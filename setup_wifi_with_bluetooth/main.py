@@ -1,149 +1,117 @@
-import sys
+# Raspberry Pi (Python) - usb_handler.py
+import usb.core
+import usb.util
+import time
 import logging
-import asyncio
-import threading
-from typing import Any, Union, Dict, Optional
-from bless import (
-    BlessServer,
-    BlessGATTCharacteristic,
-    GATTCharacteristicProperties,
-    GATTAttributePermissions
-)
 
-# Configure logging
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(name=__name__)
+logger = logging.getLogger('USBHandler')
 
-class BLEServer:
-    def __init__(self, service_name: str = "RaspberryPi BLE Service"):
-        self.service_name = service_name
-        self.server: Optional[BlessServer] = None
-        self.characteristics: Dict[str, BlessGATTCharacteristic] = {}
+class USBHandler:
+    def __init__(self):
+        # Google Pixel vendor ID and product ID
+        self.VENDOR_ID = 0x18d1
+        self.PRODUCT_ID = 0x4ee7
         
-        # Platform-specific event trigger
-        self.trigger: Union[asyncio.Event, threading.Event]
-        if sys.platform in ["darwin", "win32"]:
-            self.trigger = threading.Event()
-        else:
-            self.trigger = asyncio.Event()
+        self.device = None
+        self.endpoint_in = None
+        self.endpoint_out = None
+        self.interface = None
         
-        # Service and characteristic UUIDs
-        self.service_uuid = "A07498CA-AD5B-474E-940D-16F1FBE7E8CD"
-        self.char_uuid = "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"
-        
-    async def setup_server(self, loop: asyncio.AbstractEventLoop):
-        """Initialize and configure the BLE server"""
-        self.server = BlessServer(name=self.service_name, loop=loop)
-        self.server.read_request_func = self.read_request
-        self.server.write_request_func = self.write_request
-        
-        # Add service
-        await self.server.add_new_service(self.service_uuid)
-        
-        # Configure characteristic properties
-        char_flags = (
-            GATTCharacteristicProperties.read |
-            GATTCharacteristicProperties.write |
-            GATTCharacteristicProperties.indicate
-        )
-        permissions = (
-            GATTAttributePermissions.readable |
-            GATTAttributePermissions.writeable
-        )
-        
-        # Add characteristic to service
-        await self.server.add_new_characteristic(
-            self.service_uuid,
-            self.char_uuid,
-            char_flags,
-            None,
-            permissions
-        )
-        
-        # Store characteristic reference
-        self.characteristics[self.char_uuid] = self.server.get_characteristic(self.char_uuid)
-        
-    def read_request(self, characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-        """Handle read requests from connected devices"""
-        logger.debug(f"Read request for {characteristic.uuid}: {characteristic.value}")
-        return characteristic.value
-        
-    def write_request(self, characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
-        """Handle write requests from connected devices"""
-        characteristic.value = value
-        logger.debug(f"Write request: Characteristic {characteristic.uuid} value set to {value}")
-        
-        # Process received data
+        self.connect()
+
+    def connect(self):
         try:
-            decoded_value = value.decode() if isinstance(value, bytes) else str(value)
-            self.handle_received_data(decoded_value)
+            # Find the device
+            logger.debug(f"Looking for device with ID {hex(self.VENDOR_ID)}:{hex(self.PRODUCT_ID)}")
+            self.device = usb.core.find(idVendor=self.VENDOR_ID, idProduct=self.PRODUCT_ID)
+            
+            if self.device is None:
+                raise ValueError('Device not found')
+
+            logger.debug("Device found")
+
+            # Set configuration
+            self.device.set_configuration()
+            logger.debug("Configuration set")
+
+            # Get an endpoint instance
+            cfg = self.device.get_active_configuration()
+            self.interface = cfg[(0,0)]
+            
+            # Find endpoints
+            for endpoint in self.interface:
+                if endpoint.bEndpointAddress & 0x80:
+                    self.endpoint_in = endpoint
+                    logger.debug(f"IN endpoint found: {hex(endpoint.bEndpointAddress)}")
+                else:
+                    self.endpoint_out = endpoint
+                    logger.debug(f"OUT endpoint found: {hex(endpoint.bEndpointAddress)}")
+
         except Exception as e:
-            logger.error(f"Error processing received data: {e}")
-        
-        # Check for special commands
-        if value == b"\x0f":
-            logger.debug("Received trigger command")
-            self.trigger.set()
-            
-    def handle_received_data(self, data: str):
-        """Process received data"""
-        logger.info(f"Processing received data: {data}")
-        # Add your custom data processing logic here
-        
-    async def update_characteristic(self, value: str):
-        """Update characteristic value and notify connected devices"""
-        if self.server and self.char_uuid in self.characteristics:
-            char = self.characteristics[self.char_uuid]
-            char.value = value.encode()
-            self.server.update_value(self.service_uuid, self.char_uuid)
-            logger.debug(f"Updated characteristic value to: {value}")
-    
-    async def run(self, loop: asyncio.AbstractEventLoop):
-        """Main server operation loop"""
+            logger.error(f"Error during connection: {str(e)}")
+            raise
+
+    def send_data(self, data: str):
         try:
-            # Clear any existing triggers
-            self.trigger.clear()
-            
-            # Setup and start server
-            await self.setup_server(loop)
-            await self.server.start()
-            
-            logger.info("BLE Server started and advertising")
-            logger.info(f"Service UUID: {self.service_uuid}")
-            logger.info(f"Characteristic UUID: {self.char_uuid}")
-            
-            # Wait for events/commands
-            if isinstance(self.trigger, threading.Event):
-                self.trigger.wait()
+            if not self.device or not self.endpoint_out:
+                logger.error("Device or endpoint not initialized")
+                return False
+
+            # Convert string to bytes and send
+            bytes_sent = self.device.write(self.endpoint_out.bEndpointAddress, data.encode())
+            logger.debug(f"Sent {bytes_sent} bytes")
+            return True
+        except usb.core.USBError as e:
+            logger.error(f"Error sending data: {e}")
+            return False
+
+    def receive_data(self) -> str:
+        try:
+            if not self.device or not self.endpoint_in:
+                logger.error("Device or endpoint not initialized")
+                return ""
+
+            # Read data
+            data = self.device.read(self.endpoint_in.bEndpointAddress, 
+                                  self.endpoint_in.wMaxPacketSize,
+                                  timeout=1000)
+            received = bytes(data).decode()
+            logger.debug(f"Received: {received}")
+            return received
+        except usb.core.USBError as e:
+            if e.errno == 110:  # Timeout
+                logger.debug("No data available")
             else:
-                await self.trigger.wait()
-            
-            # Keep server running and handle updates
-            while True:
-                await asyncio.sleep(1)
-                # Add any periodic tasks here
-                
+                logger.error(f"Error receiving data: {e}")
+            return ""
+
+    def close(self):
+        try:
+            # Release the device
+            usb.util.dispose_resources(self.device)
+            logger.debug("USB connection closed")
         except Exception as e:
-            logger.error(f"Server error: {e}")
-        finally:
-            await self.cleanup()
-            
-    async def cleanup(self):
-        """Clean up server resources"""
-        if self.server:
-            await self.server.stop()
-            logger.info("BLE Server stopped")
+            logger.error(f"Error closing connection: {e}")
 
-async def main():
-    """Main entry point"""
-    server = BLEServer()
-    loop = asyncio.get_event_loop()
-    try:
-        await server.run(loop)
-    except KeyboardInterrupt:
-        logger.info("Server shutdown requested")
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-
+# Example usage
 if __name__ == "__main__":
-    asyncio.run(main())
+    usb_handler = USBHandler()
+    
+    try:
+        while True:
+            # Example: Send data
+            message = "Hello from Raspberry Pi!"
+            if usb_handler.send_data(message):
+                logger.info(f"Sent: {message}")
+            
+            # Example: Receive data
+            received = usb_handler.receive_data()
+            if received:
+                logger.info(f"Received: {received}")
+            
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        logger.info("\nClosing connection...")
+        usb_handler.close()

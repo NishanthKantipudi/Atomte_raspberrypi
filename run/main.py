@@ -66,13 +66,6 @@ def run_subprocess(commands):
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
 
-def pull_repo():
-    start_ssh_agent()
-    add_ssh_key_with_passphrase("../ssh_key", "8985")
-    run_subprocess(["git", "pull","origin", "master"])
-
-pull_repo()
-
 def create_venv():
     if not os.path.exists("venv"):
         logger.info("Creating virtual environment...")
@@ -84,5 +77,12 @@ create_venv()
 def install_modules():
     run_subprocess(["/venv/bin/python3","/venv/bin/pip", "install", "-r", "requirements.txt"])
 install_modules()
+
 import pexpect
 
+def pull_repo():
+    start_ssh_agent()
+    add_ssh_key_with_passphrase("../ssh_key", "8985")
+    run_subprocess(["git", "pull","origin", "master"])
+
+pull_repo()

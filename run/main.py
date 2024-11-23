@@ -73,3 +73,4 @@ def pull_repo():
     add_ssh_key_with_passphrase("../ssh_key", "8985")
     run_subprocess(["git", "pull","origin", "master"])
 
+pull_repo()

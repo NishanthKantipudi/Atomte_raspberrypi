@@ -15,7 +15,8 @@ async def connect_and_read_data():
     logger.info("Scanning for devices...")
     devices = await BleakScanner.discover()
     for device in devices:
-        logger.info(f"Found device: {device.name} ({device.address})")
+
+        logger.info(f"{str(device)}Found device: {device.name} ({device.address})")
         if "POCO F5" in device.name:  # Replace with your Android device name
             async with BleakClient(device.address) as client:
                 logger.info(f"Connected to {device.name}")

@@ -9,8 +9,8 @@ logger = setup_logger()
 
 def getcwd():
     cwd = os.getcwd()
-    os.chdir(cwd+"/Desktop/backend/backend")
-    cwd = os.getcwd()
+    os.chdir(cwd+"/Atomte/Atomte_raspberrypi")
+    cwd = os.getcwd()+"/run"
     return cwd
 cwd=getcwd()
 

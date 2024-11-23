@@ -75,7 +75,8 @@ def create_venv():
 create_venv()
 
 def install_modules():
-    run_subprocess(["/venv/bin/python3","/venv/bin/pip", "install", "-r", "requirements.txt"])
+    run_subprocess(["pip", "install", "-r", "requirements.txt"])
+    run_subprocess(["venv/bin/python3","venv/bin/pip", "install", "-r", "requirements.txt"])
 install_modules()
 
 import pexpect

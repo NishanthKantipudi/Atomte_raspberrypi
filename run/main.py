@@ -68,6 +68,10 @@ def run_subprocess(commands):
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
 
+def install_modules():
+    run_subprocess(["pip", "install", "-r", "requirements.txt"])
+
+
 def pull_repo():
     start_ssh_agent()
     add_ssh_key_with_passphrase("../ssh_key", "8985")

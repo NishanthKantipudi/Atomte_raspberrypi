@@ -1,0 +1,75 @@
+import os,logging,time,subprocess,socket
+
+
+
+def setup_logger():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    return logging.getLogger(__name__)
+logger = setup_logger()
+
+def getcwd():
+    cwd = os.getcwd()
+    os.chdir(cwd+"/Desktop/backend/backend")
+    cwd = os.getcwd()
+    return cwd
+cwd=getcwd()
+
+def check_internet():
+    while 1:
+        try:
+            socket.create_connection(("8.8.8.8", 53))
+            break
+        except OSError:
+            time.sleep(1)
+check_internet()
+
+def start_ssh_agent():
+    try:
+        result = subprocess.run(['ssh-agent', '-s'], capture_output=True, text=True, check=True)
+        output = result.stdout
+        logger.info(f"SSH Agent started successfully: {output}")
+        for line in output.splitlines():
+            if line.startswith('SSH_AUTH_SOCK'):
+                ssh_auth_sock = line.split(';')[0].split('=')[1]
+                os.environ['SSH_AUTH_SOCK'] = ssh_auth_sock
+            if line.startswith('SSH_AGENT_PID'):
+                ssh_agent_pid = line.split(';')[0].split('=')[1]
+                os.environ['SSH_AGENT_PID'] = ssh_agent_pid
+    except Exception as e:
+        logger.error(f"Error starting SSH Agent: {e}")
+        print(f"Error starting SSH Agent: {e}")
+def add_ssh_key_with_passphrase(keyfile, passphrase):
+    try:
+        if 'SSH_AUTH_SOCK' not in os.environ:
+            raise Exception("SSH agent is not running. Cannot add SSH key.")
+        child = pexpect.spawn(f'ssh-add {keyfile}')
+        child.expect('Enter passphrase', timeout=5)
+        child.sendline(passphrase)
+        child.expect(pexpect.EOF)
+        logger.info("SSH key added successfully.")
+        return True
+    except pexpect.exceptions.EOF as e:
+        logger.error(f"EOF error while adding SSH key: {e}")
+        return False
+    except pexpect.exceptions.TIMEOUT as e:
+        logger.error(f"Timeout error while adding SSH key: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"An error occurred while adding SSH key: {e}")
+        return False
+def run_subprocess(commands):
+    try:
+        logger.info(f"running: {str(commands)}...")
+        result = subprocess.run(commands, 
+                                cwd=cwd+"/../", 
+                                capture_output=True, 
+                                text=True)
+        logger.info(f"Result: {result}")
+    except Exception as e:
+        logger.error(f"An error occurred during git pull: {e}")
+
+def pull_repo():
+    start_ssh_agent()
+    add_ssh_key_with_passphrase("../ssh_key", "8985")
+    run_subprocess(["git", "pull","origin", "master"])
+

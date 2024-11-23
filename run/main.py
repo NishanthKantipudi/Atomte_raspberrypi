@@ -87,3 +87,6 @@ def pull_repo():
     run_subprocess(["git", "pull","origin", "master"])
 
 pull_repo()
+
+
+run_subprocess(["venv/bin/python3", "setup_wifi_with_bluetooth/main.py",">>","setup_wifi_with_bluetooth/main.log","2>&1","&"])

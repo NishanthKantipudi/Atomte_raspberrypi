@@ -1,7 +1,5 @@
 import os,logging,time,subprocess,socket
 
-
-
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -67,11 +65,6 @@ def run_subprocess(commands):
         logger.info(f"Result: {result}")
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
-        
-import pexpect
-def install_modules():
-    run_subprocess(["pip", "install", "-r", "requirements.txt"])
-install_modules()
 
 def pull_repo():
     start_ssh_agent()
@@ -79,3 +72,17 @@ def pull_repo():
     run_subprocess(["git", "pull","origin", "master"])
 
 pull_repo()
+
+def create_venv():
+    if not os.path.exists("venv"):
+        logger.info("Creating virtual environment...")
+        run_subprocess(["python3", "-m", "venv", "venv"])
+    else:
+        logger.info("Virtual environment already exists.")
+create_venv()
+
+def install_modules():
+    run_subprocess(["/venv/bin/python3","/venv/bin/pip", "install", "-r", "requirements.txt"])
+install_modules()
+import pexpect
+

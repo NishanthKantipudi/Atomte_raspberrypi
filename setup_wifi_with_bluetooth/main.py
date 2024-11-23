@@ -1,34 +1,28 @@
-import bluetooth,logging
+import logging
 
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
 logger = setup_logger()
 
-# Create a Bluetooth socket
-server_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+import asyncio
+from bleak import BleakClient, BleakScanner
 
-# Bind the socket to a port
-port = 1
-server_socket.bind(("", port))
-server_socket.listen(1)
+SERVICE_UUID = "0000180A-0000-1000-8000-00805F9B34FB"  # Replace with Android service UUID
+CHARACTERISTIC_UUID = "00002a29-0000-1000-8000-00805f9b34fb"  # Replace with Android characteristic UUID
 
-logger.info("Waiting for a connection...")
+async def connect_and_read_data():
+    logger.info("Scanning for devices...")
+    devices = await BleakScanner.discover()
+    for device in devices:
+        logger.info(f"Found device: {device.name} ({device.address})")
+        if "POCO F5" in device.name:  # Replace with your Android device name
+            async with BleakClient(device.address) as client:
+                logger.info(f"Connected to {device.name}")
+                data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                logger.info(f"Received data: {data.decode()}")  # Assuming data is text
 
-# Accept an incoming connection
-client_socket, address = server_socket.accept()
-logger.info(f"Connected to {address}")
+# Run the script
+asyncio.run(connect_and_read_data())
 
-try:
-    while True:
-
-        data = client_socket.recv(1024)
-        if not data:
-            break
-        logger.info(f"Received: {data.decode('utf-8')}")
-except Exception as e:
-    logger.error(f"Error: {e}")
-finally:
-    client_socket.close()
-    server_socket.close()
 

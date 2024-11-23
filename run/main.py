@@ -90,4 +90,4 @@ pull_repo()
 
 def run_subprocess_in_shell(command):
     subprocess.run(command, shell=True)
-run_subprocess_in_shell("venv/bin/python3 setup_wifi_with_bluetooth/main.py >> setup_wifi_with_bluetooth/main.log 2>&1 &",shell=True)
+run_subprocess_in_shell("venv/bin/python3 setup_wifi_with_bluetooth/main.py >> setup_wifi_with_bluetooth/main.log 2>&1 &")

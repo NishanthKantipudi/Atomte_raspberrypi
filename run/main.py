@@ -93,4 +93,4 @@ def run_command(command, log_file):
         log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
         process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
         process.communicate()
-run_command("venv/bin/python3 setup_wifi_with_bluetooth/main.py","setup_wifi_with_bluetooth/main.log")
+run_command("sudo venv/bin/python3 setup_wifi_with_bluetooth/main.py","setup_wifi_with_bluetooth/main.log")

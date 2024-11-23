@@ -70,7 +70,7 @@ def run_subprocess(commands):
 
 def install_modules():
     run_subprocess(["pip", "install", "-r", "requirements.txt"])
-
+install_modules()
 
 def pull_repo():
     start_ssh_agent()

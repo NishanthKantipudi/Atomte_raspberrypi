@@ -67,7 +67,8 @@ def run_subprocess(commands):
         logger.info(f"Result: {result}")
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
-
+        
+import pexpect
 def install_modules():
     run_subprocess(["pip", "install", "-r", "requirements.txt"])
 install_modules()

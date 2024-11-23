@@ -1,105 +1,69 @@
-# Raspberry Pi Python script using Bleak
 import asyncio
-from bleak import BleakServer, BleakClient, BleakGATTCharacteristic
-from bleak.backends.characteristic import CharacteristicProperties
-from bleak.backends.service import BleakGATTServiceCollection
+from bleak import BleakScanner, BleakClient
+from bleak.backends.scanner import AdvertisementData
+from bleak.backends.device import BLEDevice
 import logging
-import struct
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define UUIDs for service and characteristic
+# Define UUIDs - make sure these match your Android app
 SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
 CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"
 
-class BLEServer:
-    def __init__(self):
-        self.data_received_callback = None
-        self.connected_clients = set()
+async def handle_data(sender: int, data: bytearray):
+    """Handle incoming data from connected device"""
+    try:
+        decoded_data = data.decode()
+        logger.info(f"Received data: {decoded_data}")
+        # Process your data here
+        return decoded_data
+    except Exception as e:
+        logger.error(f"Error processing data: {e}")
+        return None
 
-    async def handle_read(self, characteristic: BleakGATTCharacteristic, **kwargs):
-        # Handle read requests from clients
-        return b"Hello from Raspberry Pi"
-
-    async def handle_write(self, characteristic: BleakGATTCharacteristic, value: bytearray, **kwargs):
-        # Handle data written by clients
+async def scan_and_connect():
+    """Scan for and connect to the first found device"""
+    logger.info("Starting BLE scan...")
+    
+    devices = await BleakScanner.discover()
+    for device in devices:
+        logger.info(f"Found device: {device.name} ({device.address})")
+        
         try:
-            decoded_value = value.decode()
-            logger.info(f"Received data: {decoded_value}")
-            if self.data_received_callback:
-                await self.data_received_callback(decoded_value)
+            async with BleakClient(device.address) as client:
+                logger.info(f"Connected to {device.address}")
+                
+                # Discover services
+                services = await client.get_services()
+                for service in services:
+                    logger.info(f"Service: {service.uuid}")
+                    for char in service.characteristics:
+                        logger.info(f"  Characteristic: {char.uuid}")
+                        
+                # Subscribe to notifications if the characteristic supports it
+                for service in services:
+                    for char in service.characteristics:
+                        if "notify" in char.properties:
+                            logger.info(f"Subscribing to notifications for {char.uuid}")
+                            await client.start_notify(char.uuid, handle_data)
+                
+                # Keep connection alive
+                while True:
+                    await asyncio.sleep(1)
+                    
         except Exception as e:
-            logger.error(f"Error processing received data: {e}")
+            logger.error(f"Error connecting to device: {e}")
 
-    async def handle_notify(self, characteristic: BleakGATTCharacteristic, **kwargs):
-        # Handle notification subscriptions
-        logger.info("Client subscribed to notifications")
-
-    async def start(self):
-        # Create service collection
-        services = BleakGATTServiceCollection()
-        
-        # Add our service
-        service = services.add_service(SERVICE_UUID)
-        
-        # Add characteristic to the service
-        char_props = CharacteristicProperties(
-            read=True,
-            write=True,
-            notify=True,
-            write_without_response=True
-        )
-        
-        service.add_characteristic(
-            CHARACTERISTIC_UUID,
-            char_props,
-            b"",
-            self.handle_read,
-            self.handle_write,
-            self.handle_notify
-        )
-
-        # Start the server
-        server = BleakServer(services)
-        await server.start()
-        
-        logger.info("BLE Server started. Waiting for connections...")
-        
-        try:
-            # Keep the server running
-            while True:
-                await asyncio.sleep(1)
-        except KeyboardInterrupt:
-            logger.info("Stopping server...")
-        finally:
-            await server.stop()
-
-    async def send_notification(self, data: str):
-        # Send notification to all connected clients
-        encoded_data = data.encode()
-        for client in self.connected_clients:
-            try:
-                await client.notify(CHARACTERISTIC_UUID, encoded_data)
-            except Exception as e:
-                logger.error(f"Error sending notification: {e}")
-
-def main():
-    server = BLEServer()
-    
-    # Example callback for received data
-    async def on_data_received(data):
-        logger.info(f"Processing received data: {data}")
-        # Send a response back
-        await server.send_notification(f"Processed: {data}")
-    
-    server.data_received_callback = on_data_received
-    
-    # Run the server
-    asyncio.run(server.start())
+async def main():
+    """Main function to run the BLE client"""
+    try:
+        await scan_and_connect()
+    except Exception as e:
+        logger.error(f"Main loop error: {e}")
+    finally:
+        logger.info("Shutting down...")
 
 if __name__ == "__main__":
-    main()
-
-
+    asyncio.run(main())

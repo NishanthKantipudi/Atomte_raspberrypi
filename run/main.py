@@ -88,6 +88,9 @@ def pull_repo():
 
 pull_repo()
 
-def run_subprocess_in_shell(command):
-    subprocess.run(command, shell=True)
-run_subprocess_in_shell("venv/bin/python3 setup_wifi_with_bluetooth/main.py >> setup_wifi_with_bluetooth/main.log 2>&1 &")
+def run_command(command, log_file):
+    with open(log_file, 'a') as log:
+        log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
+        process.communicate()
+run_command("venv/bin/python3 setup_wifi_with_bluetooth/main.py","setup_wifi_with_bluetooth/main.log")

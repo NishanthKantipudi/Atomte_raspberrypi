@@ -1,3 +1,4 @@
 pexpect
 pyusb
 PyAutoGUI
+pyvirtualdisplay

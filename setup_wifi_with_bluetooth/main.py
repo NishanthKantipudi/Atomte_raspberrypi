@@ -10,8 +10,10 @@ logger = logging.getLogger('USBHandler')
 class USBHandler:
     def __init__(self):
         # Google Pixel vendor ID and product ID
-        self.VENDOR_ID = 0x2717
-        self.PRODUCT_ID = 0xff48
+        # self.VENDOR_ID = 0x2717
+        # self.PRODUCT_ID = 0xff48
+        self.VENDOR_ID = 0x18d1
+        self.PRODUCT_ID = 0x4ee7
         
         self.device = None
         self.endpoint_in = None

@@ -99,7 +99,7 @@ class USBHandler:
 # Example usage
 if __name__ == "__main__":
     usb_handler = USBHandler()
-    
+    i=0
     try:
         while True:
             # Example: Send data
@@ -111,7 +111,10 @@ if __name__ == "__main__":
             received = usb_handler.receive_data()
             if received:
                 logger.info(f"Received: {received}")
-            
+            i+=1
+            if i==10:
+                usb_handler.close()
+                break
             time.sleep(1)
             
     except KeyboardInterrupt:

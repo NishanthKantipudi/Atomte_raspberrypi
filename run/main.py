@@ -12,6 +12,16 @@ def getcwd():
     return cwd
 cwd=getcwd()
 
+
+
+def run_command(command, log_file):
+    with open(log_file, 'a') as log:
+        log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
+        process.communicate()
+run_command("sudo venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
+
+
 def check_internet():
     while 1:
         try:
@@ -20,6 +30,8 @@ def check_internet():
         except OSError:
             time.sleep(1)
 check_internet()
+
+
 
 def start_ssh_agent():
     try:
@@ -88,9 +100,3 @@ def pull_repo():
 
 pull_repo()
 
-def run_command(command, log_file):
-    with open(log_file, 'a') as log:
-        log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
-        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
-        process.communicate()
-run_command("sudo venv/bin/python3 setup_wifi_with_bluetooth/main.py","setup_wifi_with_bluetooth/main.log")

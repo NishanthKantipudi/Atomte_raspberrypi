@@ -100,7 +100,7 @@ import pexpect
 
 def pull_repo():
     start_ssh_agent()
-    add_ssh_key_with_passphrase("../ssh_key", "8985")
+    add_ssh_key_with_passphrase(cwd+"../ssh_key", "8985")
     run_subprocess(["git", "pull","origin", "master"])
 
 pull_repo()

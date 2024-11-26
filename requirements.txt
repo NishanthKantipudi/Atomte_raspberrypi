@@ -2,3 +2,5 @@ pexpect
 pyusb
 PyAutoGUI
 pyvirtualdisplay
+flask
+flask-cors

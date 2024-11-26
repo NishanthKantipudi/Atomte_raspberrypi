@@ -13,12 +13,32 @@ def getcwd():
 cwd=getcwd()
 
 
-
 def run_command(command, log_file):
     with open(log_file, 'a') as log:
         log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
         process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
         process.communicate()
+
+def run_subprocess(commands):
+    try:
+        logger.info(f"running: {str(commands)}...")
+        result = subprocess.run(commands, 
+                                cwd=cwd+"/../", 
+                                capture_output=True, 
+                                text=True)
+        logger.info(f"Result: {result}")
+    except Exception as e:
+        logger.error(f"An error occurred during git pull: {e}")
+def create_venv():
+    if not os.path.exists("venv"):
+        logger.info("Creating virtual environment...")
+        run_subprocess(["python3", "-m", "venv", "venv"])
+        run_subprocess(["venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
+    else:
+        logger.info("Virtual environment already exists.")
+create_venv()
+
+
 run_command("venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
 
 
@@ -67,27 +87,12 @@ def add_ssh_key_with_passphrase(keyfile, passphrase):
     except Exception as e:
         logger.error(f"An error occurred while adding SSH key: {e}")
         return False
-def run_subprocess(commands):
-    try:
-        logger.info(f"running: {str(commands)}...")
-        result = subprocess.run(commands, 
-                                cwd=cwd+"/../", 
-                                capture_output=True, 
-                                text=True)
-        logger.info(f"Result: {result}")
-    except Exception as e:
-        logger.error(f"An error occurred during git pull: {e}")
 
-def create_venv():
-    if not os.path.exists("venv"):
-        logger.info("Creating virtual environment...")
-        run_subprocess(["python3", "-m", "venv", "venv"])
-    else:
-        logger.info("Virtual environment already exists.")
-create_venv()
+
+
 
 def install_modules():
-    run_subprocess(["pip3", "install", "-r", "requirements.txt"])
+    run_subprocess(["pip3", "install", "-r", "requirements_main.txt"])
     run_subprocess(["venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
 install_modules()
 

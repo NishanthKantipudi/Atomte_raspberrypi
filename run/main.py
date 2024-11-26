@@ -39,7 +39,7 @@ def create_venv():
 create_venv()
 
 
-run_command("venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
+run_command("sudo venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
 
 
 def check_internet():

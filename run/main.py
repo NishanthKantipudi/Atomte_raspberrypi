@@ -34,6 +34,19 @@ def create_venv():
         logger.info("Creating virtual environment...")
         run_subprocess(["python3", "-m", "venv", "venv"])
         run_subprocess(["venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
+        import firebase_admin
+        from firebase_admin import credentials, db
+        import json
+        cred = credentials.Certificate(cwd+"/../secrets/key.json")
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+            'httpTimeout':10
+        })
+        with open(cwd+"/../../secrets/details.json", "r") as f:
+            data = json.load(f)
+            db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
+            db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
+            db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     else:
         logger.info("Virtual environment already exists.")
 create_venv()

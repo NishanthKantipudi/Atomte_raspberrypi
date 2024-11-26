@@ -23,36 +23,33 @@ def run_subprocess(commands):
     try:
         logger.info(f"running: {str(commands)}...")
         result = subprocess.run(commands, 
-                                cwd=cwd+"/../", 
+                                cwd=cwd+"/", 
                                 capture_output=True, 
                                 text=True)
         logger.info(f"Result: {result}")
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
-def create_venv():
-    if not os.path.exists("venv"):
-        logger.info("Creating virtual environment...")
-        run_subprocess(["python3", "-m", "venv", "venv"])
-        run_subprocess(["venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
-        import firebase_admin
-        from firebase_admin import credentials, db
-        import json
-        cred = credentials.Certificate(cwd+"/../secrets/key.json")
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
-            'httpTimeout':10
-        })
-        with open(cwd+"/../../secrets/details.json", "r") as f:
-            data = json.load(f)
-            db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
-            db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
-            db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
-    else:
-        logger.info("Virtual environment already exists.")
-create_venv()
+import json
+with open(cwd+"/../../secrets/details.json", "r") as f:
+    data = json.load(f)
+def init_setup():
+    import firebase_admin
+    from firebase_admin import credentials, db
+    cred = credentials.Certificate(cwd+"/../secrets/key.json")
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+        'httpTimeout':10
+    })
+    db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
+    db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
+    db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
+    with open(cwd+"/../../secrets/details.json", "w") as f:
+        data["setup"] = True
+        json.dump(data, f)
+if(data["setup"] == False):
+    init_setup()
 
-
-run_command("sudo venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
+run_command("sudo ../venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
 
 
 def check_internet():
@@ -105,8 +102,7 @@ def add_ssh_key_with_passphrase(keyfile, passphrase):
 
 
 def install_modules():
-    run_subprocess(["pip3", "install", "-r", "requirements_main.txt"])
-    run_subprocess(["venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
+    run_subprocess(["../../venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
 install_modules()
 
 import pexpect

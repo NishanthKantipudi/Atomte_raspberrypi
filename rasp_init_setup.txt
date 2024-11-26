@@ -1,9 +1,13 @@
-mac:ssh nishanth_kantipudi@raspberrypi.local
-rasp:mkdir Atomte;cd Atomte;mkdir SSH;cd SSH
-mac:sudo scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key nishanth_kantipudi@raspberrypi.local:Atomte/SSH/ssh_key
-mac:sudo scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key.pub nishanth_kantipudi@raspberrypi.local:Atomte/SSH/ssh_key.pub
-mac:sudo scp ~/Desktop/Atomte/Atomte_raspberrypi/details.json nishanth_kantipudi@raspberrypi.local:Atomte/secrets/details.json
+mac:RPI_IP=$(ping -c 1 raspberrypi.local | awk -F'[()]' '/PING/{print $2}')
+mac:ssh-keygen -R $RPI_IP;ssh nishanth_kantipudi@$RPI_IP
+rasp:mkdir Atomte;cd Atomte;mkdir SSH;mkdir secrets;python3 -m venv venv;cd SSH
+
+
+
+
+mac:RPI_IP=$(ping -c 1 raspberrypi.local | awk -F'[()]' '/PING/{print $2}')
+mac:ssh-keygen -R $RPI_IP;scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key "nishanth_kantipudi@$RPI_IP:/home/nishanth_kantipudi/Atomte/SSH/ssh_key"
+mac:scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key.pub nishanth_kantipudi@$RPI_IP:/home/nishanth_kantipudi/Atomte/SSH/ssh_key.pub
+mac:scp ~/Desktop/Atomte/Atomte_raspberrypi/details.json nishanth_kantipudi@$RPI_IP:/home/nishanth_kantipudi/Atomte/secrets/details.json
 rasp:eval "$(ssh-agent -s)";ssh-add ssh_key;cd ..;git clone git@github.com:NishanthKantipudi/Atomte_raspberrypi.git
-rasp:(crontab -l 2>/dev/null; echo "@reboot python3 Atomte/Atomte_raspberrypi/run/main.py > Atomte/Atomte_raspberrypi/run/main.log 2>&1") | crontab -
-
-
+rasp:(crontab -l 2>/dev/null; echo "@reboot Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py > Atomte/Atomte_raspberrypi/run/main.log 2>&1") | crontab -;sudo reboot

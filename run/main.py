@@ -33,6 +33,7 @@ import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
 def init_setup():
+    run_subprocess(["../../venv/bin/python3","venv/bin/pip3", "install", "-r", "requirements.txt"])
     import firebase_admin
     from firebase_admin import credentials, db
     cred = credentials.Certificate(cwd+"/../secrets/key.json")

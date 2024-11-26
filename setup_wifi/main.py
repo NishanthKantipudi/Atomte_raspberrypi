@@ -95,13 +95,13 @@ def connect_wifi():
             return jsonify({
                 'status': 'error',
                 'message': result.stderr.strip()
-            }), 500
+            }), 200
     
     except Exception as e:
         return jsonify({
             'status': 'error',
             'message': str(e)
-        }), 500
+        }), 200
 
 @app.route('/connection_status', methods=['GET'])
 def check_connection_status():
@@ -146,5 +146,5 @@ def check_connection_status():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=False, host='0.0.0.0', port=80)
 

@@ -52,12 +52,19 @@ if(data["setup"] == False):
     })
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
+    db.reference('/').child("Printers").child(data["code"]).child("printer_setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)
 else:
+    while 1:
+        try:
+            socket.create_connection(("8.8.8.8", 53))
+            break
+        except OSError: 
+            time.sleep(1)
     import firebase_admin
     from firebase_admin import credentials, db
     cred = credentials.Certificate(cwd+"/../secrets/key.json")

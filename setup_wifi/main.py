@@ -117,7 +117,7 @@ def check_connection_status():
         for line in result.stdout.split('\n'):
             if line.startswith('yes:'):
                 current_ssid = line.split(':')[1]
-                
+            
                 # Get IP address
                 ip_result = subprocess.run(
                     ['ip', 'addr', 'show', wifi_device], 

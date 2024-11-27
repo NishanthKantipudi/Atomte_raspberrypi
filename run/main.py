@@ -43,13 +43,21 @@ def init_setup():
     })
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
+    db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)
 if(data["setup"] == False):
     init_setup()
-
+else:
+    import firebase_admin
+    from firebase_admin import credentials, db
+    cred = credentials.Certificate(cwd+"/../secrets/key.json")
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+        'httpTimeout':10
+    })
 run_command("sudo ../venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log")
 
 
@@ -101,10 +109,9 @@ def add_ssh_key_with_passphrase(keyfile, passphrase):
 
 
 
-
 def install_modules():
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
-install_modules()
+
 
 import pexpect
 
@@ -113,6 +120,11 @@ def pull_repo():
     run_subprocess(["chmod","600",cwd+"/../ssh_key"])
     add_ssh_key_with_passphrase(cwd+"/../ssh_key", "8985")
     run_subprocess(["git", "pull","origin", "master"])
+if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
+    install_modules()
+    pull_repo()
+    db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
 
-pull_repo()
+
+run_command("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log")
 

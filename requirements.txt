@@ -1,6 +1,13 @@
+websockets
+pysnmp
+PyPDF2
+pycups
+razorpay
+pillow
+tenacity
 pexpect
-pyusb
-flask
+Flask
 flask-cors
-firebase-admin
+selenium
+deepgram-sdk
 

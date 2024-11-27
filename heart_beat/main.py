@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Firebase initialization
-cred = credentials.Certificate(cwd+"/key.json")
+cred = credentials.Certificate(cwd+"/../secrets/key.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'httpTimeout':10

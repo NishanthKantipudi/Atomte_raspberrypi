@@ -33,6 +33,12 @@ import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
 def init_setup():
+    while 1:
+        try:
+            socket.create_connection(("8.8.8.8", 53))
+            break
+        except OSError:
+            time.sleep(1)
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
     import firebase_admin
     from firebase_admin import credentials, db

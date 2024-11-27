@@ -136,7 +136,7 @@ def check_connection_status():
                 })
         
         return jsonify({
-            'status': 'disconnected'
+            'status': 'disconnected',
             'message': 'Not connected to WiFi'
         })
     

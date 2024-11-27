@@ -37,9 +37,12 @@ def init_setup():
         try:
             socket.create_connection(("8.8.8.8", 53))
             break
-        except OSError:
+        except OSError: 
             time.sleep(1)
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
+    
+if(data["setup"] == False):
+    init_setup()
     import firebase_admin
     from firebase_admin import credentials, db
     cred = credentials.Certificate(cwd+"/../secrets/key.json")
@@ -54,8 +57,6 @@ def init_setup():
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)
-if(data["setup"] == False):
-    init_setup()
 else:
     import firebase_admin
     from firebase_admin import credentials, db

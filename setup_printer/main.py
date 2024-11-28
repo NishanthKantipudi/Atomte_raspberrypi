@@ -25,7 +25,7 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'storageBucket': 'skilldevelopmentapp.appspot.com'
 })
-with open(cwd+"/../../secrets/details.json", "r") as f:
+with open(cwd+"/../secrets/details.json", "r") as f:
     s_data = json.load(f)
 
 import subprocess

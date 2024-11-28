@@ -93,7 +93,7 @@ def get_printer_properties(printer_name, timeout=10):
             return None
         else:
             db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("success")
-            logger.info("Printer Properties:"+ properties)
+            logger.info("Printer Properties:"+ str(properties))
             return properties
     except Exception as e:
         logger.info(f"Unexpected error retrieving printer properties: {e}")

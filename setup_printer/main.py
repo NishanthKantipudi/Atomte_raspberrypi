@@ -120,7 +120,7 @@ def setup(snap):
             printer_ref.child("status").set("connected-fetching properties")
             if stdout == 0:
                 logger.info("Printer added successfully!")
-                logger.info("Command Output:"+ stdout)
+                logger.info("Command Output:"+ str(stdout))
                 try:
                     props=get_printer_properties(data["name"])
                     if(props is not None):

@@ -93,7 +93,7 @@ def get_printer_properties(printer_name, timeout=10):
             return None
         else:
             db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("success")
-            logger.info("Printer Properties:", properties)
+            logger.info("Printer Properties:"+ properties)
             return properties
     except Exception as e:
         logger.info(f"Unexpected error retrieving printer properties: {e}")
@@ -120,7 +120,7 @@ def setup(snap):
             printer_ref.child("status").set("connected-fetching properties")
             if stdout == 0:
                 logger.info("Printer added successfully!")
-                logger.info("Command Output:", stdout)
+                logger.info("Command Output:"+ stdout)
                 try:
                     props=get_printer_properties(data["name"])
                     if(props is not None):
@@ -138,7 +138,7 @@ def setup(snap):
             else:
                 printer_ref.child("status").set("failed-"+stderr)
                 logger.info("Printer addition failed.")
-                logger.info("Error Output:", stderr)
+                logger.info("Error Output: "+ stderr)
                 printer_ref.child("connection").set("failed")
         else:
             printer_ref.child("status").set("failed")

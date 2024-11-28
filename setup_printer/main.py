@@ -85,7 +85,7 @@ def get_printer_properties(printer_name, timeout=10):
         for line in return_code.strip().split("\n"):
             parts = line.split()
             if len(parts) > 1:
-                option_name = parts[0]
+                option_name = parts[0].replace("/", ":")
                 choices = parts[1:]
                 properties[option_name] = choices
         if(len(properties.keys()))==0:

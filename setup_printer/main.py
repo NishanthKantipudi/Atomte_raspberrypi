@@ -83,11 +83,12 @@ def get_printer_properties(printer_name, timeout=10):
             return None
         properties = {}
         for line in return_code.strip().split("\n"):
-            parts = line.split()
-            if len(parts) > 1:
-                option_name = parts[0].replace("/", ":")
-                choices = parts[1:]
-                properties[option_name] = choices
+            line = line.split(":")
+            option_name = line[0]
+            choices = line[1].split(" ")[1:]
+            properties[option_name] = []
+            for i in choices[1:]:
+                properties[option_name].append({"name":i,"cost":0.0})
         if(len(properties.keys()))==0:
             db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("failed")
             return None

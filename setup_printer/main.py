@@ -7,11 +7,7 @@ import json,os
 import logging
 import firebase_admin
 from firebase_admin import credentials, db
-cred = credentials.Certificate("key.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
-    'storageBucket': 'skilldevelopmentapp.appspot.com'
-})
+
 
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,7 +20,11 @@ def getcwd():
     cwd = os.getcwd()
     return cwd
 cwd=getcwd()
-
+cred = credentials.Certificate(cwd+"/../secrets/key.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+    'storageBucket': 'skilldevelopmentapp.appspot.com'
+})
 with open(cwd+"/../../secrets/details.json", "r") as f:
     s_data = json.load(f)
 

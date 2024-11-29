@@ -48,7 +48,7 @@ def init_setup():
         except OSError: 
             time.sleep(1)
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
-    
+
 if(data["setup"] == False):
     init_setup()
     import firebase_admin
@@ -81,6 +81,11 @@ else:
         'httpTimeout':10
     })
 
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
+db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(get_ip_address())
 def check_internet():
     while 1:
         try:

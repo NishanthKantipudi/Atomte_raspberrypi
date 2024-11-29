@@ -32,6 +32,14 @@ def run_subprocess(commands):
 import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
+
+t1 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log"))
+t1.start()
+
+
+
+
+
 def init_setup():
     while 1:
         try:
@@ -73,8 +81,6 @@ else:
         'httpTimeout':10
     })
 
-t1 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log"))
-t1.start()
 def check_internet():
     while 1:
         try:

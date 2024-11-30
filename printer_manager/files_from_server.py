@@ -3,7 +3,11 @@ import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-
+import logging
+def setup_logger():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    return logging.getLogger(__name__)
+logger = setup_logger()
 app = Flask(__name__)
 CORS(app)
 
@@ -34,4 +38,4 @@ def upload_file():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002)
+    app.run(host='0.0.0.0', port=5002, debug=False)

@@ -159,4 +159,5 @@ t3 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_
 t3.start()
 
 
-
+t4 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/files_from_server.py","printer_manager/files_from_server.log"))
+t4.start()

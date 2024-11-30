@@ -9,7 +9,7 @@ def setup_logger():
     return logging.getLogger(__name__)
 logger = setup_logger()
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 UPLOAD_FOLDER = "files/"
 if not os.path.exists(UPLOAD_FOLDER):

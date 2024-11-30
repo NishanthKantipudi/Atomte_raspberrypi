@@ -21,12 +21,15 @@ def upload_file():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'}), 400
         file = request.files['file']
-        uid = request.files["user_id"]
+        uid = request.form.get('user_id')
         logger.info(file.filename)
+        user_folder = os.path.join(UPLOAD_FOLDER, uid)
+        if not os.path.exists(user_folder):
+            os.makedirs(user_folder)
         if file.filename == '':
             return jsonify({'error': 'No selected file'}), 400
         filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, uid,filename)
+        filepath = os.path.join(user_folder,filename)
         logger.info(filepath)
         file.save(filepath)
         return jsonify({

@@ -21,11 +21,12 @@ def upload_file():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'}), 400
         file = request.files['file']
+        uid = request.files["user_id"]
         logger.info(file.filename)
         if file.filename == '':
             return jsonify({'error': 'No selected file'}), 400
         filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        filepath = os.path.join(UPLOAD_FOLDER, uid,filename)
         logger.info(filepath)
         file.save(filepath)
         return jsonify({

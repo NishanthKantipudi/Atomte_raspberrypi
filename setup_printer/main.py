@@ -122,8 +122,8 @@ def get_printer_properties(printer_name, timeout=10):
     try:
         command = ["lpoptions", "-p", printer_name, "-l"]
         return_code, stdout, stderr = run_command_with_timeout(command, timeout)
-        
-        if return_code is None or return_code != 0:
+        logger.info(f"{return_code}, {stdout}, {stderr}")
+        if stdout is None or stdout != 0:
             logger.error(f"Failed to get properties for printer '{printer_name}': {stderr}")
             return None
         
@@ -186,7 +186,7 @@ def setup(snap):
             return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
             printer_ref.child("status").set("connecting")
             logger.info(f"{return_code}, {stdout}, {stderr}")
-            if return_code == 0:
+            if stdout == 0:
                 logger.info("Printer added successfully!")
                 
                 try:

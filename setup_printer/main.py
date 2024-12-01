@@ -128,7 +128,7 @@ def get_printer_properties(printer_name, timeout=10):
             return None
         
         properties = {}
-        for line in stdout.strip().split("\n"):
+        for line in return_code.strip().split("\n"):
             if ":" in line:
                 line_parts = line.split(":")
                 option_name = line_parts[0].replace("/", ":")

@@ -137,7 +137,7 @@ def get_printer_properties(printer_name, timeout=10):
                 if len(choices) > 1:
                     properties[option_name] = [
                         {"name": choice, "cost": 0.0} 
-                        for choice in choices[1:] 
+                        for choice in choices
                         if choice
                     ]
         
@@ -191,6 +191,57 @@ def setup(snap):
                 
                 try:
                     props = get_printer_properties(data["name"])
+
+                    props={
+                        "paper_size": [
+        {"name": "a4", "cost": 0},
+        {"name": "letter", "cost": 0},
+        {"name": "legal", "cost": 0},
+        {"name": "a3", "cost": 0},
+        {"name": "custom_size", "cost": 0}
+    ],
+    "orientation": [
+        {"name": "portrait", "cost": 0},
+        {"name": "landscape", "cost": 0},
+        {"name": "reverse_portrait", "cost": 0},
+        {"name": "reverse_landscape", "cost": 0}
+    ],
+    "print_quality": [
+        {"name": "draft", "cost": 0},
+        {"name": "normal", "cost": 0},
+        {"name": "high", "cost": 0},
+        {"name": "photo", "cost": 0}
+    ],
+    "color_mode": [
+        {"name": "color", "cost": 0},
+        {"name": "grayscale", "cost": 0},
+        {"name": "black_and_white", "cost": 0}
+    ],
+    "duplex_printing": [
+        {"name": "one_sided", "cost": 0},
+        {"name": "two_sided_long_edge", "cost": 0},
+        {"name": "two_sided_short_edge", "cost": 0}
+    ],
+    "paper_source": [
+        {"name": "main_tray", "cost": 0},
+        {"name": "manual_feed", "cost": 0},
+        {"name": "alternative_tray", "cost": 0}
+    ],
+    "stapling": [
+        {"name": "no_staple", "cost": 0},
+        {"name": "top_left", "cost": 1},
+        {"name": "top_right", "cost": 1},
+        {"name": "bottom_left", "cost": 1},
+        {"name": "bottom_right", "cost": 1}
+    ],
+    "paper_type": [
+        {"name": "plain", "cost": 0},
+        {"name": "recycled", "cost": 0},
+        {"name": "glossy", "cost": 0.5},
+        {"name": "transparency", "cost": 0.5},
+        {"name": "labels", "cost": 1}
+    ]
+                    }
 
                     if props is not None:
                         printer_ref.child("properties").set(props)

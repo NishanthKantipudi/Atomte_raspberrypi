@@ -230,7 +230,7 @@ cwd, s_data = load_configuration()
 if cwd and s_data:
     try:
         initialize_firebase(
-            credentials.Certificate(os.path.join(cwd, "secrets", "key.json")), 
+            credentials.Certificate(os.path.join(cwd, "..","secrets", "key.json")), 
             'https://skilldevelopmentapp-default-rtdb.firebaseio.com/'
         )
         db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("start").listen(setup)

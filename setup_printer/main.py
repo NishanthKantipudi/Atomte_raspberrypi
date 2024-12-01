@@ -30,9 +30,7 @@ def load_configuration():
     """
     try:
         cwd = os.path.dirname(os.path.abspath(__file__))
-        
-        # Validate secret file paths
-        key_path = os.path.join(cwd, "secrets", "key.json")
+        key_path = os.path.join(cwd,"..", "secrets", "key.json")
         details_path = os.path.join(cwd, "..", "secrets", "details.json")
         
         if not os.path.exists(key_path):

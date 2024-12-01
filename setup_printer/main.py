@@ -180,9 +180,9 @@ def setup(snap):
                 "-p", data["name"], 
                 "-E", 
                 "-v", f"ipp://{data['printer_ip']}/ipp/print", 
-                "-m", "everywhere"
+                "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
             ]
-            
+
             return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
             printer_ref.child("status").set("connecting")
             
@@ -191,6 +191,7 @@ def setup(snap):
                 
                 try:
                     props = get_printer_properties(data["name"])
+                    
                     if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")

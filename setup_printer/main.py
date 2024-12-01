@@ -31,7 +31,7 @@ def load_configuration():
     try:
         cwd = os.path.dirname(os.path.abspath(__file__))
         key_path = os.path.join(cwd,"..", "secrets", "key.json")
-        details_path = os.path.join(cwd, "..", "secrets", "details.json")
+        details_path = os.path.join(cwd,"..", "..", "secrets", "details.json")
         
         if not os.path.exists(key_path):
             logger.error(f"Firebase credentials file not found: {key_path}")

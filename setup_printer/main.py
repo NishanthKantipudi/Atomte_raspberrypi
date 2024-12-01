@@ -185,13 +185,13 @@ def setup(snap):
 
             return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
             printer_ref.child("status").set("connecting")
-            
+            logger.info(f"{return_code}, {stdout}, {stderr}")
             if return_code == 0:
                 logger.info("Printer added successfully!")
                 
                 try:
                     props = get_printer_properties(data["name"])
-                    
+
                     if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")

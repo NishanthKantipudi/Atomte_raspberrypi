@@ -3,56 +3,96 @@ import threading
 import queue
 import time
 import traceback
-import json,os
+import json
+import os
 import logging
 import firebase_admin
 from firebase_admin import credentials, db
 
-
 def setup_logger():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    """Configure and return a logger with more robust logging."""
+    logging.basicConfig(
+        level=logging.INFO, 
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('printer_setup.log'),  # Log to file
+            logging.StreamHandler()  # Also log to console
+        ]
+    )
     return logging.getLogger(__name__)
+
 logger = setup_logger()
 
+def load_configuration():
+    """
+    Safely load configuration files with error handling.
+    Returns a tuple of (current working directory, secrets data)
+    """
+    try:
+        cwd = os.path.dirname(os.path.abspath(__file__))
+        
+        # Validate secret file paths
+        key_path = os.path.join(cwd, "secrets", "key.json")
+        details_path = os.path.join(cwd, "..", "secrets", "details.json")
+        
+        if not os.path.exists(key_path):
+            logger.error(f"Firebase credentials file not found: {key_path}")
+            return None, None
+        
+        if not os.path.exists(details_path):
+            logger.error(f"Details file not found: {details_path}")
+            return None, None
+        
+        # Load credentials and details
+        cred = credentials.Certificate(key_path)
+        with open(details_path, "r") as f:
+            s_data = json.load(f)
+        
+        return cwd, s_data
+    except Exception as e:
+        logger.error(f"Error loading configuration: {e}")
+        return None, None
 
-
-def getcwd():
-    cwd = os.getcwd()
-    return cwd
-cwd=getcwd()
-cred = credentials.Certificate(cwd+"/secrets/key.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
-    'storageBucket': 'skilldevelopmentapp.appspot.com'
-})
-with open(cwd+"/../secrets/details.json", "r") as f:
-    s_data = json.load(f)
-
-import subprocess
-import threading
-import queue
-import time
-import traceback
+def initialize_firebase(cred, database_url):
+    """
+    Initialize Firebase with robust error handling
+    """
+    try:
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': database_url,
+            'storageBucket': 'skilldevelopmentapp.appspot.com'
+        })
+        logger.info("Firebase initialized successfully")
+    except Exception as e:
+        logger.error(f"Firebase initialization failed: {e}")
+        raise
 
 def run_command_with_timeout(command, timeout=30):
+    """
+    Enhanced command execution with better error handling and logging
+    """
     output_queue = queue.Queue()
     error_queue = queue.Queue()
     
     def target():
         try:
+            logger.info(f"Executing command: {' '.join(command)}")
             process = subprocess.Popen(
                 command, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE, 
-                text=True
+                text=True,
+                universal_newlines=True
             )
             stdout, stderr = process.communicate()
             output_queue.put(stdout)
             error_queue.put(stderr)
             output_queue.put(process.returncode)
         except Exception as e:
+            logger.error(f"Command execution failed: {e}")
             error_queue.put(str(e))
             output_queue.put(None)
+    
     thread = threading.Thread(target=target)
     thread.daemon = True
     thread.start()
@@ -60,98 +100,143 @@ def run_command_with_timeout(command, timeout=30):
     thread.join(timeout)
     
     if thread.is_alive():
-        # Timeout occurred
+        logger.warning(f"Command timed out after {timeout} seconds")
         return (None, None, f"Command timed out after {timeout} seconds")
     
     try:
         return_code = output_queue.get(block=False)
         stdout = output_queue.get(block=False)
         stderr = error_queue.get(block=False)
+        
+        if return_code != 0:
+            logger.error(f"Command failed with return code {return_code}")
+            logger.error(f"Stderr: {stderr}")
+        
         return (return_code, stdout, stderr)
     except queue.Empty:
+        logger.error("Failed to retrieve command output")
         return (None, None, "Failed to retrieve command output")
 
 def get_printer_properties(printer_name, timeout=10):
+    """
+    Retrieve and parse printer properties with enhanced error handling
+    """
     try:
         command = ["lpoptions", "-p", printer_name, "-l"]
         return_code, stdout, stderr = run_command_with_timeout(command, timeout)
-        if return_code is None:
-            logger.info(f"Failed to get properties for printer '{printer_name}': {stderr}")
+        
+        if return_code is None or return_code != 0:
+            logger.error(f"Failed to get properties for printer '{printer_name}': {stderr}")
             return None
-        if stdout != 0:
-            logger.info(f"Error getting printer properties: {stderr}")
-            return None
+        
         properties = {}
-        for line in return_code.strip().split("\n"):
-            line = line.split(":")
-            option_name = line[0].replace("/",":")
-            choices = line[1].split(" ")[1:]
-            properties[option_name] = []
-            for i in choices[1:]:
-                properties[option_name].append({"name":i,"cost":0.0})
-        if(len(properties.keys()))==0:
-            db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("failed")
+        for line in stdout.strip().split("\n"):
+            if ":" in line:
+                line_parts = line.split(":")
+                option_name = line_parts[0].replace("/", ":")
+                choices = line_parts[1].split()
+                
+                if len(choices) > 1:
+                    properties[option_name] = [
+                        {"name": choice, "cost": 0.0} 
+                        for choice in choices[1:] 
+                        if choice
+                    ]
+        
+        if not properties:
+            logger.warning("No printer properties retrieved")
             return None
-        else:
-            db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("success")
-            logger.info("Printer Properties:"+ str(properties))
-            return properties
+        
+        logger.info(f"Printer Properties: {properties}")
+        return properties
+    
     except Exception as e:
-        logger.info(f"Unexpected error retrieving printer properties: {e}")
-        db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("failed")
+        logger.error(f"Unexpected error retrieving printer properties: {e}")
         traceback.print_exc()
         return None
+
 def setup(snap):
+    """
+    Enhanced printer setup with comprehensive error handling and logging
+    """
     if not snap.data:
-        logger.info("No printer setup data provided.")
+        logger.warning("No printer setup data provided.")
         return
+
     try:
         printer_ref = db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process")
+        
         if printer_ref.child("start").get():
             printer_ref.child("start").set(False)
             data = printer_ref.get()
+            
+            # Validate required printer setup data
+            required_keys = ['name', 'printer_ip']
+            if not all(key in data for key in required_keys):
+                logger.error("Missing required printer setup data")
+                printer_ref.child("status").set("failed-missing_data")
+                return
+            
             command = [
                 "lpadmin", 
                 "-p", data["name"], 
                 "-E", 
-                "-v", "ipp://"+data['printer_ip']+"/ipp/print", 
+                "-v", f"ipp://{data['printer_ip']}/ipp/print", 
                 "-m", "everywhere"
             ]
+            
             return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
-            printer_ref.child("status").set("connected-fetching properties")
-            if stdout == 0:
+            printer_ref.child("status").set("connecting")
+            
+            if return_code == 0:
                 logger.info("Printer added successfully!")
-                logger.info("Command Output:"+ str(stdout))
+                
                 try:
-                    props=get_printer_properties(data["name"])
-                    if(props is not None):
+                    props = get_printer_properties(data["name"])
+                    if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")
                         time.sleep(2)
                         db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup").set(True)
                     else:
-                        printer_ref.child("status").set("failed getting options")
+                        logger.warning("Failed to retrieve printer properties")
+                        printer_ref.child("status").set("failed-no_properties")
                         printer_ref.child("connection").set("failed")
+                
                 except Exception as prop_error:
-                    printer_ref.child("status").set("failed-"+str(prop_error))
+                    logger.error(f"Error retrieving printer properties: {prop_error}")
+                    printer_ref.child("status").set(f"failed-{str(prop_error)}")
                     printer_ref.child("connection").set("failed")
-                    logger.info(f"Error retrieving printer properties: {prop_error}")
+            
             else:
-                printer_ref.child("status").set("failed-"+stderr)
-                logger.info("Printer addition failed.")
-                logger.info("Error Output: "+ stderr)
+                logger.error(f"Printer addition failed. Stderr: {stderr}")
+                printer_ref.child("status").set(f"failed-{stderr}")
                 printer_ref.child("connection").set("failed")
+        
         else:
+            logger.warning("No active printer setup process found.")
             printer_ref.child("status").set("failed")
-            logger.info("No active printer setup process found.")
+    
     except Exception as e:
-        logger.info("Unexpected error in printer setup:")
-        logger.info(traceback.format_exc())
+        logger.error(f"Unexpected error in printer setup: {e}")
+        traceback.print_exc()
+        
         try:
-            printer_ref.child("status").set("failed-"+str(e))
-            db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("error").set(str(e))
-            db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("connection").set("failed")
-        except:
-            logger.info("Error in setting printer setup status network error")
-            pass
-db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("start").listen(setup)
+            printer_ref.child("status").set(f"failed-{str(e)}")
+            printer_ref.child("connection").set("failed")
+        except Exception as network_error:
+            logger.error(f"Network error setting printer setup status: {network_error}")
+
+# Configuration and initialization
+cwd, s_data = load_configuration()
+if cwd and s_data:
+    try:
+        initialize_firebase(
+            credentials.Certificate(os.path.join(cwd, "secrets", "key.json")), 
+            'https://skilldevelopmentapp-default-rtdb.firebaseio.com/'
+        )
+        db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("start").listen(setup)
+    except Exception as init_error:
+        logger.error(f"Initialization failed: {init_error}")
+else:
+    logger.error("Failed to load configuration. Exiting.")

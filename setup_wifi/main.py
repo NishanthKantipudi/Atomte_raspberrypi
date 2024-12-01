@@ -85,7 +85,16 @@ def connect_wifi():
             # Extract IP address
             ip_match = re.search(r'inet (\d+\.\d+\.\d+\.\d+)', ip_result.stdout)
             ip_address = ip_match.group(1) if ip_match else 'N/A'
-            
+
+            import firebase_admin
+            from firebase_admin import credentials, db
+            cred = credentials.Certificate(cwd+"/../secrets/key.json")
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+                'httpTimeout':10
+            })
+            db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(ip_address)
+
             return jsonify({
                 'status': 'success',
                 'message': 'Connected successfully',

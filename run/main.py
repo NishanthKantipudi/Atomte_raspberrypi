@@ -163,7 +163,7 @@ t4 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printe
 t4.start()
 
 
-t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_scanner/qr_scanner.py","qr_scanner/qr_scanner.log"))
+t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
 t5.start()
 
 

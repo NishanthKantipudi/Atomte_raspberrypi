@@ -174,7 +174,7 @@ def setup(snap):
                 return
             command = [
                 "lpadmin", 
-                "-p", db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get(), 
+                "-p", db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"),
                 "-E", 
                 "-v", f"ipp://{data['printer_ip']}/ipp/print", 
                 "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
@@ -186,7 +186,7 @@ def setup(snap):
                 logger.info("Printer added successfully!")
                 
                 try:
-                    props = get_printer_properties(data["name"])
+                    props = get_printer_properties(db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"))
 
                     props={
                         "paper_size": [

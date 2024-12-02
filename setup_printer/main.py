@@ -174,7 +174,7 @@ def setup(snap):
                 return
             command = [
                 "lpadmin", 
-                "-p", data["name"], 
+                "-p", db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get(), 
                 "-E", 
                 "-v", f"ipp://{data['printer_ip']}/ipp/print", 
                 "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"

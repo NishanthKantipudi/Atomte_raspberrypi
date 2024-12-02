@@ -105,7 +105,10 @@ async def init_firebase():
             printer_ref.child("details").child("status").set("Inactive")
             dns_name=printer_ref.child("details").child("dns_name").get()
             printer_name="nishanth1"
-            ip_address = get_ip_from_mdns(dns_name+".local")
+            if(dns_name==None or dns_name==""):
+                ip_address = printer_ref.child("details").child("ip").get()
+            else:
+                ip_address = get_ip_from_mdns(dns_name+".local")
             ip=ip_address
             printer_ref.child("details").child("status_message").set("Fetched ip address")
             i_error=False
@@ -483,7 +486,10 @@ async def get_snmp_data():
                 except Exception as e1:
                     i_error=True
                     logger.error("Failed to update printer status: " + str(e1))
-                ip=get_ip_from_mdns(dns_name+".local")
+                if(dns_name==None or dns_name==""):
+                    ip_address = printer_ref.child("details").child("ip").get()
+                else:
+                    ip=get_ip_from_mdns(dns_name+".local")
             logger.error("Unexpected Error in main loop: " + str(e))
             time.sleep(3)
 def run_snmp_loop():
@@ -607,7 +613,7 @@ async def main():
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while True:
         try:
-            response = requests.get("http://"+dns_name+".local"+":8000",timeout=5)
+            response = requests.get("http://"+ip_address+".local"+":8000",timeout=5)
             printer_ref.child("details").child("status").set("InActive")
             printer_ref.child("details").child("status_message").set("tring to connect..")
             logger.info("tring to connect..."+str(response.status_code))

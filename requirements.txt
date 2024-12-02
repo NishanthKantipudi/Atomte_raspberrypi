@@ -1,4 +1,5 @@
 websockets
+firebase-admin
 pysnmp
 PyPDF2
 pycups

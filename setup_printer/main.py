@@ -160,21 +160,18 @@ def setup(snap):
     if not snap.data:
         logger.warning("No printer setup data provided.")
         return
-
     try:
         printer_ref = db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process")
         
         if printer_ref.child("start").get():
             printer_ref.child("start").set(False)
             data = printer_ref.get()
-            
             # Validate required printer setup data
             required_keys = ['name', 'printer_ip']
             if not all(key in data for key in required_keys):
                 logger.error("Missing required printer setup data")
                 printer_ref.child("status").set("failed-missing_data")
                 return
-            
             command = [
                 "lpadmin", 
                 "-p", data["name"], 
@@ -182,7 +179,6 @@ def setup(snap):
                 "-v", f"ipp://{data['printer_ip']}/ipp/print", 
                 "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
             ]
-
             return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
             printer_ref.child("status").set("connecting")
             logger.info(f"{return_code}, {stdout}, {stderr}")
@@ -194,52 +190,52 @@ def setup(snap):
 
                     props={
                         "paper_size": [
-        {"name": "a4", "cost": 0},
-        {"name": "letter", "cost": 0},
-        {"name": "legal", "cost": 0},
-        {"name": "a3", "cost": 0},
-        {"name": "custom_size", "cost": 0}
+        {"name": "a4", "cost": 0,"value":0,"pc":1},
+        {"name": "letter", "cost": 0,"value":0,"pc":1},
+        {"name": "legal", "cost": 0,"value":0,"pc":1},
+        {"name": "a3", "cost": 0,"value":1,"pc":1},
+        {"name": "custom_size", "cost": 0,"value":0,"pc":1}
     ],
     "orientation": [
-        {"name": "portrait", "cost": 0},
-        {"name": "landscape", "cost": 0},
-        {"name": "reverse_portrait", "cost": 0},
-        {"name": "reverse_landscape", "cost": 0}
+        {"name": "portrait", "cost": 0,"value":0,"pc":1},
+        {"name": "landscape", "cost": 0,"value":0,"pc":1},
+        {"name": "reverse_portrait", "cost": 0,"value":0,"pc":1},
+        {"name": "reverse_landscape", "cost": 0,"value":0,"pc":1}
     ],
     "print_quality": [
-        {"name": "draft", "cost": 0},
-        {"name": "normal", "cost": 0},
-        {"name": "high", "cost": 0},
-        {"name": "photo", "cost": 0}
+        {"name": "draft", "cost": 0,"value":1,"pc":1},
+        {"name": "normal", "cost": 0,"value":2,"pc":1},
+        {"name": "high", "cost": 0,"value":3,"pc":1},
+        {"name": "photo", "cost": 0,"value":4,"pc":1}
     ],
     "color_mode": [
-        {"name": "color", "cost": 0},
-        {"name": "grayscale", "cost": 0},
-        {"name": "black_and_white", "cost": 0}
+        {"name": "color", "cost": 0,"value":2,"pc":1},
+        {"name": "grayscale", "cost": 0,"value":0,"pc":1},
+        {"name": "black_and_white", "cost": 0,"value":0,"pc":1}
     ],
     "duplex_printing": [
-        {"name": "one_sided", "cost": 0},
-        {"name": "two_sided_long_edge", "cost": 0},
-        {"name": "two_sided_short_edge", "cost": 0}
+        {"name": "one_sided", "cost": 0,"value":1.5,"pc":1},
+        {"name": "two_sided_long_edge", "cost": 2,"value":2,"pc":0.5},
+        {"name": "two_sided_short_edge", "cost": 0,"value":2,"pc":0.5}
     ],
     "paper_source": [
-        {"name": "main_tray", "cost": 0},
-        {"name": "manual_feed", "cost": 0},
-        {"name": "alternative_tray", "cost": 0}
+        {"name": "main_tray", "cost": 0,"value":0,"pc":1},
+        {"name": "manual_feed", "cost": 0,"value":0,"pc":1},
+        {"name": "alternative_tray", "cost": 0,"value":0,"pc":1}
     ],
     "stapling": [
-        {"name": "no_staple", "cost": 0},
-        {"name": "top_left", "cost": 1},
-        {"name": "top_right", "cost": 1},
-        {"name": "bottom_left", "cost": 1},
-        {"name": "bottom_right", "cost": 1}
+        {"name": "no_staple", "cost": 0,"value":0,"pc":1},
+        {"name": "top_left", "cost": 1,"value":0,"pc":1},
+        {"name": "top_right", "cost": 1,"value":0,"pc":1},
+        {"name": "bottom_left", "cost": 1,"value":0,"pc":1},
+        {"name": "bottom_right", "cost": 1,"value":0,"pc":1}
     ],
     "paper_type": [
-        {"name": "plain", "cost": 0},
-        {"name": "recycled", "cost": 0},
-        {"name": "glossy", "cost": 0.5},
-        {"name": "transparency", "cost": 0.5},
-        {"name": "labels", "cost": 1}
+        {"name": "plain", "cost": 0,"value":0,"pc":1},
+        {"name": "recycled", "cost": 0,"value":0,"pc":1},
+        {"name": "glossy", "cost": 0.5,"value":0,"pc":1},
+        {"name": "transparency", "cost": 0.5,"value":0,"pc":1},
+        {"name": "labels", "cost": 1,"value":0,"pc":1}
     ]
                     }
 

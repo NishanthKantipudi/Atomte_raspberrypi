@@ -3,7 +3,7 @@ import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-import logging,csv
+import logging,csv,json
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -42,34 +42,36 @@ def upload_file():
         return jsonify({'error': str(e)}), 500
 
 
-CSV_FILE = 'user_files.csv'
+JSON_FILE = 'user_files.json'
+
 @app.route('/save_user_files', methods=['POST'])
 def save_user_files():
     data = request.json
     user_id = data.get('userId')
     file_ids = data.get('fileIds')
 
-    # Read existing CSV
-    user_files = {}
-    if os.path.exists(CSV_FILE):
-        with open(CSV_FILE, 'r') as f:
-            reader = csv.reader(f)
-            user_files = {row[0]: row[1].split(',') for row in reader}
+    if not user_id or not file_ids:
+        return jsonify({'success': False, 'message': 'Invalid input'}), 400
 
-    # Append or update file IDs
+    # Read existing JSON file
+    user_files = {}
+    if os.path.exists(JSON_FILE):
+        with open(JSON_FILE, 'r') as f:
+            user_files = json.load(f)
+
+    # Update the user's file IDs, avoiding duplicates
     if user_id in user_files:
         user_files[user_id].extend(file_ids)
         user_files[user_id] = list(set(user_files[user_id]))  # Remove duplicates
     else:
         user_files[user_id] = file_ids
 
-    # Write updated data back to CSV
-    with open(CSV_FILE, 'w', newline='') as f:
-        writer = csv.writer(f)
-        for uid, files in user_files.items():
-            writer.writerow([uid, ','.join(files)])
+    # Write back the updated data to the JSON file
+    with open(JSON_FILE, 'w') as f:
+        json.dump(user_files, f, indent=4)
 
     return jsonify({'success': True, 'message': 'Files saved successfully'})
+
 
 
 

@@ -242,8 +242,10 @@ def setup(snap):
                     if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")
+                        printer_ref.child("status").set("success")
                         time.sleep(2)
                         db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup").set(True)
+                        db.reference("/").child("Printers").child(s_data["code"]).child("select_properties").set(True)
                     else:
                         logger.warning("Failed to retrieve printer properties")
                         printer_ref.child("status").set("failed-no_properties")

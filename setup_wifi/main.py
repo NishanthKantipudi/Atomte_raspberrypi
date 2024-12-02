@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
-import re
+import re,os
 
 app = Flask(__name__)
 CORS(app)
 
 wifi_device = "wlan0"
-
+cwd = os.getcwd()
 @app.route('/available_networks', methods=['GET'])
 def get_available_networks():
     try:

@@ -1,13 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
-import re,os
+import re,os,json
 
 app = Flask(__name__)
 CORS(app)
 
 wifi_device = "wlan0"
 cwd = os.getcwd()
+
+with open(cwd+"/../secrets/details.json", "r") as f:
+    data_main = json.load(f)
 @app.route('/available_networks', methods=['GET'])
 def get_available_networks():
     try:
@@ -93,7 +96,7 @@ def connect_wifi():
                 'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
                 'httpTimeout':10
             })
-            db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(ip_address)
+            db.reference('/').child("Printers").child(data_main["code"]).child("details").child("device_ip").set(ip_address)
 
             return jsonify({
                 'status': 'success',

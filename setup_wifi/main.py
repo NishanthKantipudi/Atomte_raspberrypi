@@ -88,7 +88,7 @@ def connect_wifi():
 
             import firebase_admin
             from firebase_admin import credentials, db
-            cred = credentials.Certificate(cwd+"/../secrets/key.json")
+            cred = credentials.Certificate(cwd+"/secrets/key.json")
             firebase_admin.initialize_app(cred, {
                 'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
                 'httpTimeout':10

@@ -167,7 +167,7 @@ def setup(snap):
             printer_ref.child("start").set(False)
             data = printer_ref.get()
             # Validate required printer setup data
-            required_keys = ['name', 'printer_ip']
+            required_keys = [ 'printer_ip']
             if not all(key in data for key in required_keys):
                 logger.error("Missing required printer setup data")
                 printer_ref.child("status").set("failed-missing_data")

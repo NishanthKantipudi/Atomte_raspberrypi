@@ -213,7 +213,7 @@ def print_file(user, file):
     options = file_data["properties"]
     timestamp = str(int(time.time()))
     try:
-        print_job_id = conn.printFile(printer_name, os.path.abspath(filename), timestamp, options)
+        print_job_id = conn.printFile(printer_name, filename, timestamp, options)
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("printing...")
         return 1
         while True:

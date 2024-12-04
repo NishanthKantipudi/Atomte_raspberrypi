@@ -209,21 +209,7 @@ def print_file(user, file):
         raise Exception("Error downloading file")
     logger.info("File downloaded")
     db.reference(f'users/{user}/printsdetails/{file}').child("status").set("File downloaded, starting printing...")
-    n_up=int(file_data["properties"]["count_per_page"].split(" ")[0])
-    orientation = 'landscape' if file_data["properties"]["zedge"] == "Horizontal" else 'portrait'
-    binding = 'Top' if file_data["properties"]["zedge"] == "Horizontal" else 'Left'
-    options = {
-        "copies": str(file_data["count"]),
-        "number-up": str(n_up),
-        "media":"ISO A4",
-        "sides": (
-            'two-sided-short-edge' if file_data["properties"]["zedge"] == "Horizontal" and file_data["properties"]["sides"] != "Single-sided"
-            else 'two-sided-long-edge' if file_data["properties"]["sides"] != "Single-sided"
-            else 'single-sided'
-        ),
-        "orientation-requested": orientation,
-        'BindEdge': binding
-    }
+    options = file_data["properties"]
     timestamp = str(int(time.time()))
     try:
         print_job_id = conn.printFile(printer_name, os.path.abspath(filename), timestamp, options)

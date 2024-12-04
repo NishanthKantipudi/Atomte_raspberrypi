@@ -147,8 +147,8 @@ def pull_repo():
     add_ssh_key_with_passphrase(cwd+"/../ssh_key", "8985")
     run_subprocess(["git", "pull","origin", "master"])
 if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
-    install_modules()
     pull_repo()
+    install_modules()
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
 
 

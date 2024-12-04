@@ -202,7 +202,7 @@ def print_file(user, file):
     db.reference(f'users/{user}/printsdetails/{file}').child("status").set("Downloading file...")
     db.reference(f'users/{user}/printsdetails/{file}').child("printprogress").set(0)
     try:
-        filename = "files/"+user+"/"+file
+        filename = cwd+"/files/"+user+"/"+file_data["name"]
     except Exception as e:
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("Error downloading file")
         logger.error(f"Error downloading file: {e}")

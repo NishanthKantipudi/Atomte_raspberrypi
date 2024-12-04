@@ -12,3 +12,4 @@ flask-cors
 selenium
 deepgram-sdk
 RPi.GPIO
+opencv-python-headless

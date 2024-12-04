@@ -4,7 +4,15 @@ import json
 import os,time
 import firebase_admin
 from firebase_admin import credentials, db
-cred = credentials.Certificate("key.json")
+import logging,csv,json
+cwd = os.getcwd()
+def setup_logger():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    return logging.getLogger(__name__)
+logger = setup_logger()
+
+
+cred = credentials.Certificate(cwd+"/secrets/key.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'storageBucket': 'skilldevelopmentapp.appspot.com'
@@ -12,7 +20,7 @@ firebase_admin.initialize_app(cred, {
 
 ref = db.reference('users')
 
-with open('..//data1.json', 'r') as f:
+with open('../secrets/details.json', 'r') as f:
     data1 = json.load(f)
 
 
@@ -23,15 +31,15 @@ def read_qrcode_opencv():
     # Open the webcam
     cap = cv2.VideoCapture(0)
 
-    print("Press 'q' to quit.")
+    logger.info("Press 'q' to quit.")
     while True:
-        with open('files/user_files.json', 'r') as f:
+        with open('user_files.json', 'r') as f:
             data = json.load(f)
         try:
         # Capture frame-by-frame
             ret, frame = cap.read()
             if not ret:
-                print("Failed to capture frame. Exiting...")
+                logger.info("Failed to capture frame. Exiting...")
                 break
             qdata, bbox, _ = qr_detector.detectAndDecode(frame)
             if bbox is not None and qdata:
@@ -44,9 +52,9 @@ def read_qrcode_opencv():
 
                 # Display the decoded data
                 cv2.putText(frame, qdata, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                print(f"QR Code detected: {qdata}")
+                logger.info(f"QR Code detected: {qdata}")
                 if(qdata[::-1] in data):
-                    print(data[qdata[::-1]])
+                    logger.info(data[qdata[::-1]])
                     ref.child(str(data1["code"])).child("printstodo").push().set({"user":data[qdata[::-1]],"files":data[qdata[::-1]]})
                     del data[qdata[::-1]]
                     open("../files/data.json", "w").write(json.dumps(data))

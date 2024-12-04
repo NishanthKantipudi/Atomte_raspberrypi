@@ -100,7 +100,7 @@ async def init_firebase():
     while 1:
         try:
             printer_ref = db.reference("Printers/"+main_data["printer_id"])
-            printer_ref.child("details").child("ip").set(ip_address)
+            # printer_ref.child("details").child("ip").set(ip_address)
             printer_ref.child("details").child("status_message").set("Fetching ip address")
             printer_ref.child("details").child("status").set("Inactive")
             dns_name=printer_ref.child("details").child("dns_name").get()
@@ -517,7 +517,7 @@ async def main():
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while True:
         try:
-            response = requests.get("http://"+str(ip)+":8000",timeout=5)
+            response = requests.get("http://"+str(ip_address)+":8000",timeout=5)
             printer_ref.child("details").child("status").set("InActive")
             printer_ref.child("details").child("status_message").set("tring to connect..")
             logger.info("tring to connect..."+str(response.status_code))

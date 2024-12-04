@@ -36,23 +36,24 @@ def read_qrcode_opencv():
         with open('user_files.json', 'r') as f:
             data = json.load(f)
         try:
-        # Capture frame-by-frame
             ret, frame = cap.read()
             if not ret:
                 logger.info("Failed to capture frame. Exiting...")
                 break
-            qdata, bbox, _ = qr_detector.detectAndDecode(frame)
+            detected_barcodes = decode(frame)
+            qdata = ""
+            for barcode in detected_barcodes:
+                barcode_data = barcode.data.decode('utf-8')
+                barcode_type = barcode.type
+                logger.info(f"Detected {barcode_type}: {barcode_data}")
+                qdata = barcode_data
             logger.info(f"QR Code detected: {qdata}")
             if(qdata[::-1] in data):
                 logger.info(data[qdata[::-1]])
                 ref.child(str(data1["code"])).child("printstodo").push().set({"user":data[qdata[::-1]],"files":data[qdata[::-1]]})
                 del data[qdata[::-1]]
                 open("../files/data.json", "w").write(json.dumps(data))
-            # Display the frame
-            time.sleep(1)
-            # Break on 'q' key press
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            time.sleep(0.5)
 
         except Exception as e:
             logger.info(f"Error: {str(e)}")

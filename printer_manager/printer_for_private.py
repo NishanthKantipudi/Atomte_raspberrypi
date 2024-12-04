@@ -9,7 +9,6 @@ import asyncio
 import math
 import tempfile
 from pysnmp.hlapi.v1arch.asyncio import *
-from pysnmp.hlapi.v1arch.asyncio import getCmd, CommunityData, UdpTransportTarget, ObjectType, ObjectIdentity
 
 import cups
 import requests

@@ -9,6 +9,8 @@ import asyncio
 import math
 import tempfile
 from pysnmp.hlapi.v1arch.asyncio import *
+from pysnmp.hlapi.v1arch.asyncio import getCmd, CommunityData, UdpTransportTarget, ObjectType, ObjectIdentity
+
 import cups
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -263,7 +265,7 @@ curr_page_count=0
 async def query_snmp_data(snmpDispatcher, oid, ip):
     try:
         async def snmp_query():
-            return await getCmd(
+            return await get_cmd(
                 snmpDispatcher,
                 CommunityData("public", mpModel=0),
                 await UdpTransportTarget.create((ip, 161), timeout=3, retries=2),

@@ -299,7 +299,7 @@ async def get_snmp_data():
     global p_error,ip,i_error
     global curr_page_count
     snmpDispatcher = SnmpDispatcher()
-    target = ip # Your printer's IP address
+    target = ip_address# Your printer's IP address
     # target = dns_name+".local"
     community = "public"
     oids = {
@@ -394,7 +394,7 @@ async def get_snmp_data():
                 except Exception as e1:
                     i_error=True
                     logger.error("Failed to update printer status: " + str(e1))
-                ip=get_ip_from_mdns(dns_name+".local")
+                # ip=get_ip_from_mdns(dns_name+".local")
             logger.error("Unexpected Error in main loop: " + str(e))
             time.sleep(3)
 def run_snmp_loop():

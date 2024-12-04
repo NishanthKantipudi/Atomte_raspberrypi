@@ -238,7 +238,6 @@ def setup(snap):
         {"name": "labels", "cost": 1,"value":0,"pc":1}
     ]
                     }
-
                     if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")

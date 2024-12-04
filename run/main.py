@@ -23,7 +23,7 @@ def run_subprocess(commands):
     try:
         logger.info(f"running: {str(commands)}...")
         result = subprocess.run(commands, 
-                                cwd=cwd+"/", 
+                                cwd=cwd+"/",
                                 capture_output=True, 
                                 text=True)
         logger.info(f"Result: {result}")
@@ -61,6 +61,7 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("printer_setup").set(False)
+    db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     with open(cwd+"/../../secrets/details.json", "w") as f:

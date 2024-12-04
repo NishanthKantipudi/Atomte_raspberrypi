@@ -1,18 +1,15 @@
 
-mac:CODE=(234567);RPI_IP=$(ping -c 1 raspberrypi${CODE}.local | awk -F'[()]' '/PING/{print $2}')
-mac:ssh-keygen -R $RPI_IP;ssh rasp${CODE}@$RPI_IP
-
-rasp:mkdir Atomte;cd Atomte;mkdir SSH;mkdir secrets;python3 -m venv venv;cd SSH
+mac:
+CODE=(234567);RPI_IP=$(ping -c 1 raspberrypi${CODE}.local | awk -F'[()]' '/PING/{print $2}');ssh-keygen -R $RPI_IP;ssh rasp${CODE}@$RPI_IP
 
 
+rasp:
+mkdir Atomte;cd Atomte;mkdir SSH;mkdir secrets;python3 -m venv venv;cd SSH
 
+mac:
+CODE=(234567);RPI_IP=$(ping -c 1 raspberrypi${CODE}.local | awk -F'[()]' '/PING/{print $2}');ssh-keygen -R $RPI_IP;scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key "rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/SSH/ssh_key";scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key.pub rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/SSH/ssh_key.pub;scp ~/Desktop/Atomte/Atomte_raspberrypi/details.json rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/secrets/details.json
 
-mac:CODE=(234567);RPI_IP=$(ping -c 1 raspberrypi${CODE}.local | awk -F'[()]' '/PING/{print $2}')
-mac:ssh-keygen -R $RPI_IP;scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key "rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/SSH/ssh_key"
-rasp:sudo apt update;sudo apt install libcups2-dev python3-dev build-essential
-mac:scp ~/Desktop/Atomte/Atomte_raspberrypi/ssh_key.pub rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/SSH/ssh_key.pub
-mac:scp ~/Desktop/Atomte/Atomte_raspberrypi/details.json rasp${CODE}@$RPI_IP:/home/rasp${CODE}/Atomte/secrets/details.json
-rasp:eval "$(ssh-agent -s)";ssh-add ssh_key;cd ..;git clone git@github.com:NishanthKantipudi/Atomte_raspberrypi.git
-rasp:(crontab -l 2>/dev/null; echo "@reboot Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py > Atomte/Atomte_raspberrypi/run/main.log 2>&1") | crontab -;sudo reboot
+rasp:
+sudo apt update;sudo apt install libcups2-dev python3-dev build-essential;sudo apt install tesseract-ocr;sudo apt install libtesseract-dev;eval "$(ssh-agent -s)";ssh-add ssh_key;cd ..;git clone git@github.com:NishanthKantipudi/Atomte_raspberrypi.git;(crontab -l 2>/dev/null; echo "@reboot Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py > Atomte/Atomte_raspberrypi/run/main.log 2>&1") | crontab -;sudo reboot
 
 

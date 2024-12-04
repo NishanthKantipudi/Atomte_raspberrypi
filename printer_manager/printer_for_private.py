@@ -48,12 +48,12 @@ async def int_check():
     while 1:
         try:
             socket.create_connection(("8.8.8.8", 53))
-            requests.post("http://localhost:5000/update_data", json={"message":"internet connected"})
+            # requests.post("http://localhost:5000/update_data", json={"message":"internet connected"})
             i_error=False
             break
         except OSError:
             i_error=True
-            requests.post("http://localhost:5000/update_data", json={"message":"no internet"})
+            # requests.post("http://localhost:5000/update_data", json={"message":"no internet"})
             await asyncio.sleep(1)
 asyncio.run(int_check())
 
@@ -70,11 +70,11 @@ def check_i_error_p_error():
         except OSError:
             logger.error("check internet error-error sending message to web")
        
-check_i_error_p_error_thread = threading.Thread(target=check_i_error_p_error)
-check_i_error_p_error_thread.daemon = True
-check_i_error_p_error_thread.start()
+# check_i_error_p_error_thread = threading.Thread(target=check_i_error_p_error)
+# check_i_error_p_error_thread.daemon = True
+# check_i_error_p_error_thread.start()
 
-cred = credentials.Certificate(cwd+"/key.json")
+cred = credentials.Certificate(cwd+"/secrets/key.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'httpTimeout':10
@@ -105,7 +105,7 @@ async def init_firebase():
             printer_ref.child("details").child("status").set("Inactive")
             dns_name=printer_ref.child("details").child("dns_name").get()
             printer_name="nishanth1"
-            ip_address = get_ip_from_mdns(dns_name+".local")
+            ip_address = printer_ref.child("details").child("ip").get()#get_ip_from_mdns(dns_name+".local")
             ip=ip_address
             printer_ref.child("details").child("status_message").set("Fetched ip address")
             i_error=False
@@ -129,7 +129,7 @@ except Exception as e:
     logger.error('razorpay client error '+str(e))
 conn = cups.Connection()
 printers = conn.getPrinters()
-printer_name = list(printers.keys())[0]
+printer_name = printer_ref.child("details").child("name").get()
 
 jobs = conn.getJobs()
 
@@ -494,7 +494,7 @@ def check_network():
     while 1:
         try:
             socket.create_connection(("8.8.8.8", 53))
-            requests.post("http://localhost:5000/update_data", json={"message":"internet connected"})
+            # requests.post("http://localhost:5000/update_data", json={"message":"internet connected"})
             c=0
             i_error=False
             time.sleep(5)
@@ -503,7 +503,7 @@ def check_network():
             if(c==3):
                 c=0
                 logger.error("check network ------------------ error : "+str(e))
-                requests.post("http://localhost:5000/update_data", json={"message":"internet not connected"})
+                # requests.post("http://localhost:5000/update_data", json={"message":"internet not connected"})
                 i_error=True
             logger.error("check network error : "+str(p_error)+str(e))
             time.sleep(5)
@@ -517,7 +517,7 @@ async def main():
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while True:
         try:
-            response = requests.get("http://"+dns_name+".local"+":8000",timeout=5)
+            response = requests.get("http://"+str(ip)+":8000",timeout=5)
             printer_ref.child("details").child("status").set("InActive")
             printer_ref.child("details").child("status_message").set("tring to connect..")
             logger.info("tring to connect..."+str(response.status_code))

@@ -11,4 +11,4 @@ Flask
 flask-cors
 selenium
 deepgram-sdk
-
+RPi.GPIO

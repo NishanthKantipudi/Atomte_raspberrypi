@@ -47,7 +47,7 @@ def read_qrcode_opencv():
                 barcode_type = barcode.type
                 logger.info(f"Detected {barcode_type}: {barcode_data}")
                 qdata = barcode_data
-            logger.info(f"QR Code detected: {qdata}")
+                logger.info(f"QR Code detected: {qdata}")
             if(qdata[::-1] in data):
                 logger.info(data[qdata[::-1]])
                 ref.child(str(data1["code"])).child("printstodo").push().set({"user":data[qdata[::-1]],"files":data[qdata[::-1]]})

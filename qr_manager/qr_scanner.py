@@ -52,7 +52,7 @@ def read_qrcode_opencv():
                 logger.info(data[qdata[::-1]])
                 ref.child(str(data1["code"])).child("printstodo").push().set({"user":data[qdata[::-1]],"files":data[qdata[::-1]]})
                 del data[qdata[::-1]]
-                open("../files/data.json", "w").write(json.dumps(data))
+                open("user_files.json", "w").write(json.dumps(data))
             time.sleep(0.5)
 
         except Exception as e:

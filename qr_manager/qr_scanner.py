@@ -18,7 +18,7 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': 'skilldevelopmentapp.appspot.com'
 })
 
-ref = db.reference('users')
+ref = db.reference('Printers')
 
 with open('../secrets/details.json', 'r') as f:
     data1 = json.load(f)

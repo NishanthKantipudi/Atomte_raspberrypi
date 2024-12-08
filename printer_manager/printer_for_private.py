@@ -105,8 +105,11 @@ async def init_firebase():
             printer_ref.child("details").child("status_message").set("Fetching ip address")
             printer_ref.child("details").child("status").set("Inactive")
             dns_name=printer_ref.child("details").child("dns_name").get()
-            printer_name="nishanth1"
-            ip_address = printer_ref.child("details").child("ip").get()#get_ip_from_mdns(dns_name+".local")
+            printer_name=printer_ref.child("details").child("name").get()
+            if(dns_name==None or dns_name==""):
+                ip_address = printer_ref.child("details").child("ip").get()
+            else:
+                ip_address = get_ip_from_mdns(dns_name+".local")
             ip=ip_address
             printer_ref.child("details").child("status_message").set("Fetched ip address")
             i_error=False
@@ -116,18 +119,6 @@ async def init_firebase():
             time.sleep(3)
             logger.error('get ip failed'+str(e))
 asyncio.run(init_firebase())
-key = 'rzp_live_7p3oO9G6VYLXcd'
-secret = 'aEIdELoJ4GIDf03DqpfVrGpX'
-try:
-    client = razorpay.Client(auth=(key, secret))
-    # deepgram = DeepgramClient(api_key="b3473b8ababc16dd50a450145a8b01fc87fb558a")
-    # options = SpeakOptions(
-    #         model="aura-asteria-en",
-    #         encoding="linear16",
-    #         container="wav"
-    #     )
-except Exception as e:
-    logger.error('razorpay client error '+str(e))
 conn = cups.Connection()
 printers = conn.getPrinters()
 printer_name = printer_ref.child("details").child("name").get()
@@ -215,8 +206,9 @@ def print_file(user, file):
     try:
         print_job_id = conn.printFile(printer_name, filename, timestamp, options)
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("printing...")
-        return 1
+        t=0
         while True:
+            t+=1
             state_description, state_reasons = get_print_job_state(conn, print_job_id)
             print(f"Print Job State: {state_description}")
             if state_reasons:
@@ -232,7 +224,9 @@ def print_file(user, file):
                 print("Print job did not complete successfully.")
                 db.reference(f'users/{user}/printsdetails/{file}').child("status").set("Error at printer")
                 logger.info('Error at printer')
-                
+                return 0
+            if(t>200):
+                conn.cancelJob(print_job_id)
                 return 0
             time.sleep(0.5)
         # db.reference(f'users/{user}/printsdetails/{file}').child("status").set("Done")
@@ -329,11 +323,9 @@ async def get_snmp_data():
                     printer_ref.child("details").child("status").set("Active")
                     printer_ref.child("details").child("status_message").set("Printer is Active")
             if 'toner is out (black).' in results['Printer Detailed Status']:
-                
                 printer_ref.child("details").child("status").set("Inactive")
                 printer_ref.child("details").child("status_message").set("toner is empty...")
             if results['tray 1'] == "0" and results['tray 2'] == "0":
-                
                 printer_ref.child("details").child("status").set("Inactive")
                 printer_ref.child("details").child("status_message").set("Printer is empty please wait for a while")
                 no_papers=True
@@ -356,13 +348,11 @@ async def get_snmp_data():
                         printer_ref.child("details").child("status_message").set("Printer is Active")
                         no_toner=False
             if "paper jam" in results['Printer Detailed Status'].lower():
-                
                 printer_ref.child("details").child("status").set("Inactive")
                 printer_ref.child("details").child("status_message").set("Paper is jammed please wait for a while")
                 printer_ref.child("details").child("error").set("Paper is jammed")
                 paper_jammed=True
             elif "empty" in results['Printer Detailed Status'].lower() and "toner" in results['Printer Detailed Status'].lower():
-                
                 printer_ref.child("details").child("status").set("Inactive")
                 printer_ref.child("details").child("status_message").set("Toner is empty takes 10-100mins to refill")
                 printer_ref.child("details").child("error").set("Toner is empty")
@@ -382,7 +372,12 @@ async def get_snmp_data():
                 except Exception as e1:
                     i_error=True
                     logger.error("Failed to update printer status: " + str(e1))
-                # ip=get_ip_from_mdns(dns_name+".local")
+                if(dns_name==None or dns_name==""):
+                    ip_address = printer_ref.child("details").child("ip").get()
+                    ip=ip_address
+                else:
+                    ip=get_ip_from_mdns(dns_name+".local")
+                    ip_address=ip
             logger.error("Unexpected Error in main loop: " + str(e))
             time.sleep(3)
 def run_snmp_loop():
@@ -418,6 +413,7 @@ def on_value_change1(event_key,data):
                 files = files.split(",")
                 user = data["user"]
                 printing_pages = []
+                job_ids = []
                 i=0
                 def l1():
                     count = 1
@@ -430,16 +426,19 @@ def on_value_change1(event_key,data):
                             db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').child("files").set(f)
                             logger.info(f"Printing: {file}")
                             try:
-                                p = print_file(user, file) 
+                                p,job_id = print_file(user, file) 
                                 if p:
                                     up_c = int(db.reference(f'users/{user}/printsdetails/{file}/properties').child('count_per_page').get().split(" ")[0])
                                     total_pc = math.ceil(db.reference(f'users/{user}/printsdetails/{file}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{file}').child('count').get()
                                     pc += total_pc
+                                    job_ids.append(job_id)
                                     printing_pages.append(pc)
                                 else:
                                     printing_pages.append(pc)
+                                    job_ids.append(job_id)
                             except Exception as e:
                                 printing_pages.append(pc)
+                                job_ids.append(0)
                                 logger.error(f"Error at printing {file}: {e}")
                             count += 1
                         logger.info("Sent to printer")
@@ -449,9 +448,38 @@ def on_value_change1(event_key,data):
                 t1.daemon = True
                 t1.start()
                 printed_sum=0
+                times=[0 for i in range(len(files))]
                 while True:
+                    times[i] += 1
+                    if times[i] > 60:
+                        state_description, state_reasons = get_print_job_state(conn, job_ids[i])
+                        logger.info(f"Print Job State: {state_description}")
+                        if state_reasons:
+                            logger.info(f"State Reasons: {state_reasons}")
+                        if state_description == "Completed":
+                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("now printing...")
+                            logger.info("Print job completed. Status set to 'Done'.")
+                            logger.info(f"Print job ID: {job_ids[i]}")
+                        elif state_description in ["Canceled", "Aborted", "Stopped"]:
+                            logger.info("Print job did not complete successfully.")
+                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
+                            logger.info('Error at printer')
+                            conn.cancelJob(job_ids[i])
+                            i+=1
+                            init_page_count-=printing_pages[i]
+                            continue
+                        else:
+                            if(times[i]>120):
+                                logger.info("Print job did not complete successfully.")
+                                db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
+                                logger.info('Error at printer')
+                                i+=1
+                                conn.cancelJob(job_ids[i])
+                                init_page_count-=printing_pages[i]
+                                continue
                     pages_printed = int(curr_page_count) - int(init_page_count)
                     if(len(printing_pages)<=i):
+                        time.sleep(1)
                         continue
                     db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(f"{pages_printed-printed_sum}/{printing_pages[i]-printed_sum}")
                     if pages_printed >= printing_pages[i]:
@@ -461,12 +489,14 @@ def on_value_change1(event_key,data):
                         i = i + 1
                         if i == len(files):
                             db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').delete()
+                            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Done","time":datetime.datetime.now(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                             break
                     if p_error or i_error:
-                        
+                        db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Done","time":datetime.datetime.now(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                         logger.error('Error at page count diff p_error')
                         break
                     time.sleep(1)
+    
     except Exception as e:
         time.sleep(3)
         logger.error('error value listner'+str(e))

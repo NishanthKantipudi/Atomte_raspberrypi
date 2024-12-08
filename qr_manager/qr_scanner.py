@@ -50,7 +50,7 @@ def read_qrcode_opencv():
                 logger.info(f"QR Code detected: {qdata}")
             if(qdata[::-1] in data):
                 logger.info(data[qdata[::-1]])
-                ref.child(str(data1["code"])).child("printstodo").push().set({"user":data[qdata[::-1]],"files":data[qdata[::-1]]})
+                ref.child(str(data1["code"])).child("printstodo").push().set({"user":qdata[::-1],"files":",".join(data[qdata[::-1]])})
                 del data[qdata[::-1]]
                 open("user_files.json", "w").write(json.dumps(data))
             time.sleep(0.5)

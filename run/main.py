@@ -81,22 +81,21 @@ else:
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10
     })
-
+db.reference('/').child("Printers").child(data["code"]).child("states").child("internet").set(True)
 def get_ip_address():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    return s.getsockname()[0]
-db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(get_ip_address())
-def check_internet():
-    while 1:
-        try:
-            socket.create_connection(("8.8.8.8", 53))
-            break
-        except OSError:
-            time.sleep(1)
-check_internet()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        db.reference('/').child("Printers").child(data["code"]).child("states").child("device_ip").set(True)
+        return s.getsockname()[0]
+    except Exception as e:
+        logger.error(f"Error getting IP address: {e}")
+        db.reference('/').child("Printers").child(data["code"]).child("states").child("device_ip").set(False)
+        return None
 
 
+ip_address=get_ip_address()
+db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(ip_address)
 
 def start_ssh_agent():
     try:
@@ -134,7 +133,6 @@ def add_ssh_key_with_passphrase(keyfile, passphrase):
         return False
 
 
-
 def install_modules():
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
 
@@ -169,8 +167,11 @@ t5.start()
 
 
 if(db.reference('/').child("Printers").child(data["code"]).child("type").get()=="public"):
-    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/printer_for_public.py","printer_manager/printer_for_public.log"))
+    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
     t6.start()
 else:
-    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/printer_for_private.py","printer_manager/printer_for_private.log"))
+    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_private.py","printer_manager/prints_manager_for_private.log"))
     t6.start()
+
+t7 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/restart_device.py","device_manager/restart_device.log"))
+t7.start()

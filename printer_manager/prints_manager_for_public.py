@@ -1,5 +1,6 @@
 i_error=False
 p_error=False
+snmp=False
 import datetime
 import firebase_admin
 from firebase_admin import credentials, db,messaging
@@ -23,6 +24,7 @@ import json
 
 
 def init_setup():
+    global snmp
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
     executor = ThreadPoolExecutor(max_workers=1)

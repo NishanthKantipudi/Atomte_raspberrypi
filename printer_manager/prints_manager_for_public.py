@@ -24,7 +24,7 @@ import json
 
 
 def init_setup():
-    global snmp
+    global snmp,main_data
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
     executor = ThreadPoolExecutor(max_workers=1)

@@ -55,6 +55,7 @@ def init_setup():
         oids=printer_ref.child("details").child("oids").get()
     def setup_dns_and_ip():
         def get_ip_from_mdns(hostname):
+            global ip_address
             trying=0
             while 1:
                 trying+=1

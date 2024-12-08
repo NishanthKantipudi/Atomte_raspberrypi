@@ -24,7 +24,7 @@ import json
 
 
 def init_setup():
-    global snmp,main_data
+    global snmp,main_data,ip_address,ip
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
     executor = ThreadPoolExecutor(max_workers=1)
@@ -176,7 +176,7 @@ async def get_snmp_data():
     global p_error,ip,i_error,ip_address
     global curr_page_count
     snmpDispatcher = SnmpDispatcher()
-    target = ip
+    target = ip_address
     community = "public"
     oids = {
         "Printer Detailed Status": oids["oid1"],

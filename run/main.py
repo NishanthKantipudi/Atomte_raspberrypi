@@ -94,8 +94,7 @@ def get_ip_address():
         return None
 
 
-ip_address=get_ip_address()
-db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(ip_address)
+db.reference('/').child("Printers").child(data["code"]).child("details").child("device_ip").set(get_ip_address())
 
 def start_ssh_agent():
     try:
@@ -165,8 +164,8 @@ t4.start()
 t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
 t5.start()
 
-type=db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()
-if(type=="public"):
+
+if(db.reference('/').child("Printers").child(data["code"]).child("type").get()=="public"):
     t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
     t6.start()
 else:

@@ -648,7 +648,7 @@ def main():
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while 1:
         try:
-            printer_connection=False
+            printer_connection=True
             #ping test
             #lpstat -t
             #http client

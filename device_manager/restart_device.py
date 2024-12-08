@@ -66,13 +66,13 @@ def sendlogs(event):
     if(event.data):
         files={
             "device_manager/printer_restart.log": "logs/"+data["code"]+"/device_manager/printer_restart.log",
-            "device_manager/restart_device.log": f"logs/"+data["code"]+"/device_manager/restart_device.log",
-            "heart_beat/main.log": f"logs/"+data["code"]+"/heart_beat/main.log",
-            "setup_printer/main.log": f"logs/"+data["code"]+"/setup_printer/main.log",
-            "setup_wifi/main.log": f"logs/"+data["code"]+"/setup_wifi/main.log",
-            "printer_manager/files_from_server.log": f"logs/"+data["code"]+"/printer_manager/files_from_server.log",
-            "printer_manager/prints_manager_for_private.log": f"logs/"+data["code"]+"/printer_manager/prints_manager_for_private.log",
-            "printer_manager/prints_manager_for_public.log": f"logs/"+data["code"]+"/printer_manager/prints_manager_for_public.log",
+            "device_manager/restart_device.log": "logs/"+data["code"]+"/device_manager/restart_device.log",
+            "heart_beat/main.log": "logs/"+data["code"]+"/heart_beat/main.log",
+            "setup_printer/main.log": "logs/"+data["code"]+"/setup_printer/main.log",
+            "setup_wifi/main.log": "logs/"+data["code"]+"/setup_wifi/main.log",
+            "printer_manager/files_from_server.log": "logs/"+data["code"]+"/printer_manager/files_from_server.log",
+            "printer_manager/prints_manager_for_private.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_private.log",
+            "printer_manager/prints_manager_for_public.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_public.log",
         }
         try:
             for file_path, firebase_path in files.items():

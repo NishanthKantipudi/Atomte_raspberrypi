@@ -165,7 +165,7 @@ t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_man
 t5.start()
 
 
-if(db.reference('/').child("Printers").child(data["code"]).child("type").get()=="public"):
+if(db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()=="public"):
     t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
     t6.start()
 else:

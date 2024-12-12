@@ -168,14 +168,13 @@ t4 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printe
 t4.start()
 
 
-t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
-t5.start()
-
 
 if(db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()=="public"):
     t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
     t6.start()
 else:
+    t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
+    t5.start()
     t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_private.py","printer_manager/prints_manager_for_private.log"))
     t6.start()
 

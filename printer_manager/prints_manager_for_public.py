@@ -496,7 +496,7 @@ def on_value_change_with_snmp(event_key,data):
     global p_error,i_error
     try:
         if event_key:
-            user_ref=db.reference(f'users/{user}/printsdetails/{files[i]}')
+            user_ref=db.reference(f'users/{user}/details')
             data = db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').get()
             if data:
                 init_page_count = curr_page_count
@@ -597,7 +597,10 @@ def on_value_change_with_snmp(event_key,data):
     except Exception as e:
         time.sleep(3)
         logger.error('error value listner'+str(e))
-        t1.terminate()
+        try:
+            t1.terminate()
+        except Exception as e:
+            pass
         try:
             db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Error","time":datetime.datetime.now(),"name":user_ref.child("name").get()})
             db.reference(f'Printers/123456/printstodo/{event_key}').delete()

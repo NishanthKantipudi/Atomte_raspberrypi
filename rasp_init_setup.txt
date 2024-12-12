@@ -13,3 +13,6 @@ rasp:
 sudo apt update;sudo apt install libcups2-dev python3-dev build-essential;sudo apt install tesseract-ocr;sudo apt install libtesseract-dev;eval "$(ssh-agent -s)";ssh-add ssh_key;cd ..;git clone git@github.com:NishanthKantipudi/Atomte_raspberrypi.git;(crontab -l 2>/dev/null; echo "@reboot Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py > Atomte/Atomte_raspberrypi/run/main.log 2>&1") | crontab -;sudo reboot
 
 
+
+
+create user_files.json

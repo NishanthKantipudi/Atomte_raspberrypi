@@ -81,7 +81,14 @@ else:
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10
     })
-db.reference('/').child("Printers").child(data["code"]).child("states").child("internet").set(True)
+
+while 1:
+    try:
+        db.reference('/').child("Printers").child(data["code"]).child("states").child("internet").set(True)
+        break
+    except Exception as e:
+        logger.error(f"Error checking internet connection: {e}")
+        time.sleep(1)
 def get_ip_address():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

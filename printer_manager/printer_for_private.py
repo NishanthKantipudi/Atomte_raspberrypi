@@ -500,7 +500,10 @@ def on_value_change1(event_key,data):
     except Exception as e:
         time.sleep(3)
         logger.error('error value listner'+str(e))
-        t1.terminate()
+        try:
+            t1.terminate()
+        except Exception as e:
+            pass
         try:
             db.reference(f'Printers/123456/printstodo/{event_key}').delete()
         except Exception as e:

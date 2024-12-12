@@ -24,7 +24,7 @@ import json
 
 
 def init_setup():
-    global snmp,main_data,ip_address,ip,oids
+    global snmp,main_data,ip_address,ip,oids_data
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
     executor = ThreadPoolExecutor(max_workers=1)
@@ -52,7 +52,7 @@ def init_setup():
     printer_ref.child("states").child("internet").set(True)
     snmp=printer_ref.child("details").child("snmp").get()
     if(snmp==True):
-        oids=printer_ref.child("details").child("oids").get()
+        oids_data=printer_ref.child("details").child("oids").get()
     def setup_dns_and_ip():
         global ip_address
         def get_ip_from_mdns(hostname):
@@ -180,11 +180,11 @@ async def get_snmp_data():
     target = ip_address
     community = "public"
     oids = {
-        "Printer Detailed Status": oids["oid1"],
-        "printed": oids["oid2"],
-        "toner level": oids["oid3"],
-        "tray 1": oids["oid4"],  
-        "tray 2": oids["oid5"], 
+        "Printer Detailed Status": oids_data["oid1"],
+        "printed": oids_data["oid2"],
+        "toner level": oids_data["oid3"],
+        "tray 1": oids_data["oid4"],  
+        "tray 2": oids_data["oid5"], 
     }
     conn_error=False
     no_papers=False

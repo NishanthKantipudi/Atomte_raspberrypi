@@ -54,7 +54,7 @@ def init_setup():
     if(snmp==True):
         oids_data=printer_ref.child("oids").get()
     def setup_dns_and_ip():
-        global ip_address
+        global ip_address,dns_name
         def get_ip_from_mdns(hostname):
             trying=0
             while 1:
@@ -174,7 +174,7 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
         logger.error(str(e))
         raise
 async def get_snmp_data():
-    global p_error,ip,i_error,ip_address
+    global p_error,ip,i_error,ip_address,printer_name,dns_name
     global curr_page_count
     snmpDispatcher = SnmpDispatcher()
     target = ip_address

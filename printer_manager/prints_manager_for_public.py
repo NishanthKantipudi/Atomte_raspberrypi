@@ -22,12 +22,12 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 import socket
 import json
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+executor = ThreadPoolExecutor(max_workers=1)
 
 def init_setup():
-    global snmp,main_data,ip_address,ip,oids_data
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    logger = logging.getLogger(__name__)
-    executor = ThreadPoolExecutor(max_workers=1)
+    global snmp,main_data,ip_address,ip,oids_data,cwd,client,printer_name,printer_ref,dns_name,conn
     cwd = os.getcwd()
     def read_json_file(file_path):
         with open(file_path, 'r') as file:
@@ -144,7 +144,7 @@ server_thread2.start()
 async def query_snmp_data(snmpDispatcher, oid, ip):
     try:
         async def snmp_query():
-            return await getCmd(
+            return await get_cmd(
                 snmpDispatcher,
                 CommunityData("public", mpModel=0),
                 await UdpTransportTarget.create((ip, 161), timeout=3, retries=2),

@@ -192,7 +192,7 @@ async def get_snmp_data():
     no_toner=False
     e_c=0
     while True:  # Continuous loop
-        target = ip
+        target = ip_address
         try:
             results = {}
             for key, oid in oids.items():

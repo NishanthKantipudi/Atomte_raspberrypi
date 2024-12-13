@@ -52,7 +52,7 @@ def init_setup():
     printer_ref.child("states").child("internet").set(True)
     snmp=printer_ref.child("details").child("snmp").get()
     if(snmp==True):
-        oids_data=printer_ref.child("details").child("oids").get()
+        oids_data=printer_ref.child("oids").get()
     def setup_dns_and_ip():
         global ip_address
         def get_ip_from_mdns(hostname):

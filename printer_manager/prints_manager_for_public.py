@@ -658,7 +658,8 @@ def ping_test(ip_address):
         return False
 
 def main():
-    global printer_ip
+    global printer_ip,ip_address
+    printer_ip=ip_address
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while 1:
         try:

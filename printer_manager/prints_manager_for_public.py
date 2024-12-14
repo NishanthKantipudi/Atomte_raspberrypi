@@ -90,6 +90,7 @@ def init_setup():
         logger.error('razorpay client error '+str(e))
     printer_name = printer_ref.child("details").child("name").get()
     def setup_cups():
+        global conn
         conn = cups.Connection()
         printers = conn.getPrinters()
         jobs = conn.getJobs()

@@ -508,7 +508,7 @@ def on_value_change_with_snmp(event_key,data):
                 i=0
                 totalcost=0
                 def l1():
-                    nonlocal pc, printing_pages
+                    nonlocal pc, printing_pages,totalcost
                     count = 1
                     try:
                         for file in files:

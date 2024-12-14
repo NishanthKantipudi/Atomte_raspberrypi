@@ -21,6 +21,7 @@ import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 import socket
 import json
+import subprocess
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -147,20 +148,14 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
             return await get_cmd(
                 snmpDispatcher,
                 CommunityData("public", mpModel=0),
-                await UdpTransportTarget.create((ip, 161), timeout=3, retries=2),
+                await UdpTransportTarget.create((ip, 161), timeout=7, retries=2),
                 ObjectType(ObjectIdentity(oid))
             )
-        # Use asyncio.wait_for to enforce a timeout
         try:
-            iterator = await asyncio.wait_for(snmp_query(), timeout=5)  # Set your desired timeout
+            iterator = await asyncio.wait_for(snmp_query(), timeout=7)
         except asyncio.TimeoutError:
-            # logger.error(f"SNMP query timed out for OID: {oid}")
             raise Exception("SNMP query timed out")
-
-        # logger.info("SNMP data queried successfully")
-
         errorIndication, errorStatus, errorIndex, varBinds = iterator
-
         if errorIndication:
             logger.error(f"SNMP Error: {errorIndication}")
             raise Exception("Error querying SNMP data")
@@ -168,7 +163,6 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
             logger.error(f"Error Status: {errorStatus.prettyPrint()} at {errorIndex}")
             raise Exception("Error querying SNMP data")
         else:
-            # logger.info(f"SNMP data: {varBinds[0][1].prettyPrint()}")
             return varBinds[0][1].prettyPrint()
     except Exception as e:
         logger.error(str(e))
@@ -258,6 +252,7 @@ async def get_snmp_data():
                 no_toner=True
             else:
                 printer_ref.child("details").child("error").set(results['Printer Detailed Status'])
+            printer_ref.child("states").child("snmp").set(True)
         except Exception as e:
             # p_error=True
             e_c+=1
@@ -267,6 +262,7 @@ async def get_snmp_data():
                 try:
                     printer_ref.child("details").child("status").set("Inactive")
                     printer_ref.child("details").child("status_message").set("printer is restarting network issue at fetching data")
+                    printer_ref.child("states").child("snmp").set(False)
                     conn_error=True
                 except Exception as e1:
                     i_error=True
@@ -510,8 +506,8 @@ def on_value_change_with_snmp(event_key,data):
                 i=0
                 totalcost=0
                 def l1():
-                    count = 1
                     nonlocal pc, printing_pages
+                    count = 1
                     try:
                         for file in files:
                             db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').child("printing").set(count)
@@ -648,17 +644,33 @@ def on_value_change_without_snmp(event_key,data):
     except Exception as e:
         logger.error(f"Error in on_value_change1: {e}")
         raise Exception("error in on_value_change1")
+def ping_test(ip_address):
+    try:
+        # Use the ping command for the platform
+        response = subprocess.run(
+            ["ping", "-c", "1", "-W", "2", ip_address],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        return response.returncode == 0
+    except Exception as e:
+        logger.error(f"Ping test failed with exception: {e}")
+        return False
+
 def main():
+    global printer_ip
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while 1:
         try:
             printer_connection=True
-            #ping test
+            ping_test(printer_ip)#ping test
             #lpstat -t
             #http client
             #pyipp module
             if printer_connection:
                 db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(True)
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Active")
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Printer is now Active")
                 listner=ref.listen(on_value_change)
                 while 1:
                     if(i_error or p_error):
@@ -668,10 +680,14 @@ def main():
                     time.sleep(1)
             else:
                 db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(False)
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Inactive")
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Something went wrong")
         except Exception as e:
             refund_all()
             try:
                 db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(False)
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Inactive")
+                db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Something went wrong")
             except Exception as e:
                 logger.error(f"Error in main loop: {e}")
             logger.error(f"Error in main loop: {e}")

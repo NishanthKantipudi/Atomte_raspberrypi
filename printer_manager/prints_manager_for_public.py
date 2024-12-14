@@ -490,7 +490,7 @@ def on_value_change(event):
 
 
 def on_value_change_with_snmp(event_key,data):
-    global p_error,i_error
+    global p_error,i_error,conn
     user=""
     try:
         if event_key:
@@ -527,6 +527,7 @@ def on_value_change_with_snmp(event_key,data):
                                     pc += total_pc
                                     job_ids.append(job_id)
                                     printing_pages.append(pc)
+                                    logger.info("Sent to printer")
                                 else:
                                     printing_pages.append(pc)
                                     job_ids.append(job_id)
@@ -536,7 +537,7 @@ def on_value_change_with_snmp(event_key,data):
                                 logger.error(f"Error at printing {file}: {e}")
                                 handle_print_error(user, file)
                             count += 1
-                        logger.info("Sent to printer")
+                        
                     except Exception as e:
                         logger.error(f"Error in print thread: {e}")
                 t1 = threading.Thread(target=l1)
@@ -585,11 +586,11 @@ def on_value_change_with_snmp(event_key,data):
                         i = i + 1
                         if i == len(files):
                             db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').delete()
-                            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Done","time":datetime.datetime.now(),"name":user_ref.child("name").get(),"totalcost":totalcost})
+                            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                             break
                     if p_error or i_error:
                         refund_all(error="Error at printer taking too long try again")
-                        db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Error","time":datetime.datetime.now(),"name":user_ref.child("name").get(),"totalcost":totalcost})
+                        db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                         logger.error('Error at page count diff p_error')
                         break
                     time.sleep(1)
@@ -602,7 +603,7 @@ def on_value_change_with_snmp(event_key,data):
             pass
         try:
             db.reference(f'Printers/123456/printstodo/{event_key}').delete()
-            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Error","time":datetime.datetime.now(),"name":user_ref.child("name").get()})
+            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
         except Exception as e:
             raise Exception("Error at listner")
 

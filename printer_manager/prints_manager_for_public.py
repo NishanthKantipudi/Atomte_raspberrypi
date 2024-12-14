@@ -445,6 +445,7 @@ def print_file_without_snmp(user, file):
         raise Exception("Error at printer")
 
 def print_file_with_snmp(user, file):
+    global conn
     file_data = db.reference(f'users/{user}/printsdetails/{file}').get()
     if file_data["count"]==0:
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("Done")

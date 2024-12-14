@@ -470,7 +470,7 @@ def print_file_with_snmp(user, file):
             logger.error(f"Error at set status: {e}")
         logger.error(f"Error at printer: {e}")
         raise Exception("Error at printer")
-
+pr=""
 def on_value_change(event):
     global pr
     data = db.reference(f'Printers/{main_data["printer_id"]}/printstodo').get()
@@ -652,6 +652,7 @@ def ping_test(ip_address):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
+        logger.info(f"Ping test result: {response.returncode}")
         return response.returncode == 0
     except Exception as e:
         logger.error(f"Ping test failed with exception: {e}")

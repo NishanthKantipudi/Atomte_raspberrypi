@@ -481,7 +481,7 @@ def on_value_change(event):
             if pr != first_key:
                 pr = first_key 
                 print(f"New data for {first_key}: {data[first_key]}")
-                if(snmp):
+                if(not snmp):
                     on_value_change_without_snmp(first_key,data[first_key])
                 else:
                     on_value_change_with_snmp(first_key,data[first_key])
@@ -490,9 +490,10 @@ def on_value_change(event):
 
 def on_value_change_with_snmp(event_key,data):
     global p_error,i_error
+    user=""
     try:
         if event_key:
-            user_ref=db.reference(f'users/{user}/details')
+            
             data = db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').get()
             if data:
                 init_page_count = curr_page_count
@@ -501,6 +502,7 @@ def on_value_change_with_snmp(event_key,data):
                 f = files
                 files = files.split(",")
                 user = data["user"]
+                user_ref=db.reference(f'users/{user}/details')
                 printing_pages = []
                 job_ids = []
                 i=0
@@ -598,8 +600,8 @@ def on_value_change_with_snmp(event_key,data):
         except Exception as e:
             pass
         try:
-            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Error","time":datetime.datetime.now(),"name":user_ref.child("name").get()})
             db.reference(f'Printers/123456/printstodo/{event_key}').delete()
+            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":user,"files":files,"status":"Error","time":datetime.datetime.now(),"name":user_ref.child("name").get()})
         except Exception as e:
             raise Exception("Error at listner")
 
@@ -609,13 +611,13 @@ def on_value_change_with_snmp(event_key,data):
 def on_value_change_without_snmp(event_key,data):
     try:
         if event_key:
-            user_ref=db.reference(f'users/{user}/printsdetails')
             data = db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').get()
             if data:
                 files = data["files"]
                 f = files
                 files = files.split(",")
                 user = data["user"]
+                user_ref=db.reference(f'users/{user}/printsdetails')
                 i=0
                 totalcost=0
                 count=1

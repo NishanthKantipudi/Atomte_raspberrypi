@@ -462,8 +462,8 @@ def print_file_with_snmp(user, file):
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:
-        logger.info(filename)
-        print_job_id = conn.printFile(printer_name, os.path.abspath(cwd+filename), timestamp, options)
+        logger.info(cwd+"/"+filename)
+        print_job_id = conn.printFile(printer_name, os.path.abspath(cwd+"/"+filename), timestamp, options)
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("printing...")
         return 1,print_job_id
     except Exception as e:

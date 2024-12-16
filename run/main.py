@@ -174,19 +174,21 @@ t3 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_
 t3.start()
 
 
-t4 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/files_from_server.py","printer_manager/files_from_server.log"))
-t4.start()
 
 
-
-if(db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()=="public"):
-    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
-    t6.start()
+printer_ip=db.reference('/').child("Printers").child(data["code"]).child("details").child("ip").get()
+if(printer_ip!=None and printer_ip!=""):
+    if(db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()=="public"):
+        t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))
+        t6.start()
+    else:
+        t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
+        t5.start()
+        t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_private.py","printer_manager/prints_manager_for_private.log"))
+        t6.start()
+        t4 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/files_from_server.py","printer_manager/files_from_server.log"))
+        t4.start()
 else:
-    t5 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py","qr_manager/qr_scanner.log"))
-    t5.start()
-    t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_private.py","printer_manager/prints_manager_for_private.log"))
-    t6.start()
-
+    db.reference('/').child("Printers").child(data["code"]).child("states").child("printer_connection").set(False)
 t7 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/restart_device.py","device_manager/restart_device.log"))
 t7.start()

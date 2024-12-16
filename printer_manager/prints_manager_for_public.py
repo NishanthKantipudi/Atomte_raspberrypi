@@ -524,7 +524,7 @@ def on_value_change_with_snmp(event_key,data):
                                 totalcost+=db.reference(f'users/{user}/printsdetails/{file}').child('cost').get()
                                 p,job_id = print_file_with_snmp(user, file) 
                                 if p:
-                                    up_c = int(db.reference(f'users/{user}/printsdetails/{file}/properties').child('count_per_page').get().split(" ")[0])
+                                    up_c = 1#int(db.reference(f'users/{user}/printsdetails/{file}/properties').child('count_per_page').get().split(" ")[0])
                                     total_pc = math.ceil(db.reference(f'users/{user}/printsdetails/{file}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{file}').child('count').get()
                                     pc += total_pc
                                     job_ids.append(job_id)

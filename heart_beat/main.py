@@ -45,5 +45,6 @@ def update_heartbeat():
             # logger.info(current_time)
         except Exception as e:
             logger.error(f"Error updating heartbeat: {str(e)}")
-        time.sleep(3)
+        finally:
+            time.sleep(3)
 update_heartbeat()

@@ -1,5 +1,5 @@
 import os,logging,time,subprocess,socket,threading
-
+import importlib.util
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -19,6 +19,8 @@ def run_command(command, log_file):
         process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
         process.communicate()
 
+
+
 def run_subprocess(commands):
     try:
         logger.info(f"running: {str(commands)}...")
@@ -33,6 +35,9 @@ import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
 
+
+security_check = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 security/security_check.py","security/security_check.log"))
+security_check.start()
 t1 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_wifi/main.py","setup_wifi/main.log"))
 t1.start()
 
@@ -48,9 +53,13 @@ def init_setup():
         except OSError: 
             time.sleep(1)
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
-
+def is_module_installed(module_name):
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
 if(data["setup"] == False):
     init_setup()
+    if(not is_module_installed("firebase_admin")):
+        run_subprocess(["sudo","reboot"])
     import firebase_admin
     from firebase_admin import credentials, db
     cred = credentials.Certificate(cwd+"/../secrets/key.json")
@@ -59,6 +68,7 @@ if(data["setup"] == False):
         'httpTimeout':10
     })
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
+    db.reference('/').child("Printers").child(data["code"]).child("details").child("type").set("public")
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("printer_setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)

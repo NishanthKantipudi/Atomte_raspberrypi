@@ -188,56 +188,67 @@ def setup(snap):
                 try:
                     props = get_printer_properties(db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"))
 
-                    props={
+                    props = {
                         "paper_size": [
-        {"name": "a4", "cost": 0,"value":0,"pc":1},
-        {"name": "letter", "cost": 0,"value":0,"pc":1},
-        {"name": "legal", "cost": 0,"value":0,"pc":1},
-        {"name": "a3", "cost": 0,"value":1,"pc":1},
-        {"name": "custom_size", "cost": 0,"value":0,"pc":1}
-    ],
-    "orientation": [
-        {"name": "portrait", "cost": 0,"value":0,"pc":1},
-        {"name": "landscape", "cost": 0,"value":0,"pc":1},
-        {"name": "reverse_portrait", "cost": 0,"value":0,"pc":1},
-        {"name": "reverse_landscape", "cost": 0,"value":0,"pc":1}
-    ],
-    "print_quality": [
-        {"name": "draft", "cost": 0,"value":1,"pc":1},
-        {"name": "normal", "cost": 0,"value":2,"pc":1},
-        {"name": "high", "cost": 0,"value":3,"pc":1},
-        {"name": "photo", "cost": 0,"value":4,"pc":1}
-    ],
-    "color_mode": [
-        {"name": "color", "cost": 0,"value":2,"pc":1},
-        {"name": "grayscale", "cost": 0,"value":0,"pc":1},
-        {"name": "black_and_white", "cost": 0,"value":0,"pc":1}
-    ],
-    "duplex_printing": [
-        {"name": "one_sided", "cost": 0,"value":1.5,"pc":1},
-        {"name": "two_sided_long_edge", "cost": 2,"value":2,"pc":0.5},
-        {"name": "two_sided_short_edge", "cost": 0,"value":2,"pc":0.5}
-    ],
-    "paper_source": [
-        {"name": "main_tray", "cost": 0,"value":0,"pc":1},
-        {"name": "manual_feed", "cost": 0,"value":0,"pc":1},
-        {"name": "alternative_tray", "cost": 0,"value":0,"pc":1}
-    ],
-    "stapling": [
-        {"name": "no_staple", "cost": 0,"value":0,"pc":1},
-        {"name": "top_left", "cost": 1,"value":0,"pc":1},
-        {"name": "top_right", "cost": 1,"value":0,"pc":1},
-        {"name": "bottom_left", "cost": 1,"value":0,"pc":1},
-        {"name": "bottom_right", "cost": 1,"value":0,"pc":1}
-    ],
-    "paper_type": [
-        {"name": "plain", "cost": 0,"value":0,"pc":1},
-        {"name": "recycled", "cost": 0,"value":0,"pc":1},
-        {"name": "glossy", "cost": 0.5,"value":0,"pc":1},
-        {"name": "transparency", "cost": 0.5,"value":0,"pc":1},
-        {"name": "labels", "cost": 1,"value":0,"pc":1}
-    ]
+                            {"name": "a4", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "letter", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "legal", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "a3", "cost": 0, "value": 1, "pc": 1},
+                            {"name": "tabloid", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "custom_size", "cost": 0, "value": 0, "pc": 1}
+                        ],
+                        "orientation": [
+                            {"name": "portrait", "cost": 0, "value": 3, "pc": 1},
+                            {"name": "landscape", "cost": 0, "value": 4, "pc": 1},
+                            {"name": "reverse_portrait", "cost": 0, "value": 5, "pc": 1},
+                            {"name": "reverse_landscape", "cost": 0, "value": 6, "pc": 1}
+                        ],
+                        "print_quality": [
+                            {"name": "draft", "cost": 0, "value": 1, "pc": 1},
+                            {"name": "normal", "cost": 0, "value": 2, "pc": 1},
+                            {"name": "high", "cost": 0, "value": 3, "pc": 1},
+                            {"name": "photo", "cost": 0, "value": 4, "pc": 1}
+                        ],
+                        "color_mode": [
+                            {"name": "color", "cost": 0, "value": 2, "pc": 1},
+                            {"name": "grayscale", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "black_and_white", "cost": 0, "value": 0, "pc": 1}
+                        ],
+                        "sides": [
+                            {"name": "one-sided", "cost": 0, "value": "one-sided", "pc": 1},
+                            {"name": "two-sided-long-edge", "cost": 0, "value": "two-sided-long-edge", "pc": 1},
+                            {"name": "two-sided-short-edge", "cost": 0, "value": "two-sided-short-edge", "pc": 1}
+                        ],
+                        "number_up": [
+                            {"name": "1", "cost": 0, "value": 1, "pc": 1},
+                            {"name": "2", "cost": 0, "value": 2, "pc": 1},
+                            {"name": "4", "cost": 0, "value": 4, "pc": 1},
+                            {"name": "6", "cost": 0, "value": 6, "pc": 1},
+                            {"name": "9", "cost": 0, "value": 9, "pc": 1},
+                            {"name": "16", "cost": 0, "value": 16, "pc": 1}
+                        ],
+                        "printer_resolution": [
+                            {"name": "300x300dpi", "cost": 0, "value": "300x300dpi", "pc": 1},
+                            {"name": "600x600dpi", "cost": 0, "value": "600x600dpi", "pc": 1},
+                            {"name": "1200x1200dpi", "cost": 0, "value": "1200x1200dpi", "pc": 1}
+                        ],
+                        "output_bin": [
+                            {"name": "face-down", "cost": 0, "value": "face-down", "pc": 1},
+                            {"name": "face-up", "cost": 0, "value": "face-up", "pc": 1}
+                        ],
+                        "finishings": [
+                            {"name": "none", "cost": 0, "value": 3, "pc": 1},
+                            {"name": "staple", "cost": 0, "value": 4, "pc": 1},
+                            {"name": "punch", "cost": 0, "value": 5, "pc": 1},
+                            {"name": "bind", "cost": 0, "value": 6, "pc": 1}
+                        ],
+                        "media_margins": [
+                            {"name": "default", "cost": 0, "value": 0, "pc": 1},
+                            {"name": "narrow", "cost": 0, "value": 635, "pc": 1},
+                            {"name": "wide", "cost": 0, "value": 1270, "pc": 1}
+                        ]
                     }
+
                     if props is not None:
                         printer_ref.child("properties").set(props)
                         printer_ref.child("connection").set("success")

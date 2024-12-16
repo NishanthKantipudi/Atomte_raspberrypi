@@ -69,6 +69,7 @@ if(data["setup"] == False):
     })
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("details").child("type").set("public")
+    db.reference('/').child("Printers").child(data["code"]).child("details").child("id").set(data["code"])
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("printer_setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
@@ -164,6 +165,7 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     pull_repo()
     install_modules()
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
+    run_subprocess(["sudo","reboot"])
 
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))
@@ -192,3 +194,4 @@ else:
     db.reference('/').child("Printers").child(data["code"]).child("states").child("printer_connection").set(False)
 t7 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/restart_device.py","device_manager/restart_device.log"))
 t7.start()
+

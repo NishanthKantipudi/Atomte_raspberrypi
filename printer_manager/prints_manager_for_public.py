@@ -670,7 +670,9 @@ def main():
     while 1:
         try:
             printer_connection=True
-            ping_test(printer_ip)#ping test
+            if(not ping_test(printer_ip)):
+                logger.error("Printer is not connected Ping failed")
+                raise Exception("Printer is not connected Ping failed")
             #lpstat -t
             #http client
             #pyipp module

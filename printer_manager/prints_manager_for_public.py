@@ -669,28 +669,19 @@ def main():
     ref = db.reference(f'Printers/{main_data["printer_id"]}/printstodo')
     while 1:
         try:
-            printer_connection=True
             if(not ping_test(printer_ip)):
                 logger.error("Printer is not connected Ping failed")
                 raise Exception("Printer is not connected Ping failed")
-            #lpstat -t
-            #http client
-            #pyipp module
-            if printer_connection:
-                db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(True)
-                db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Active")
-                db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Printer is now Active")
-                listner=ref.listen(on_value_change)
-                while 1:
-                    if(i_error or p_error):
-                        logger.error('error i_error or p_error'+str(i_error)+str(p_error))
-                        listner.close()
-                        raise Exception("i_error or p_error")
-                    time.sleep(1)
-            else:
-                db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(False)
-                db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Inactive")
-                db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Something went wrong")
+            db.reference(f'Printers/{main_data["printer_id"]}/states').child("printer_connection").set(True)
+            db.reference(f"Printers/{main_data['printer_id']}/details").child("status").set("Active")
+            db.reference(f"Printers/{main_data['printer_id']}/details").child("status_message").set("Printer is now Active")
+            listner=ref.listen(on_value_change)
+            while 1:
+                if(i_error or p_error):
+                    logger.error('error i_error or p_error'+str(i_error)+str(p_error))
+                    listner.close()
+                    raise Exception("i_error or p_error")
+                time.sleep(1)
         except Exception as e:
             refund_all()
             try:

@@ -76,6 +76,8 @@ def sendlogs(event):
         }
         try:
             for file_path, firebase_path in files.items():
+                if not os.path.exists(file_path):
+                    continue
                 upload_file_to_firebase(file_path, firebase_path)
             printer_ref.child("getlogs").set(False)
         except Exception as e:

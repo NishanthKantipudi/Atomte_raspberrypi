@@ -64,7 +64,7 @@ def fetch_ads_data():
         with open(file_path, 'r') as file:
             data = json.load(file)
             return data
-    main_data = read_json_file(cwd+"/../secrets/details.json")
+    main_data = read_json_file(cwd+"/../../secrets/details.json")
     main_data["printer_id"] = main_data["code"]
     ref = db.reference("Printers/"+str(main_data["printer_id"])+"/ads")  # Replace 'ads' with your Firebase node name
     ads_data = ref.get()

@@ -47,6 +47,7 @@ def init_setup():
     cred = credentials.Certificate(cwd+"/secrets/key.json")
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+
         'httpTimeout':10
     })
     printer_ref = db.reference("Printers/"+main_data["printer_id"])
@@ -99,6 +100,37 @@ def init_setup():
     setup_cups()
 init_setup()        
 
+def send_high_priority_notification(self,token,title="",body="",data={}):
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            token=token,
+            android=messaging.AndroidConfig(
+                priority="high"
+            ),
+            data=data
+        )
+        try:
+            response = messaging.send(message)
+            logger.info(f'Successfully sent message: {response}')
+        except Exception as e:
+            logger.error(f"Error sending message: {e}")
+
+def get_ip_from_mdns(hostname):
+    trying=0
+    while 1:
+        trying+=1
+        if(trying>100):
+            return None
+        try:
+            ip_address = socket.gethostbyname(hostname)
+            printer_ref.child("details").child("ip").set(ip_address)
+            return ip_address
+        except Exception as e:
+            print(f"Error resolving mDNS name: {e}")
+            time.sleep(1)
 
 def check_network():
     global i_error
@@ -178,7 +210,7 @@ async def get_snmp_data():
         "Printer Detailed Status": oids_data["oid1"],
         "printed": oids_data["oid2"],
         "toner level": oids_data["oid3"],
-        "tray 1": oids_data["oid4"],  
+        "tray 1": oids_data["oid4"],
         "tray 2": oids_data["oid5"], 
     }
     conn_error=False
@@ -350,9 +382,12 @@ def handle_print_error(user, currentfile,error="Error printing"):
                 logger.error(f"Error initiating full refund: {e}")
                 refund_success = False
         if refund_success:
-            send_high_priority_notification(web_device_id, title="Refund initiated Rs." + str(amount_to_refund/100), body="Refund for file " + currentfile + " initiated due to"+error, data={"file": currentfile})
-            send_high_priority_notification(device_id, title="Refund initiated Rs." + str(amount_to_refund/100), body="Refund for file " + currentfile + " initiated due to"+error, data={"file": currentfile})
-            db.reference(f'users/{user}/printsdetails/{currentfile}').child("status").set(error+", money refunded, refund id: " + str(refund.get("id", "")))
+            if(device_id):
+                send_high_priority_notification(device_id, title="Refund initiated Rs." + str(amount_to_refund/100), body="Refund for file " + currentfile + " initiated due to"+error, data={"file": currentfile})
+            else:
+                if(web_device_id):
+                    send_high_priority_notification(web_device_id, title="Refund initiated Rs." + str(amount_to_refund/100), body="Refund for file " + currentfile + " initiated due to"+error, data={"file": currentfile})
+                db.reference(f'users/{user}/printsdetails/{currentfile}').child("status").set(error+", money refunded, refund id: " + str(refund.get("id", "")))
             db.reference(f'users/{user}/printsdetails/{currentfile}').child("refund_id").set(str(refund.get("id", "")))
             logger.info("Refund initiated successfully.")
         else:
@@ -414,6 +449,7 @@ def print_file_without_snmp(user, file):
         logger.error(f"Error downloading file: {e}")
         raise Exception("Error downloading file")
     options=db.reference(f'users/{user}/printsdetails/{file}').child("properties").get()
+    options = {key.replace('_', '-'): value for key, value in options.items()}
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:
@@ -463,9 +499,22 @@ def print_file_with_snmp(user, file):
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:
-        logger.info(cwd+"/"+filename)
-        logger.info(printer_name)
-        print_job_id = conn.printFile(printer_name.replace(" ","_"), os.path.abspath(cwd+"/"+filename), timestamp, options)
+       
+        retry_count = 0
+        while True:
+            retry_count += 1
+            if retry_count > 5:
+                logger.error("Error at printer connection")
+                raise Exception("Error at printer connection")
+            try:
+                print_job_id = conn.printFile(printer_name.replace(" ","_"), os.path.abspath(cwd+"/"+filename), timestamp, options)
+                break
+            except Exception as e:
+                logger.error(f"Error at printer: {e}")
+            time.sleep(3)
+            
+        # print_job_id=send_print_job(printer_name, os.path.abspath(filename),timestamp, options)
+
         db.reference(f'users/{user}/printsdetails/{file}').child("status").set("printing...")
         return 1,print_job_id
     except Exception as e:

@@ -166,7 +166,6 @@ def setup(snap):
         if printer_ref.child("start").get():
             printer_ref.child("start").set(False)
             data = printer_ref.get()
-            # Validate required printer setup data
             required_keys = [ 'printer_ip']
             if not all(key in data for key in required_keys):
                 logger.error("Missing required printer setup data")
@@ -184,7 +183,6 @@ def setup(snap):
             logger.info(f"{return_code}, {stdout}, {stderr}")
             if stdout == 0:
                 logger.info("Printer added successfully!")
-                
                 try:
                     props = get_printer_properties(db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"))
 
@@ -248,6 +246,10 @@ def setup(snap):
                             {"name": "wide", "cost": 0, "value": 1270, "pc": 1}
                         ]
                     }
+                    for category in props.values():
+                        for item in category:
+                            item["value"] = item["cost"]
+
 
                     if props is not None:
                         printer_ref.child("properties").set(props)

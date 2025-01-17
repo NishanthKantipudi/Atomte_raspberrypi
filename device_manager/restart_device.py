@@ -73,6 +73,7 @@ def sendlogs(event):
             "printer_manager/files_from_server.log": "logs/"+data["code"]+"/printer_manager/files_from_server.log",
             "printer_manager/prints_manager_for_private.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_private.log",
             "printer_manager/prints_manager_for_public.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_public.log",
+            "run/main.log": "logs/"+data["code"]+"/run/main.log",
         }
         try:
             for file_path, firebase_path in files.items():

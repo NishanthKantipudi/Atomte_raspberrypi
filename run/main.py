@@ -155,6 +155,30 @@ def install_modules():
 
 
 import pexpect
+def run_web(command, project_dir):
+    try:
+        result = subprocess.run(command, cwd=cwd+project_dir, capture_output=True, text=True)
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        print("Return code:", result.returncode)
+        if result.returncode != 0:
+            print(f"Command failed with return code {result.returncode}")
+            return False
+        return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+def run_web_tread():
+    run_web(['sudo','serve','-s','build'],'/../atomte/')
+web_t = threading.Thread(target=run_web_tread)
+web_t.start()
+time.sleep(1)
+web_command={
+        "command": cwd + "/start_website.sh",
+        "log_file": cwd + "/start_website.log"
+    }
+t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
+t_r.start()
 
 def pull_repo():
     start_ssh_agent()
@@ -164,6 +188,9 @@ def pull_repo():
 if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
     pull_repo()
     install_modules()
+    run_web(['npm', 'install'],'/../atomte/')
+    run_web(['npm','run','build'],'/../atomte/')
+    run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 

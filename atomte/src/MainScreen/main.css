@@ -1,0 +1,44 @@
+.MainScreen{
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+.LeftView{
+    flex: 0 0 20%;
+}
+
+.separator{
+    flex: 0 0 1px;
+    background-color: black;
+    border: 1px solid #e0e0e0;
+    margin: 2px 0;
+}
+
+.CenterView{ 
+    flex: 0 0 45%;
+}
+.CenterView .title-atomte{
+    text-align: center;
+    font-size: 60px;
+    font-family: "Georgia";
+    font-weight: bold;
+    letter-spacing: 7px;
+    color: rgb(0, 0, 0);
+    background-color: rgba(220, 219, 218, 0.426);
+}
+.RightView{
+    flex: 0 0 35%;
+}
+
+.MainScreen .CenterView{
+    display: flex;
+    flex-direction: column;
+    
+}
+
+
+.MainScreen .CenterView .RightTopView{
+    flex:1;
+}
+

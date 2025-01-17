@@ -14,7 +14,7 @@ const SuperRightView = ({ code,videoFile1, videoFile2, width = "500" }) => {
                 <h3>For Advertising</h3>
             <QRCode
                 value={'https://atomte.com/ads?code='+code}
-                size={250}
+                size={200}
                 bgColor="#ffffff"
                 fgColor="#000000"
                 level="H"

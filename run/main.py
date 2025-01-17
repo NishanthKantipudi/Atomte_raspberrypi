@@ -68,7 +68,6 @@ def init_setup():
 def is_module_installed(module_name):
     spec = importlib.util.find_spec(module_name)
     return spec is not None
-run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
 if(data["setup"] == False):
     init_setup()
     if(not is_module_installed("firebase_admin")):

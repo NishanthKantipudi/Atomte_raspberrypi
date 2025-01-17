@@ -42,7 +42,19 @@ t1 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_
 t1.start()
 
 
-
+def run_web(command, project_dir):
+    try:
+        result = subprocess.run(command, cwd=cwd+project_dir, capture_output=True, text=True)
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        print("Return code:", result.returncode)
+        if result.returncode != 0:
+            print(f"Command failed with return code {result.returncode}")
+            return False
+        return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
 
 
 def init_setup():
@@ -56,6 +68,7 @@ def init_setup():
 def is_module_installed(module_name):
     spec = importlib.util.find_spec(module_name)
     return spec is not None
+run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
 if(data["setup"] == False):
     init_setup()
     if(not is_module_installed("firebase_admin")):
@@ -67,6 +80,7 @@ if(data["setup"] == False):
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10
     })
+    run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("details").child("type").set("public")
     db.reference('/').child("Printers").child(data["code"]).child("details").child("id").set(data["code"])
@@ -155,19 +169,7 @@ def install_modules():
 
 
 import pexpect
-def run_web(command, project_dir):
-    try:
-        result = subprocess.run(command, cwd=cwd+project_dir, capture_output=True, text=True)
-        print("STDOUT:", result.stdout)
-        print("STDERR:", result.stderr)
-        print("Return code:", result.returncode)
-        if result.returncode != 0:
-            print(f"Command failed with return code {result.returncode}")
-            return False
-        return True
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return False
+
 def run_web_tread():
     run_web(['sudo','serve','-s','build'],'/../atomte/')
 web_t = threading.Thread(target=run_web_tread)
@@ -190,7 +192,6 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     install_modules()
     run_web(['npm', 'install'],'/../atomte/')
     run_web(['npm','run','build'],'/../atomte/')
-    run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 

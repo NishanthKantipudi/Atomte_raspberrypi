@@ -221,4 +221,5 @@ else:
     db.reference('/').child("Printers").child(data["code"]).child("states").child("printer_connection").set(False)
 t7 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/restart_device.py","device_manager/restart_device.log"))
 t7.start()
-
+t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_manager/main.py","ads_manager/main.log"))
+t8.start()

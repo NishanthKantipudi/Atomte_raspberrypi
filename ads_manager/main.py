@@ -39,8 +39,10 @@ def delete_video(filename):
     else:
         print(f"File not found for deletion: {filename}")
 
+
 def process_ads(ads_data):
     now = datetime.now()
+
     for ad in ads_data:
         date = ad.get("date")
         time_slots = ad.get("time_slots", [])
@@ -59,47 +61,48 @@ def process_ads(ads_data):
             
 
 # Function to fetch ads data from Firebase
+
+def ad_process_listner(event,ref,printer_id):
+    if event.data:
+        data=ref.get()
+        for placesname, info in data.items(): 
+            filename = f"ad{placesname.replace('place', '')}.mp4"
+            print(f"Downloading {filename} immediately.")
+            threading.Thread(target=download_video, args=(info["url"], filename)).start()
+    else:
+        print("No ads data found.")
+listner=None
 def fetch_ads_data():
+    global listner
+    if listner:
+        try:
+            listner.close()
+            listner = None
+        except Exception as e:
+            print(f"Error closing listener: {e}")
     def read_json_file(file_path):
         with open(file_path, 'r') as file:
             data = json.load(file)
             return data
-    main_data = read_json_file(cwd+"/../../secrets/details.json")
+    main_data = read_json_file(cwd+"/../secrets/details.json")
     main_data["printer_id"] = main_data["code"]
-    ref = db.reference("Printers/"+str(main_data["printer_id"])+"/ads")  # Replace 'ads' with your Firebase node name
-    ads_data = ref.get()
-    if ads_data:
-        structured_data = []
-        for date, entries in ads_data.items():
-            time_slots = []
-            for time_slot, info in entries.items():
-                for placename, url in info.items():
-                    time_slots.append({"slot": time_slot, "place": placename, "url": url["url"]})
-            structured_data.append({"printer_id": main_data["printer_id"], "date": date, "time_slots": time_slots})
-        return structured_data
+    now = datetime.now()
+    ref = db.reference("Printers/"+str(main_data["printer_id"])+"/ads/").child(now.date().strftime("%Y-%m-%d")).child(f"{str(now.strftime('%H'))}:00 to {str(int(now.strftime('%H'))+1).zfill(2)}:00")
+
+    print(ref.get())
+    listner = ref.listen(lambda event: ad_process_listner(event, ref, main_data["printer_id"]))
     return []
 
 
 
 def run_scheduler():
     while True:
-        # Get the current time
         now = datetime.now()
-        
-        # Calculate the next hour
         next_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
-        
-        # Calculate the delay until the next hour
         delay = (next_hour - now).total_seconds()
         
         print(f"Fetching data from Firebase at {now.strftime('%Y-%m-%d %H:%M:%S')}...")
         ads_data = fetch_ads_data()
-        print(ads_data)
-        if ads_data:
-            process_ads(ads_data)
-        else:
-            print("No ads data found.")
-        
         print(f"Next fetch scheduled at {next_hour.strftime('%Y-%m-%d %H:%M:%S')}. Waiting for {int(delay)} seconds...")
         time.sleep(delay)
 

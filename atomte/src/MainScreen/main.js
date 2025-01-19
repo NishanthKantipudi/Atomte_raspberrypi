@@ -7,6 +7,9 @@ import "./main.css";
 import ad1 from "./ads/ad1.mp4";
 import ad2 from "./ads/ad2.mp4";
 import ad3 from "./ads/ad3.mp4";
+import ad1_default from "./ads/ad1_default.mp4";
+import ad2_default from "./ads/ad2_default.mp4";
+import ad3_default from "./ads/ad3_default.mp4";
 import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { get } from "firebase/database";
 import { onValue, ref, getDatabase, set, child } from "firebase/database";
@@ -60,20 +63,28 @@ export default function MainScreen() {
       }, [email, password]);
 
 
-    return (
+      return (
         <div className="MainScreen">
-            <div className="LeftView" >
-                <LeftView code={code}/>
+            <div className="LeftView">
+                <LeftView code={code} />
             </div>
             <div className="separator"></div>
             <div className="CenterView">
-            <h1 className="title-atomte">ATOMTE</h1>
-                <RightTopView className="RightTopView" code={code}/>
-                <VideoPlayer className="ad1" videoFile={ad1} width="100%" />
+                <h1 className="title-atomte">ATOMTE</h1>
+                <RightTopView className="RightTopView" code={code} />
+                <VideoPlayer 
+                    className="ad1" 
+                    videoFile={ad1 || ad1_default} 
+                    width="100%" 
+                />
             </div>
             <div className="separator"></div>
             <div className="RightView">
-                <SuperRightView code={code} videoFile1={ad2} videoFile2={ad3}/>
+                <SuperRightView 
+                    code={code} 
+                    videoFile1={ad2 || ad2_default} 
+                    videoFile2={ad3 || ad3_default} 
+                />
             </div>
         </div>
     );

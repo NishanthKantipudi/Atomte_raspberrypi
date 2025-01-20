@@ -1,5 +1,5 @@
 mac:
-CODE=(234567);RPI_IP=$(ping -c 1 atomte${CODE}.local | awk -F'[()]' '/PING/{print $2}');ssh-keygen -R $RPI_IP;ssh atomte${CODE}@$RPI_IP
+CODE=(100006);RPI_IP=$(ping -c 1 atomte${CODE}.local | awk -F'[()]' '/PING/{print $2}');ssh-keygen -R $RPI_IP;ssh atomte${CODE}@$RPI_IP
 
 rasp:
 mkdir Atomte;cd Atomte;mkdir SSH;mkdir secrets;python3 -m venv venv;cd SSH

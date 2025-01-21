@@ -35,6 +35,7 @@ import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
 
+run_subprocess(["wlr-randr", "--output", "HDMI-A-2", "--transform", "90"])
 
 security_check = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 security/security_check.py","security/security_check.log"))
 security_check.start()
@@ -88,7 +89,6 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
-    run_subprocess(["sudo", "bash", "-c", "echo 'display_rotate=1' >> /boot/config.txt"])
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)

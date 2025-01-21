@@ -181,7 +181,7 @@ web_command={
     }
 t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
 t_r.start()
-
+run_subprocess(["export","XDG_RUNTIME_DIR=/run/user/$(id -u)"])
 or_command={
         "command": cwd + "/orientation.sh",
         "log_file": cwd + "/orientation.log"

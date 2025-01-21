@@ -35,7 +35,7 @@ import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
 
-run_subprocess(["wlr-randr", "--output", "HDMI-A-2", "--transform", "90"])
+run_subprocess(["sudo","wlr-randr", "--output", "HDMI-A-2", "--transform", "90"])
 
 security_check = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 security/security_check.py","security/security_check.log"))
 security_check.start()

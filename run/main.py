@@ -105,8 +105,7 @@ else:
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10
     })
-    
-run_subprocess(["sudo","wlr-randr", "--output", "HDMI-A-2", "--transform", "90"])
+
 
 while 1:
     try:
@@ -182,6 +181,13 @@ web_command={
     }
 t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
 t_r.start()
+
+or_command={
+        "command": cwd + "/orientation.sh",
+        "log_file": cwd + "/orientation.log"
+    }
+t_r1 = threading.Thread(target=run_command, args=(or_command['command'], or_command['log_file']))
+t_r1.start()
 
 def pull_repo():
     start_ssh_agent()

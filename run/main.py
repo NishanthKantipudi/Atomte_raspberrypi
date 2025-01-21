@@ -88,6 +88,7 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
+    run_subprocess(["sudo", "bash", "-c", "echo 'display_rotate=1' >> /boot/config.txt"])
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)

@@ -181,13 +181,7 @@ web_command={
     }
 t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
 t_r.start()
-run_command(["export","XDG_RUNTIME_DIR=/run/user/$(id -u)"],"export.log")
-or_command={
-        "command": cwd + "/orientation.sh",
-        "log_file": cwd + "/orientation.log"
-    }
-t_r1 = threading.Thread(target=run_command, args=(or_command['command'], or_command['log_file']))
-t_r1.start()
+
 
 def pull_repo():
     start_ssh_agent()
@@ -201,6 +195,16 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     run_web(['npm','run','build'],'/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
+
+
+
+run_command(["export","XDG_RUNTIME_DIR=/run/user/$(id -u)"],"export.log")
+or_command={
+        "command": cwd + "/orientation.sh",
+        "log_file": cwd + "/orientation.log"
+    }
+t_r1 = threading.Thread(target=run_command, args=(or_command['command'], or_command['log_file']))
+t_r1.start()
 
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))

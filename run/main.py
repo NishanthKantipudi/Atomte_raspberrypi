@@ -198,7 +198,6 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
 
 
 
-run_command(["export","XDG_RUNTIME_DIR=/run/user/$(id -u)"],"export.log")
 or_command={
         "command": cwd + "/orientation.sh",
         "log_file": cwd + "/orientation.log"

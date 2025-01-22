@@ -1,28 +1,55 @@
 #!/bin/bash
 
-# Define the rotation command
-ROTATE_COMMAND="xrandr --output HDMI-1 --rotate left"
 
-# Create the LightDM display-setup-script.sh if it doesn't exist
-LIGHTDM_SCRIPT="/etc/lightdm/display-setup-script.sh"
+SERVICE_NAME="display-rotation.service"
+SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME"
+SCRIPT_PATH="/usr/local/bin/set-display-rotation.sh"
 
-if [ ! -f "$LIGHTDM_SCRIPT" ]; then
-    echo "$ROTATE_COMMAND" | sudo tee $LIGHTDM_SCRIPT > /dev/null
-    # Make the script executable
-    sudo chmod +x $LIGHTDM_SCRIPT
-    echo "Display setup script created at $LIGHTDM_SCRIPT"
-else
-    echo "Display setup script already exists, skipping creation."
-fi
 
-# Configure LightDM to use the setup script
-LIGHTDM_CONF="/etc/lightdm/lightdm.conf"
-
-if ! grep -q "display-setup-script=$LIGHTDM_SCRIPT" "$LIGHTDM_CONF"; then
-    echo -e "\n[Seat:*]\ndisplay-setup-script=$LIGHTDM_SCRIPT" | sudo tee -a $LIGHTDM_CONF > /dev/null
-    echo "LightDM configuration updated to use display-setup-script."
-else
-    echo "LightDM is already configured to use the display-setup-script."
+if [ "$(id -u)" -ne 0 ]; then
+    echo "This script must be run as root. Please rerun with sudo."
+    exit 1
 fi
 
 
+cat << 'EOF' > $SCRIPT_PATH
+#!/bin/bash
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export WAYLAND_DISPLAY="wayland-0"
+
+# Rotate the display using wlr-randr
+/usr/bin/wlr-randr --output HDMI-A-1 --transform 90
+EOF
+
+
+chmod +x $SCRIPT_PATH
+echo "Display rotation script created at $SCRIPT_PATH"
+
+
+cat << EOF > $SERVICE_PATH
+[Unit]
+Description=Set display rotation for Wayland
+After=graphical.target
+
+[Service]
+User=$(logname)
+Environment="XDG_RUNTIME_DIR=/run/user/$(id -u)"
+Environment="WAYLAND_DISPLAY=wayland-0"
+ExecStart=$SCRIPT_PATH
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
+EOF
+
+echo "Systemd service created at $SERVICE_PATH"
+
+
+systemctl daemon-reload
+systemctl enable $SERVICE_NAME
+systemctl start $SERVICE_NAME
+
+
+systemctl status $SERVICE_NAME --no-pager
+
+echo "Setup complete! The display rotation will now persist across reboots."

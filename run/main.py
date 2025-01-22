@@ -90,7 +90,7 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
     run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
-    run_command(cwd+"/orientation.sh", cwd+"/orientation.log")
+    run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)

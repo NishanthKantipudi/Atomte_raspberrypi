@@ -25,5 +25,4 @@ else
     echo "LightDM is already configured to use the display-setup-script."
 fi
 
-# Restart LightDM to apply changes
-sudo systemctl restart lightdm
+

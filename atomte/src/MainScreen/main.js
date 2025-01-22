@@ -64,28 +64,38 @@ export default function MainScreen() {
 
 
       return (
-        <div className="MainScreen">
-            <div className="LeftView">
-                <LeftView code={code} />
-            </div>
-            <div className="separator"></div>
-            <div className="CenterView">
-                <h1 className="title-atomte">ATOMTE</h1>
-                <RightTopView className="RightTopView" code={code} />
-                <VideoPlayer 
-                    className="ad1" 
-                    videoFile={ad1 || ad1_default} 
-                    width="100%" 
-                />
-            </div>
-            <div className="separator"></div>
-            <div className="RightView">
-                <SuperRightView 
-                    code={code} 
-                    videoFile1={ad2 || ad2_default} 
-                    videoFile2={ad3 || ad3_default} 
-                />
-            </div>
+        <div className="Total">
+          <div className="MainScreen">
+
+              <div className="LeftView">
+                  <LeftView code={code} />
+              </div>
+              <div className="separator"></div>
+              <div className="CenterView">
+                  <h1 className="title-atomte">ATOMTE</h1>
+                  <RightTopView className="RightTopView" code={code} />
+              </div>
+              
+          </div>
+
+              <div className="separator"></div>
+              <div>
+              <VideoPlayer 
+                      className="ad1" 
+                      videoFile={ad1 || ad1_default} 
+                      width="100%" 
+                  />
+              </div>
+              <div className="separator"></div>
+              <div className="RightView">
+                  <SuperRightView 
+                      code={code} 
+                      videoFile1={ad2 || ad2_default} 
+                      videoFile2={ad3 || ad3_default} 
+                  />
+              </div>
+
         </div>
+        
     );
 }

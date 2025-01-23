@@ -87,7 +87,7 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("printer_setup").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
-    db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
+    db.reference('/').child("Printers").child(data["code"]).child("updates").set(True)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
     if(data["type"] == "display"):
         run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])

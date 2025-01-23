@@ -639,11 +639,11 @@ def on_value_change_with_snmp(event_key,data):
                         i = i + 1
                         if i == len(files):
                             db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').delete()
-                            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Success","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
+                            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"user_id":user_ref.child("atomte_id").get(),"files":data["files"],"status":"Success","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                             break
                     if p_error or i_error:
                         refund_all(error="Error at printer taking too long try again")
-                        db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
+                        db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"user_id":user_ref.child("atomte_id").get(),"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
                         logger.error('Error at page count diff p_error')
                         break
                     time.sleep(1)
@@ -656,7 +656,7 @@ def on_value_change_with_snmp(event_key,data):
             pass
         try:
             db.reference(f'Printers/123456/printstodo/{event_key}').delete()
-            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
+            db.reference(f'Printers/{main_data["printer_id"]}/printeddetails').child(datetime.datetime.now().strftime("%d-%m-%y")).push().set({"user":data["user"],"user_id":user_ref.child("atomte_id").get(),"files":data["files"],"status":"Error","time":datetime.datetime.now().isoformat(),"name":user_ref.child("name").get(),"totalcost":totalcost})
         except Exception as e:
             raise Exception("Error at listner")
 

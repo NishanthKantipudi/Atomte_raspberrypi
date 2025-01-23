@@ -79,7 +79,8 @@ if(data["setup"] == False):
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10
     })
-    run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
+    if(data["type"] == "display"):
+        run_web(['sudo','npm', 'install','-g', 'serve'], '/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("details").child("password").set(data["password"])
     db.reference('/').child("Printers").child(data["code"]).child("details").child("type").set("public")
     db.reference('/').child("Printers").child(data["code"]).child("details").child("id").set(data["code"])
@@ -88,9 +89,10 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("select_properties").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
-    run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
-    run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
-    run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
+    if(data["type"] == "display"):
+        run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
+        run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
+        run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
     with open(cwd+"/../../secrets/details.json", "w") as f:
         data["setup"] = True
         json.dump(data, f)
@@ -175,15 +177,17 @@ import pexpect
 
 def run_web_tread():
     run_web(['sudo','serve','-s','build'],'/../atomte/')
-web_t = threading.Thread(target=run_web_tread)
-web_t.start()
-time.sleep(1)
+if(data["type"] == "display"):
+    web_t = threading.Thread(target=run_web_tread)
+    web_t.start()
+    time.sleep(1)
 web_command={
         "command": cwd + "/start_website.sh",
         "log_file": cwd + "/start_website.log"
     }
-t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
-t_r.start()
+if(data["type"] == "display"):
+    t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
+    t_r.start()
 
 
 def pull_repo():
@@ -194,8 +198,9 @@ def pull_repo():
 if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
     pull_repo()
     install_modules()
-    run_web(['npm', 'install'],'/../atomte/')
-    run_web(['npm','run','build'],'/../atomte/')
+    if(data["type"] == "display"):
+        run_web(['npm', 'install'],'/../atomte/')
+        run_web(['npm','run','build'],'/../atomte/')
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 

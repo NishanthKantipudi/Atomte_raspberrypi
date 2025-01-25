@@ -201,6 +201,8 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     if(data["type"] == "display"):
         run_web(['npm', 'install'],'/../atomte/')
         run_web(['npm','run','build'],'/../atomte/')
+    run_subprocess(["sudo","apt","remove","python3-rpi.gpio"])
+    run_subprocess(["sudo","apt","install","python3-rpi-lgpio"])
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 

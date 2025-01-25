@@ -61,12 +61,12 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 def audio(event):
     if(event.data):
-        run_subprocess(["amixer","set","Master",str(event.data)+"%"])
+        run_subprocess(["sudo","amixer","set","Master",str(event.data)+"%"])
         run_subprocess(["sudo","alsactl","store"])
 
 def mic(event):
     if(event.data):
-        run_subprocess(["amixer","set","Capture",str(event.data)+"%"])
+        run_subprocess(["sudo","amixer","set","Capture",str(event.data)+"%"])
         run_subprocess(["sudo","alsactl","store"])
 
 

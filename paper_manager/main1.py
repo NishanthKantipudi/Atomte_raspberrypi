@@ -17,8 +17,10 @@ cwd = os.getcwd()
 
 
 SERVO_PIN = 12 
+SERVO_PIN1 = 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SERVO_PIN, GPIO.OUT)
+GPIO.setup(6, GPIO.OUT)
 pwm = GPIO.PWM(SERVO_PIN, 50) 
 pwm.start(0)  
 def set_angle(angle):
@@ -28,6 +30,18 @@ def set_angle(angle):
     time.sleep(0.5) 
     GPIO.output(SERVO_PIN, False)
     pwm.ChangeDutyCycle(0)
+
+
+GPIO.setup(SERVO_PIN1, GPIO.OUT)
+pwm1 = GPIO.PWM(SERVO_PIN1, 50) 
+pwm1.start(0)  
+def set_angle1(angle):
+    duty = 2 + (angle / 18)
+    GPIO.output(SERVO_PIN1, True)
+    pwm1.ChangeDutyCycle(duty)
+    time.sleep(0.5) 
+    GPIO.output(SERVO_PIN1, False)
+    pwm1.ChangeDutyCycle(0)
 
 
 
@@ -73,23 +87,27 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 def power(event):
     if(event.data):
-        pass
+        GPIO.output(6, GPIO.HIGH)
+    else:
+        GPIO.output(6, GPIO.LOW)
 
 def lock1(event):
     if(event.data):
         if(event.data):
-            set_angle(90)
+            set_angle(105)
             time.sleep(1)
-            set_angle(0)
+        else:
+            set_angle(15)
             time.sleep(1)    
 
 def lock2(event):
-    # if(event.data):
-    #     if(event.data):
-    #         set_angle2(90)
-    #     else:
-    #         set_angle2(0)
-    pass
+    if(event.data):
+        if(event.data):
+            set_angle1(105)
+            time.sleep(1)
+        else:
+            set_angle1(15)
+            time.sleep(1) 
 
 
 

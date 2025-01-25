@@ -15,7 +15,7 @@ cwd = os.getcwd()
 
 
 
-servo1=gpiozero.Servo(12,min_angle=0,max_angle=180,initial_value=0, pin_factory=RPiGPIOFactory())
+servo1=gpiozero.Servo(12, pin_factory=RPiGPIOFactory())
 
 
 

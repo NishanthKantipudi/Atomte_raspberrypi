@@ -247,9 +247,7 @@ threads=[]
 threads.append(t1)
 threads.append(t2)
 threads.append(t3)
-threads.append(t4)
-threads.append(t5)
-threads.append(t6)
+
 threads.append(t7)
 threads.append(t8)
 threads.append(t9)

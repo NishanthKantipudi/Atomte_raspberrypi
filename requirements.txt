@@ -17,4 +17,5 @@ pyzbar
 requests
 firebase-admin
 gpiozero
+lgpio
 pigpio

@@ -240,5 +240,19 @@ t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_ma
 t8.start()
 t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
 t9.start()
-t10 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/devicecontrol.py","device_manager/devicecontrol.log"))
+t10 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/devicecontrol.py","device_manager/devicecontrol.log"),daemon=True)
 t10.start()
+
+threads=[]
+threads.append(t1)
+threads.append(t2)
+threads.append(t3)
+threads.append(t4)
+threads.append(t5)
+threads.append(t6)
+threads.append(t7)
+threads.append(t8)
+threads.append(t9)
+threads.append(t10)
+for thread in threads:
+    thread.join()

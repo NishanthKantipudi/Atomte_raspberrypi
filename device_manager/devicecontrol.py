@@ -67,7 +67,7 @@ def set_volume(volume_percentage):
     Sets the volume to the specified percentage (0-100%).
     """
     try:
-        subprocess.run(["amixer", "sset", "Master", f"{volume_percentage}%"], check=True)
+        subprocess.run(["sudo", "amixer", "sset", "Master", f"{volume_percentage}%"], check=True)
         print(f"Volume set to {volume_percentage}%")
     except subprocess.CalledProcessError as e:
         print(f"Failed to set volume: {e}")

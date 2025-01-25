@@ -1,5 +1,5 @@
 import gpiozero
-from gpio.pins.pigpio import PiGPIOFactory
+from gpiozero.pins.pigpio import PiGPIOFactory
 
 
 import time

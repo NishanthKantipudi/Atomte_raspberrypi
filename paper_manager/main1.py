@@ -93,7 +93,7 @@ def power(event):
 
 def lock1(event):
     if(event.data):
-        if(event.data):
+        if(event.data==True):
             set_angle(105)
             time.sleep(1)
         else:
@@ -102,7 +102,7 @@ def lock1(event):
 
 def lock2(event):
     if(event.data):
-        if(event.data):
+        if(event.data==True):
             set_angle1(105)
             time.sleep(1)
         else:

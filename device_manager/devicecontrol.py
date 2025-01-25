@@ -74,7 +74,7 @@ def audio(event):
 
 def mic(event):
     if(event.data):
-        os.system(f"amixer set Capture {volume_percentage}%")
+        os.system(f"amixer set Capture {event.data}%")
 
 
 

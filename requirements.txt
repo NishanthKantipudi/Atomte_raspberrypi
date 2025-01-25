@@ -15,3 +15,5 @@ RPi.GPIO
 opencv-python-headless
 pyzbar
 requests
+firebase-admin
+gpiozero

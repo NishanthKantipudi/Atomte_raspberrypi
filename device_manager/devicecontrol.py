@@ -1,0 +1,92 @@
+import time
+import json,os
+import threading,socket
+import subprocess
+import firebase_admin
+from firebase_admin import credentials, db,storage
+import logging
+cwd = os.getcwd()
+
+
+def read_json_file(file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+        return data
+data = read_json_file(cwd+"/../secrets/details.json")
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Firebase initialization
+cred = credentials.Certificate(cwd+"/secrets/key.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
+    'storageBucket': 'skilldevelopmentapp.appspot.com',
+    'httpTimeout':10
+})
+
+network_error=False
+
+
+def run_subprocess(commands):
+    try:
+        logger.info(f"running: {str(commands)}...")
+        result = subprocess.run(commands, 
+                                cwd=cwd+"/",
+                                capture_output=True, 
+                                text=True)
+        logger.info(f"Result: {result}")
+    except Exception as e:
+        logger.error(f"An error occurred during git pull: {e}")
+def check_network():
+    global network_error
+    network_error=False
+    while 1:
+        try:
+            socket.create_connection(("8.8.8.8", 53))
+            network_error=False
+            time.sleep(10)
+        except Exception as e:
+            network_error=True
+            logger.error("check network error : "+str(e))
+            time.sleep(5)
+server_thread1 = threading.Thread(target=check_network)
+server_thread1.daemon = True
+server_thread1.start()
+
+
+printer_ref = db.reference("Printers/"+data["code"])
+
+
+
+def audio(event):
+    if(event.data):
+        run_subprocess(["amixer","set","Master",str(event.data)+"%"])
+        run_subprocess(["sudo","alsactl","store"])
+
+def mic(event):
+    if(event.data):
+        run_subprocess(["amixer","set","Capture",str(event.data)+"%"])
+        run_subprocess(["sudo","alsactl","store"])
+
+
+
+listners=[]
+
+while 1:
+    try:
+        for listner in listners:
+            listner.close()
+        listners=[]
+        listner=printer_ref.child("audio").listen(audio)
+        listners.append(listner)
+        listner1=printer_ref.child("mic").listen(mic)
+        listners.append(listner1)
+        while 1:
+            time.sleep(10)
+            if(network_error):
+                time.sleep(10)
+                raise Exception("Network error")
+    except Exception as e:
+        logger.error(str(e))
+        time.sleep(10)

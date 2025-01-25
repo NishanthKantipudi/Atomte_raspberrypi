@@ -1,0 +1,1 @@
+$(pwd)/../venv/bin/python3 $(pwd)/device_manager/devicecontrol.py

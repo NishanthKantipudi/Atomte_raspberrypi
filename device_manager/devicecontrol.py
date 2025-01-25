@@ -66,7 +66,7 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 def audio(event):
     if(event.data):
-        run_subprocess(["pactl","set-sink-volume","alsa_output.usb-C-Media_Electronics_Inc._USB_PnP_Sound_Device-00.analog-stereo-output",str(event.data)+"%"])
+        run_subprocess(["sudo","pactl","set-sink-volume","alsa_output.usb-C-Media_Electronics_Inc._USB_PnP_Sound_Device-00.analog-stereo-output",str(event.data)+"%"])
         
 
 def mic(event):

@@ -63,12 +63,8 @@ server_thread1.start()
 printer_ref = db.reference("Printers/"+data["code"])
 
 def set_volume(volume_percentage):
-    """
-    Sets the volume to the specified percentage (0-100%).
-    """
     try:
-        subprocess.run(["amixer", "sset", "Master", f"{volume_percentage}%"], check=True)
-        print(f"Volume set to {volume_percentage}%")
+        os.system(f"amixer set Master {volume_percentage}%")
     except subprocess.CalledProcessError as e:
         print(f"Failed to set volume: {e}")
 
@@ -78,8 +74,7 @@ def audio(event):
 
 def mic(event):
     if(event.data):
-        run_subprocess(["sudo","amixer","set","Capture",str(event.data)+"%"])
-        run_subprocess(["sudo","alsactl","store"])
+        os.system(f"amixer set Capture {volume_percentage}%")
 
 
 

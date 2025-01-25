@@ -15,7 +15,19 @@ cwd = os.getcwd()
 
 
 
-servo1=gpiozero.Servo(12, pin_factory=RPiGPIOFactory())
+SERVO_PIN = 12 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+pwm = GPIO.PWM(SERVO_PIN, 50) 
+pwm.start(0)  
+def set_angle(angle):
+    duty = 2 + (angle / 18)
+    GPIO.output(SERVO_PIN, True)
+    pwm.ChangeDutyCycle(duty)
+    time.sleep(0.5) 
+    GPIO.output(SERVO_PIN, False)
+    pwm.ChangeDutyCycle(0)
+
 
 
 
@@ -65,9 +77,9 @@ def power(event):
 def lock1(event):
     if(event.data):
         if(event.data):
-            servo1.min()
+            set_angle(90)
             time.sleep(1)
-            servo1.max()
+            set_angle(0)
             time.sleep(1)    
 
 def lock2(event):

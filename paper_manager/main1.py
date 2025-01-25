@@ -2,7 +2,7 @@ import gpiozero
 
 import time
 import json,os
-import threading
+import threading,socket
 import subprocess
 import firebase_admin
 from firebase_admin import credentials, db,storage

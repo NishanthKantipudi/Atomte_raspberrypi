@@ -66,9 +66,8 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 def audio(event):
     if(event.data):
-        run_subprocess(["sudo","amixer","set","Master",str(event.data)+"%"])
-        run_command("sudo amixer set Master "+str(event.data)+"%", cwd+"/device_manager/devicecontrol1.log")
-        run_subprocess(["sudo","alsactl","store"])
+        run_subprocess(["pactl","set-sink-volume","alsa_output.usb-C-Media_Electronics_Inc._USB_PnP_Sound_Device-00.analog-stereo-output",str(event.data)+"%"])
+        
 
 def mic(event):
     if(event.data):

@@ -1,6 +1,7 @@
 import gpiozero
 from gpiozero.pins.rpigpio import RPiGPIOFactory
 import pigpio
+import RPi.GPIO as GPIO
 
 import time
 import json,os

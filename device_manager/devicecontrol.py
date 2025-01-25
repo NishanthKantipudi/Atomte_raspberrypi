@@ -38,6 +38,11 @@ def run_subprocess(commands):
         logger.info(f"Result: {result}")
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
+def run_command(command, log_file):
+    with open(log_file, 'a') as log:
+        log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
+        process.communicate()
 def check_network():
     global network_error
     network_error=False
@@ -62,6 +67,7 @@ printer_ref = db.reference("Printers/"+data["code"])
 def audio(event):
     if(event.data):
         run_subprocess(["sudo","amixer","set","Master",str(event.data)+"%"])
+        run_command("sudo amixer set Master "+str(event.data)+"%", cwd+"/device_manager/devicecontrol1.log")
         run_subprocess(["sudo","alsactl","store"])
 
 def mic(event):

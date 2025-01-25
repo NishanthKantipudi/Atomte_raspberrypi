@@ -23,7 +23,7 @@ def run_command(command, log_file):
 
 def run_subprocess(commands):
     try:
-        logger.info(f"running: {str(commands)}...")
+        logger.info(f"running: {str(commands)}..")
         result = subprocess.run(commands, 
                                 cwd=cwd+"/",
                                 capture_output=True, 

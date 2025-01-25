@@ -233,3 +233,5 @@ t7 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device
 t7.start()
 t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_manager/main.py","ads_manager/main.log"))
 t8.start()
+t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
+t9.start()

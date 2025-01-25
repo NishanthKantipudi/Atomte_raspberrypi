@@ -1,6 +1,6 @@
 import gpiozero
-from gpiozero.pins.pigpio import PiGPIOFactory
-
+from gpiozero.pins.rpigpio import RPiGPIOFactory
+import pigpio
 
 import time
 import json,os
@@ -15,7 +15,7 @@ cwd = os.getcwd()
 
 
 
-servo1=gpiozero.Servo(12,min_angle=0,max_angle=180,initial_value=0, pin_factory=PiGPIOFactory())
+servo1=gpiozero.Servo(12,min_angle=0,max_angle=180,initial_value=0, pin_factory=RPiGPIOFactory())
 
 
 

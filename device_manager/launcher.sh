@@ -1,1 +1,1 @@
-$(pwd)/../venv/bin/python3 $(pwd)/device_manager/devicecontrol.py
+/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py

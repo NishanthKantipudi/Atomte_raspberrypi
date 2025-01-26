@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, db,storage
 import logging
 
-
+env = os.environ.copy()
 os.environ["DISPLAY"] = ":0"
 os.environ["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
 os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"

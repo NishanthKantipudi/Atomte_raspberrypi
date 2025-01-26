@@ -13,6 +13,10 @@ def getcwd():
 cwd=getcwd()
 
 env = os.environ.copy()
+env["DISPLAY"] = ":0"
+env["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
+env["XDG_RUNTIME_DIR"] = "/run/user/1000"
+
 
 def run_command(command, log_file):
     with open(log_file, 'a') as log:
@@ -242,9 +246,9 @@ t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_ma
 t8.start()
 t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
 t9.start()
-# t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
-# t10.start()
-os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
+t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
+t10.start()
+# os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
 
 run_subprocess(["/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python","/home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py"])
 threads=[]

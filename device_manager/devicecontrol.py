@@ -10,12 +10,14 @@ env = os.environ.copy()
 os.environ["DISPLAY"] = ":0"
 os.environ["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
 os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
-def getcwd():
-    cwd = os.getcwd()
-    os.chdir(cwd+"/Atomte/Atomte_raspberrypi")
-    cwd = os.getcwd()
-    return cwd
-cwd=getcwd()
+# def getcwd():
+#     cwd = os.getcwd()
+#     os.chdir(cwd+"/Atomte/Atomte_raspberrypi")
+#     cwd = os.getcwd()
+#     return cwd
+# cwd=getcwd()
+
+cwd = os.getcwd()
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)

@@ -212,6 +212,7 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     if(data["type"] == "display"):
         run_web(['npm', 'install'],'/../atomte/')
         run_web(['npm','run','build'],'/../atomte/')
+        run_subprocess(["sudo apt install portaudio19-dev"])
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 

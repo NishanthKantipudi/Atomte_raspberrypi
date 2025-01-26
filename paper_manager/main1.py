@@ -20,7 +20,7 @@ SERVO_PIN = 12
 SERVO_PIN1 = 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SERVO_PIN, GPIO.OUT)
-GPIO.setup(6, GPIO.OUT)
+GPIO.setup(14, GPIO.OUT)
 pwm = GPIO.PWM(SERVO_PIN, 50) 
 pwm.start(0)  
 def set_angle(angle):
@@ -86,10 +86,10 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 
 def power(event):
-    if(event.data==True):
-        GPIO.output(6, GPIO.HIGH)
+    if(event.data!=True):
+        GPIO.output(14, GPIO.HIGH)
     else:
-        GPIO.output(6, GPIO.LOW)
+        GPIO.output(14, GPIO.LOW)
 
 def lock1(event):
    

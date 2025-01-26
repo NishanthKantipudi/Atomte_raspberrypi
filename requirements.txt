@@ -19,3 +19,5 @@ firebase-admin
 gpiozero
 lgpio
 pigpio
+rpi-lgpio
+pyaudio

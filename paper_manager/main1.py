@@ -86,13 +86,13 @@ printer_ref = db.reference("Printers/"+data["code"])
 
 
 def power(event):
-    if(event.data):
+    if(event.data==True):
         GPIO.output(6, GPIO.HIGH)
     else:
         GPIO.output(6, GPIO.LOW)
 
 def lock1(event):
-    if(event.data):
+   
         if(event.data==True):
             set_angle(105)
             time.sleep(1)
@@ -101,7 +101,7 @@ def lock1(event):
             time.sleep(1)    
 
 def lock2(event):
-    if(event.data):
+ 
         if(event.data==True):
             set_angle1(105)
             time.sleep(1)

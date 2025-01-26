@@ -8,6 +8,8 @@ import logging
 def getcwd():
     cwd = os.getcwd()
     os.chdir(cwd+"/Atomte/Atomte_raspberrypi")
+    cwd = os.getcwd()
+    return cwd
 cwd=getcwd()
 def read_json_file(file_path):
     with open(file_path, 'r') as file:

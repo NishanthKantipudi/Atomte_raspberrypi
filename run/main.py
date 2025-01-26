@@ -12,11 +12,12 @@ def getcwd():
     return cwd
 cwd=getcwd()
 
+env = os.environ.copy()
 
 def run_command(command, log_file):
     with open(log_file, 'a') as log:
         log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
-        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT,env=env)
         process.communicate()
 
 
@@ -27,7 +28,8 @@ def run_subprocess(commands):
         result = subprocess.run(commands, 
                                 cwd=cwd+"/",
                                 capture_output=True, 
-                                text=True)
+                                text=True,
+                                env=env)
         logger.info(f"Result: {result}")
     except Exception as e:
         logger.error(f"An error occurred during git pull: {e}")
@@ -240,9 +242,9 @@ t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_ma
 t8.start()
 t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
 t9.start()
-t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
-t10.start()
-
+# t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
+# t10.start()
+run_subprocess([cwd+"../venv/bin/python3","./device_manager/launcher.sh"])
 threads=[]
 threads.append(t1)
 threads.append(t2)

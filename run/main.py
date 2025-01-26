@@ -244,6 +244,8 @@ t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_
 t9.start()
 # t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
 # t10.start()
+os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
+
 run_subprocess(["/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python","/home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py"])
 threads=[]
 threads.append(t1)

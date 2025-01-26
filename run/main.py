@@ -100,13 +100,14 @@ if(data["setup"] == False):
     db.reference('/').child("Printers").child(data["code"]).child("audio").set(50)
     db.reference('/').child("Printers").child(data["code"]).child("mic").set(50)
     db.reference('/').child("Printers").child(data["code"]).child("secrets").set(data)
+    with open(cwd+"/../../secrets/details.json", "w") as f:
+        data["setup"] = True
+        json.dump(data, f)
     if(data["type"] == "display"):
         run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
         run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
         run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
-    with open(cwd+"/../../secrets/details.json", "w") as f:
-        data["setup"] = True
-        json.dump(data, f)
+    
 else:
     while 1:
         try:

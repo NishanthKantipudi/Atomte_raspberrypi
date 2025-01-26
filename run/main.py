@@ -244,7 +244,7 @@ t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_
 t9.start()
 # t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
 # t10.start()
-run_subprocess(["../venv/bin/python3","./device_manager/launcher.sh"])
+run_subprocess([cwd+"/../venv/bin/python3",cwd+"/device_manager/launcher.sh"])
 threads=[]
 threads.append(t1)
 threads.append(t2)

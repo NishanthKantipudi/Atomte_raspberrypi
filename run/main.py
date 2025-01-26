@@ -12,11 +12,6 @@ def getcwd():
     return cwd
 cwd=getcwd()
 
-env = os.environ.copy()
-env["DISPLAY"] = ":0"
-env["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
-env["XDG_RUNTIME_DIR"] = "/run/user/1000"
-
 
 def run_command(command, log_file):
     with open(log_file, 'a') as log:

@@ -5,9 +5,10 @@ import subprocess
 import firebase_admin
 from firebase_admin import credentials, db,storage
 import logging
-cwd = os.getcwd()
-
-
+def getcwd():
+    cwd = os.getcwd()
+    os.chdir(cwd+"/Atomte/Atomte_raspberrypi")
+cwd=getcwd()
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)

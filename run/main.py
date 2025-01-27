@@ -12,6 +12,11 @@ def getcwd():
     return cwd
 cwd=getcwd()
 
+env = os.environ.copy()
+env["DISPLAY"] = ":0"
+env["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
+env["XDG_RUNTIME_DIR"] = "/run/user/1000"
+
 
 def run_command(command, log_file):
     with open(log_file, 'a') as log:
@@ -101,6 +106,7 @@ if(data["setup"] == False):
     if(data["type"] == "display"):
         run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
         run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
+        run_subprocess(["chmod","+x",cwd+"/../device_manager/launcher.sh"])
         run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
     
 else:
@@ -247,7 +253,6 @@ t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh",
 t10.start()
 # os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
 
-run_subprocess(["/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python","/home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py"])
 threads=[]
 threads.append(t1)
 threads.append(t2)

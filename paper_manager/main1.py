@@ -97,7 +97,7 @@ def lock1(event):
             set_angle(105)
             time.sleep(1)
         else:
-            set_angle(15)
+            set_angle(20)
             time.sleep(1)    
 
 def lock2(event):
@@ -106,7 +106,7 @@ def lock2(event):
             set_angle1(105)
             time.sleep(1)
         else:
-            set_angle1(15)
+            set_angle1(20)
             time.sleep(1) 
 
 

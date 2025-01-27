@@ -107,6 +107,7 @@ if(data["setup"] == False):
         run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png","/usr/share/plymouth/themes/pix/splash.png"])
         run_subprocess(["chmod","+x",cwd+"/orientation.sh"])
         run_subprocess(["chmod","+x",cwd+"/../device_manager/launcher.sh"])
+        run_subprocess(["sudo","chmod","+x",cwd+"/../device_manager/launcher.sh"])
         run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
     
 else:
@@ -214,7 +215,6 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     if(data["type"] == "display"):
         run_web(['npm', 'install'],'/../atomte/')
         run_web(['npm','run','build'],'/../atomte/')
-        run_subprocess(["sudo","chmod","+x",cwd+"/../device_manager/launcher.sh"])
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 
@@ -249,7 +249,7 @@ t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_ma
 t8.start()
 t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
 t9.start()
-t10 = threading.Thread(target=run_command, args=("./device_manager/launcher.sh","device_manager/devicecontrol.log"),daemon=True)
+t10 = threading.Thread(target=run_command, args=("./device_manager/devicecontrol.py","device_manager/devicecontrol.log"),daemon=True)
 t10.start()
 # os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
 

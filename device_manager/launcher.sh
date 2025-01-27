@@ -1,1 +1,1 @@
-/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py
+/../venv/bin/python /device_manager/devicecontrol.py

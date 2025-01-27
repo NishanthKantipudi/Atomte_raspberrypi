@@ -249,7 +249,7 @@ t8 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 ads_ma
 t8.start()
 t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_manager/main1.py","paper_manager/main1.log"))
 t9.start()
-t10 = threading.Thread(target=run_command, args=("./device_manager/devicecontrol.py","device_manager/devicecontrol.log"),daemon=True)
+t10 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/devicecontrol.py","device_manager/devicecontrol.log"),daemon=True)
 t10.start()
 # os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
 

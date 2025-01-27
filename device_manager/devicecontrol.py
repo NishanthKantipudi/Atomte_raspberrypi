@@ -18,6 +18,7 @@ os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
 # cwd=getcwd()
 
 cwd = os.getcwd()
+os.system("amixer -c 2 set 'Speaker' 100%")
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)

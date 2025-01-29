@@ -18,7 +18,7 @@ export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 export WAYLAND_DISPLAY="wayland-0"
 
 # Rotate the display using wlr-randr
-/usr/bin/wlr-randr --output HDMI-A-1 --transform 90
+/usr/bin/wlr-randr --output HDMI-A-1 --transform 270
 EOF
 
 

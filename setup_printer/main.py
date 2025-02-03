@@ -187,19 +187,17 @@ def setup(snap):
                     props = get_printer_properties(db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"))
 
                     props = {
-                        "paper_size": [
-                            {"name": "a4", "cost": 0, "value": 0, "pc": 1},
+                        "media": [
+                            {"name": "A4", "cost": 1, "value": 0, "pc": 1},
                             {"name": "letter", "cost": 0, "value": 0, "pc": 1},
                             {"name": "legal", "cost": 0, "value": 0, "pc": 1},
                             {"name": "a3", "cost": 0, "value": 1, "pc": 1},
                             {"name": "tabloid", "cost": 0, "value": 0, "pc": 1},
                             {"name": "custom_size", "cost": 0, "value": 0, "pc": 1}
                         ],
-                        "orientation": [
-                            {"name": "portrait", "cost": 0, "value": 3, "pc": 1},
-                            {"name": "landscape", "cost": 0, "value": 4, "pc": 1},
-                            {"name": "reverse_portrait", "cost": 0, "value": 5, "pc": 1},
-                            {"name": "reverse_landscape", "cost": 0, "value": 6, "pc": 1}
+                        "orientation-requested": [
+                            {"name": "3", "cost": 1, "value": 0, "pc": 1},
+                            {"name": "4", "cost": 1, "value": 0, "pc": 1}
                         ],
                         "print_quality": [
                             {"name": "draft", "cost": 0, "value": 1, "pc": 1},

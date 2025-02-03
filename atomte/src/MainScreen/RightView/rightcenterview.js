@@ -1,25 +1,34 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "309", mute = true }) => {
+  const videoRef = useRef(null);
 
-const VideoPlayer = ({ videoFile="./ad1.mp4", width = "640", height = "309" }) => {
+  useEffect(() => {
+    videoRef.current.play();
+    videoRef.current.muted = mute;
+  }, []);
+
+ 
+
   return (
     <div>
+      
       <video
-        src={videoFile}
+        ref={videoRef}
+        src={window.location.origin + videoFile}
         width={width}
         height={height}
-        autoPlay
-        loop
         muted
-        preload="auto" // Preload video data
+        loop
+        controls
+        preload="auto"
         style={{
-            display: "block",
-            margin: "0 auto",
-            objectFit: "cover",
+          display: "block",
+          margin: "0 auto",
+          objectFit: "cover",
         }}
-        >
-      Your browser does not support the video tag.
-    </video>
-
+      >
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 };

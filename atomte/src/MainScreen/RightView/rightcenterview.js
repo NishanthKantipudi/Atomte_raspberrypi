@@ -1,14 +1,11 @@
 import React, { useEffect, useRef } from "react";
-const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "309", mute = true }) => {
+const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "419", mute = true }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
     videoRef.current.play();
     videoRef.current.muted = mute;
   }, []);
-
- 
-
   return (
     <div>
       

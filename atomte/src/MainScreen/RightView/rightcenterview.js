@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "419", mute = true }) => {
+const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400", mute = true }) => {
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(mute);
 

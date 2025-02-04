@@ -15,7 +15,7 @@ const DetailsCard = ({code, name, description, properties, status, statusMessage
       <div className="details-card">
         <h2 className="name">{name}({code})</h2>
         <p className="description">{description}</p>
-        <ul className="print-properties">
+        {/* <ul className="print-properties">
         {Object.entries(properties).map(([category, options]) => (
         <div key={category} className="property-category">
           <h3 className="category-name">{category}</h3>
@@ -29,7 +29,7 @@ const DetailsCard = ({code, name, description, properties, status, statusMessage
           </div>
         </div>
       ))}
-        </ul>
+        </ul> */}
         <div className={`status ${status.toLowerCase()=="active"?"active":"inactive"}`}>
           <span className="status-indicator"></span>
           {status}

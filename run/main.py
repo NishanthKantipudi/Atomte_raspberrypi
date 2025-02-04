@@ -209,7 +209,11 @@ def pull_repo():
     run_subprocess(["chmod","600",cwd+"/../ssh_key"])
     add_ssh_key_with_passphrase(cwd+"/../ssh_key", "8985")
     run_subprocess(["git","stash"])
-    run_subprocess(["git", "pull", "--rebase", "origin", "master"])
+    # run_subprocess(["git", "pull", "--rebase", "origin", "master"])
+    subprocess.run(["git", "pull", "--rebase", "origin", "master"], 
+                        cwd=cwd+"/",
+                        capture_output=True, 
+                        text=True)
 if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
     pull_repo()
     install_modules()

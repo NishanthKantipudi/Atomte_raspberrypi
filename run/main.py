@@ -252,6 +252,8 @@ t9 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 paper_
 t9.start()
 t10 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 device_manager/devicecontrol.py","device_manager/devicecontrol.log"),daemon=True)
 t10.start()
+t11 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 run/playvideo.py","run/playvideo.log"))
+t11.start()
 # os.system("/home/atomte100016/Atomte/Atomte_raspberrypi/../venv/bin/python /home/atomte100016/Atomte/Atomte_raspberrypi/device_manager/devicecontrol.py")
 
 threads=[]

@@ -1,43 +1,42 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "419" }) => {
+const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "419", mute = true }) => {
   const videoRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const sourceRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(mute);
 
   useEffect(() => {
     const video = videoRef.current;
 
-    // Step 1: Start muted (autoplay allowed)
-    video.muted = true;
-    video.play().catch((error) => console.log("Muted autoplay failed:", error));
-
-    // Step 2: Create an AudioContext
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    sourceRef.current = audioContextRef.current.createMediaElementSource(video);
-    sourceRef.current.connect(audioContextRef.current.destination);
-
-    // Step 3: Unmute video after a delay
-    setTimeout(() => {
-      audioContextRef.current.resume().then(() => {
-        video.muted = false;
-        video.play().catch((error) => console.log("Unmuted autoplay failed:", error));
+    // Try to play the video when the component mounts
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        console.log("Autoplay blocked, waiting for user interaction:", error);
       });
-    }, 1000); 
-
+    }
   }, []);
 
+  // Unmute when the user interacts
+  const handleUnmute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      setIsMuted(false);
+      videoRef.current.play(); // Restart playback after unmuting
+    }
+  };
+
   return (
-    <div>
+    <div onClick={handleUnmute} style={{ cursor: "pointer" }}>
       <video
         ref={videoRef}
         src={window.location.origin + videoFile}
         width={width}
         height={height}
+        muted={isMuted}
         loop
         autoPlay
+        playsInline // Important for iOS devices
         preload="auto"
-        playsInline
         style={{
           display: "block",
           margin: "0 auto",

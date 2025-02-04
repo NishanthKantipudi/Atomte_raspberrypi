@@ -21,3 +21,4 @@ lgpio
 pigpio
 rpi-lgpio
 pyaudio
+pyautogui

@@ -206,18 +206,6 @@ if(data["type"] == "display"):
 #     t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
 #     t_r.start()
 
-options = Options()
-options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
-options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
-options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
-options.add_argument("--disable-infobars")  # Disable infobars
-options.add_argument("--kiosk")  # Enable kiosk mode
-# Set up WebDriver
-service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
-driver = webdriver.Chrome(service=service, options=options)
-
-# Open the React website
-driver.get("http://localhost:3000/?code="+data["code"])  # 
 
 
 def pull_repo():
@@ -239,6 +227,18 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 
+options = Options()
+options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
+options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
+options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
+options.add_argument("--disable-infobars")  # Disable infobars
+options.add_argument("--kiosk")  # Enable kiosk mode
+# Set up WebDriver
+service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
+driver = webdriver.Chrome(service=service, options=options)
+
+# Open the React website
+driver.get("http://localhost:3000/?code="+data["code"])  # 
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))
 t2.start()

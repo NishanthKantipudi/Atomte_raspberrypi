@@ -1,5 +1,8 @@
 import os,logging,time,subprocess,socket,threading
 import importlib.util
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -195,13 +198,26 @@ if(data["type"] == "display"):
     web_t = threading.Thread(target=run_web_tread)
     web_t.start()
     time.sleep(1)
-web_command={
-        "command": cwd + "/start_website.sh",
-        "log_file": cwd + "/start_website.log"
-    }
-if(data["type"] == "display"):
-    t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
-    t_r.start()
+# web_command={
+#         "command": cwd + "/start_website.sh",
+#         "log_file": cwd + "/start_website.log"
+#     }
+# if(data["type"] == "display"):
+#     t_r = threading.Thread(target=run_command, args=(web_command['command'], web_command['log_file']))
+#     t_r.start()
+
+options = Options()
+options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
+options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
+options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
+options.add_argument("--disable-infobars")  # Disable infobars
+options.add_argument("--kiosk")  # Enable kiosk mode
+# Set up WebDriver
+service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
+driver = webdriver.Chrome(service=service, options=options)
+
+# Open the React website
+driver.get("http://localhost:3000/?code="+data["code"])  # 
 
 
 def pull_repo():

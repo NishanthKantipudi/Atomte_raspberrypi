@@ -15,12 +15,22 @@ const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400"
       });
     }
   }, []);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = true; // Ensure it's muted before playing
+      video.play().catch((error) => {
+        console.log("Autoplay blocked:", error);
+      });
+    }
+  }, []);
+  
 
   // Unmute when the user interacts
   const handleUnmute = () => {
     if (videoRef.current) {
-      videoRef.current.muted = false;
-      setIsMuted(false);
+      videoRef.current.muted = mute;
+      setIsMuted(mute);
       videoRef.current.play(); // Restart playback after unmuting
     }
   };
@@ -32,6 +42,7 @@ const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400"
         src={window.location.origin + videoFile}
         width={width}
         height={height}
+        crossOrigin="anonymous"
         muted={isMuted}
         loop
         autoPlay

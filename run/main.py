@@ -227,11 +227,11 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
 
 # os.system(f"{cwd}/../../venv/bin/python {cwd}/startweb.py >> {cwd}/startweb.log 2>&1")
 with open(f"{cwd}/startweb.log", "a") as log_file:
-    subprocess.run(["sudo -E ",f"{cwd}/../../venv/bin/python", f"{cwd}/startweb.py"], 
-                   cwd=cwd+"/",
-                   stdout=log_file, 
-                   stderr=log_file, 
-                   text=True)
+    subprocess.run(["sudo", "-E", f"{cwd}/../../venv/bin/python", f"{cwd}/startweb.py"], 
+               cwd=cwd+"/",
+               capture_output=True, 
+               text=True)
+
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))
 t2.start()

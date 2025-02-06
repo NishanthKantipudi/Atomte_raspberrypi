@@ -10,7 +10,7 @@ def getcwd():
 cwd=getcwd()
 
 import json
-with open(cwd+"/../../secrets/details.json", "r") as f:
+with open(cwd+"/../secrets/details.json", "r") as f:
     data = json.load(f)
 options = Options()
 options.add_argument("--no-sandbox")

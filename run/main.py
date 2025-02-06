@@ -232,7 +232,7 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
 #                capture_output=True, 
 #                text=True,env=env)
 
-w_t = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 run/startweb.py","run/startweb.log"))
+w_t = threading.Thread(target=run_command, args=("../venv/bin/python3 run/startweb.py","run/startweb.log"))
 w_t.start()
 
 

@@ -230,7 +230,7 @@ with open(f"{cwd}/startweb.log", "a") as log_file:
     subprocess.run([f"{cwd}/../../venv/bin/python", f"{cwd}/startweb.py"], 
                cwd=cwd+"/",
                capture_output=True, 
-               text=True)
+               text=True,env=env)
 
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))

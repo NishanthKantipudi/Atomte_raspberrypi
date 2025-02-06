@@ -227,7 +227,7 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
 
 # os.system(f"{cwd}/../../venv/bin/python {cwd}/startweb.py >> {cwd}/startweb.log 2>&1")
 with open(f"{cwd}/startweb.log", "a") as log_file:
-    subprocess.run(["sudo", "-E", f"{cwd}/../../venv/bin/python", f"{cwd}/startweb.py"], 
+    subprocess.run([f"{cwd}/../../venv/bin/python", f"{cwd}/startweb.py"], 
                cwd=cwd+"/",
                capture_output=True, 
                text=True)

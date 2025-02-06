@@ -2,8 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os
-import time
-os.environ["DISPLAY"] = ":0"  # Ensures GUI apps (like Chrome) work
+import time# Ensures GUI apps (like Chrome) work
   # Uses the correct user session
 def getcwd():
     cwd = os.getcwd()
@@ -13,7 +12,6 @@ cwd=getcwd()
 import json
 with open(cwd+"/../../secrets/details.json", "r") as f:
     data = json.load(f)
-os.environ["XAUTHORITY"] = f"/home/atomte{data['code']}/.Xauthority"
 options = Options()
 options.add_argument("--no-sandbox")
 options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound

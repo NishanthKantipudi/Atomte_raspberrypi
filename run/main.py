@@ -225,7 +225,6 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 
-os.system(cwd+"/../../venv/bin/python "+cwd+"/startweb.py")
 os.system(f"{cwd}/../../venv/bin/python {cwd}/startweb.py >> {cwd}/startweb.log 2>&1")
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))

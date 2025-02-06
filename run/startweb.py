@@ -20,6 +20,7 @@ options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent
 options.add_argument("--allow-running-insecure-content")  # Allow mixed content
 options.add_argument("--disable-dev-shm-usage")  # Ignore certificate errors
 options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
+options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--disable-infobars")  # Disable infobars
 options.add_argument("--kiosk")  # Enable kiosk mode
 # Set up WebDriver

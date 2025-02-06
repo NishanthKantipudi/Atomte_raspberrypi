@@ -1,8 +1,6 @@
 import os,logging,time,subprocess,socket,threading
 import importlib.util
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -227,18 +225,8 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
     db.reference('/').child("Printers").child(data["code"]).child("updates").set(False)
     run_subprocess(["sudo","reboot"])
 
-options = Options()
-options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
-options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
-options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
-options.add_argument("--disable-infobars")  # Disable infobars
-options.add_argument("--kiosk")  # Enable kiosk mode
-# Set up WebDriver
-service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
-driver = webdriver.Chrome(service=service, options=options)
-
-# Open the React website
-driver.get("http://localhost:3000/?code="+data["code"])  # 
+os.system(cwd+"/../../venv/bin/python "+cwd+"/startweb.py")
+os.system(f"{cwd}/../../venv/bin/python {cwd}/startweb.py >> {cwd}/startweb.log 2>&1")
 
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))
 t2.start()

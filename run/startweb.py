@@ -23,6 +23,9 @@ options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhos
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--disable-infobars")  # Disable infobars
 options.add_argument("--kiosk")  # Enable kiosk mode
+options.add_experimental_option("useAutomationExtension", False)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+
 # Set up WebDriver
 service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
 driver = webdriver.Chrome(service=service, options=options)

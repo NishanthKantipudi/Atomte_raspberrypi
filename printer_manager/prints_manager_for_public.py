@@ -196,7 +196,8 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
             logger.error(f"Error Status: {errorStatus.prettyPrint()} at {errorIndex}")
             raise Exception("Error querying SNMP data")
         else:
-            return varBinds[0][1].prettyPrint()
+            return "No data" if not varBinds else " | ".join(vb[1].prettyPrint() for vb in varBinds)
+
     except Exception as e:
         logger.error(str(e))
         raise
@@ -449,7 +450,7 @@ def print_file_without_snmp(user, file):
         logger.error(f"Error downloading file: {e}")
         raise Exception("Error downloading file")
     options=db.reference(f'users/{user}/printsdetails/{file}').child("properties").get()
-    options = {key.replace('_', '-'): value for key, value in options.items()}
+    options = {key: value.split(" ")[0] for key, value in options.items()}
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:
@@ -496,6 +497,7 @@ def print_file_with_snmp(user, file):
         logger.error(f"Error downloading file: {e}")
         raise Exception("Error downloading file")
     options=db.reference(f'users/{user}/printsdetails/{file}').child("properties").get()
+    options = {key: value.split(" ")[0] for key, value in options.items()}
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:

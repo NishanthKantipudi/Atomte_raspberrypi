@@ -188,62 +188,63 @@ def setup(snap):
 
                     props = {
                         "media": [
-                            {"name": "A4", "cost": 1, "value": 0, "pc": 1},
-                            {"name": "letter", "cost": 0, "value": 0, "pc": 1},
-                            {"name": "legal", "cost": 0, "value": 0, "pc": 1},
-                            {"name": "a3", "cost": 0, "value": 1, "pc": 1},
-                            {"name": "tabloid", "cost": 0, "value": 0, "pc": 1},
-                            {"name": "custom_size", "cost": 0, "value": 0, "pc": 1}
+                            {"name": "iso_a4_210x297mm A4", "value": 0, "cost": 1, "pc": 1},
+                            {"name": "na_letter_8.5x11in", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "na_legal_8.5x14in", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "iso_a3_297x420mm", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "na_tabloid_11x17in", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "custom", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "orientation-requested": [
-                            {"name": "3", "cost": 1, "value": 0, "pc": 1},
-                            {"name": "4", "cost": 1, "value": 0, "pc": 1}
+                            {"name": "3 potrait", "value": 0, "cost": 1, "pc": 1},
+                            {"name": "4 landscape", "value": 0, "cost": 1, "pc": 1}
                         ],
                         "print_quality": [
-                            {"name": "draft", "cost": 0, "value": 1, "pc": 1},
-                            {"name": "normal", "cost": 0, "value": 2, "pc": 1},
-                            {"name": "high", "cost": 0, "value": 3, "pc": 1},
-                            {"name": "photo", "cost": 0, "value": 4, "pc": 1}
+                            {"name": "draft", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "normal", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "high", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "photo", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "color_mode": [
-                            {"name": "color", "cost": 0, "value": 2, "pc": 1},
-                            {"name": "grayscale", "cost": 0, "value": 0, "pc": 1},
-                            {"name": "black_and_white", "cost": 0, "value": 0, "pc": 1}
+                            {"name": "color", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "monochrome", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "black_and_white", "value": 0, "cost": 1, "pc": 1}
                         ],
                         "sides": [
-                            {"name": "one-sided", "cost": 0, "value": "one-sided", "pc": 1},
-                            {"name": "two-sided-long-edge", "cost": 0, "value": "two-sided-long-edge", "pc": 1},
-                            {"name": "two-sided-short-edge", "cost": 0, "value": "two-sided-short-edge", "pc": 1}
+                            {"name": "one-sided", "value": 1.5, "cost": 1.5, "pc": 1},
+                            {"name": "two-sided-long-edge", "value": 2, "cost": 2, "pc": 0.5},
+                            {"name": "two-sided-short-edge", "value": 2, "cost": 2, "pc": 0.5}
                         ],
                         "number_up": [
-                            {"name": "1", "cost": 0, "value": 1, "pc": 1},
-                            {"name": "2", "cost": 0, "value": 2, "pc": 1},
-                            {"name": "4", "cost": 0, "value": 4, "pc": 1},
-                            {"name": "6", "cost": 0, "value": 6, "pc": 1},
-                            {"name": "9", "cost": 0, "value": 9, "pc": 1},
-                            {"name": "16", "cost": 0, "value": 16, "pc": 1}
+                            {"name": "1 1_page_per_side", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "2 2_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "4 4_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "6 6_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "9 9_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "16 16_pages_per_side", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "printer_resolution": [
-                            {"name": "300x300dpi", "cost": 0, "value": "300x300dpi", "pc": 1},
-                            {"name": "600x600dpi", "cost": 0, "value": "600x600dpi", "pc": 1},
-                            {"name": "1200x1200dpi", "cost": 0, "value": "1200x1200dpi", "pc": 1}
+                            {"name": "300x300dpi", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "600x600dpi", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "1200x1200dpi", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "output_bin": [
-                            {"name": "face-down", "cost": 0, "value": "face-down", "pc": 1},
-                            {"name": "face-up", "cost": 0, "value": "face-up", "pc": 1}
+                            {"name": "face-down", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "face-up", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "finishings": [
-                            {"name": "none", "cost": 0, "value": 3, "pc": 1},
-                            {"name": "staple", "cost": 0, "value": 4, "pc": 1},
-                            {"name": "punch", "cost": 0, "value": 5, "pc": 1},
-                            {"name": "bind", "cost": 0, "value": 6, "pc": 1}
+                            {"name": "3", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "4", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "5", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "6", "value": 0, "cost": 0, "pc": 1}
                         ],
                         "media_margins": [
-                            {"name": "default", "cost": 0, "value": 0, "pc": 1},
-                            {"name": "narrow", "cost": 0, "value": 635, "pc": 1},
-                            {"name": "wide", "cost": 0, "value": 1270, "pc": 1}
+                            {"name": "0", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "635", "value": 0, "cost": 0, "pc": 1},
+                            {"name": "1270", "value": 0, "cost": 0, "pc": 1}
                         ]
                     }
+
                     for category in props.values():
                         for item in category:
                             item["value"] = item["cost"]

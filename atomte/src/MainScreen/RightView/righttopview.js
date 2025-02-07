@@ -90,9 +90,10 @@ const RightTopView = ({code}) => {
                     const files=curr.files.split(",")
                     const currentprintingfile=curr.printing
                     const currentprintingfile1=curr.done_printing+1
-                    get(ref(getDatabase(app), 'users/'+user+'/details/name')).then((snapshot) => {
-                        setUserPrintdata(new userprintdata(snapshot.val(),files.length,currentprintingfile-1))
-                        setUserPrintdata1(new userprintdata(snapshot.val(),files.length,currentprintingfile1-1))
+                    get(ref(getDatabase(app), 'users/'+user+'/details')).then((snapshot) => {
+
+                        setUserPrintdata(new userprintdata(snapshot.child("name").val(),snapshot.child("atomte_id").val(),files.length,currentprintingfile-1))
+                        setUserPrintdata1(new userprintdata(snapshot.child("name").val(),snapshot.child("atomte_id").val(),files.length,currentprintingfile1-1))
                     })
                     set(ref(getDatabase(app), 'Printers/'+code+"/nowprint/id"),Object.keys(data)[0])
                     setFileData(null)
@@ -152,7 +153,7 @@ const RightTopView = ({code}) => {
                 <div className="queue-count">Total {queuecount} members are in queue</div>
                 <hr></hr>
                 <div className="print-details">
-                    <div className="username">Hello, {userPrintdata.username}</div>
+                    <div className="username">Hello, {userPrintdata.username} ({userPrintdata.id})</div>
                     <hr></hr>
                     <h3>Downloaded files({userPrintdata.totaldone+1+"/"+userPrintdata.totalfiles})</h3>
                     <div className="file-details">
@@ -211,8 +212,9 @@ const RightTopView = ({code}) => {
 };
 
 class userprintdata{
-    constructor(username,totalfiles,totaldone) {
+    constructor(username,id,totalfiles,totaldone) {
         this.username = username;
+        this.id = id;
         this.totalfiles = totalfiles;
         this.totaldone = totaldone;
         this.left = this.totalfiles-this.totaldone;

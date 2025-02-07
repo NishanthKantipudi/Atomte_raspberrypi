@@ -177,27 +177,67 @@ server_thread2.start()
 
 async def query_snmp_data(snmpDispatcher, oid, ip):
     try:
-        async def snmp_query():
+        # First try to get the specific OID value
+        async def get_specific():
             return await get_cmd(
                 snmpDispatcher,
                 CommunityData("public", mpModel=0),
-                await UdpTransportTarget.create((ip, 161), timeout=7, retries=2),
+                await UdpTransportTarget.create((ip, 161), timeout=7, retries=3),
                 ObjectType(ObjectIdentity(oid))
             )
-        try:
-            iterator = await asyncio.wait_for(snmp_query(), timeout=7)
-        except asyncio.TimeoutError:
-            raise Exception("SNMP query timed out")
-        errorIndication, errorStatus, errorIndex, varBinds = iterator
-        if errorIndication:
-            logger.error(f"SNMP Error: {errorIndication}")
-            raise Exception("Error querying SNMP data")
-        elif errorStatus:
-            logger.error(f"Error Status: {errorStatus.prettyPrint()} at {errorIndex}")
-            raise Exception("Error querying SNMP data")
-        else:
-            return "No data" if not varBinds else " | ".join(vb[1].prettyPrint() for vb in varBinds)
 
+        try:
+            iterator = await asyncio.wait_for(get_specific(), timeout=7)
+            errorIndication, errorStatus, errorIndex, varBinds = iterator
+            
+            if not errorIndication and not errorStatus and varBinds[0][1]:
+                return varBinds[0][1].prettyPrint()
+                
+        except Exception:
+            pass  # Continue to GETNEXT if GET fails
+            
+        # If specific get didn't work or we want to get next values, use GETNEXT
+        async def snmp_query():
+            return await next_cmd(
+                snmpDispatcher,
+                CommunityData("public", mpModel=0),
+                await UdpTransportTarget.create((ip, 161), timeout=7, retries=3),
+                ObjectType(ObjectIdentity(oid))
+            )
+        
+        all_values = []
+        while True:
+            try:
+                iterator = await asyncio.wait_for(snmp_query(), timeout=7)
+            except asyncio.TimeoutError:
+                if all_values:  # If we have any values, return them
+                    return " | ".join(all_values)
+                raise Exception("SNMP query timed out")
+
+            errorIndication, errorStatus, errorIndex, varBinds = iterator
+            if errorIndication:
+                if all_values:  # If we have any values, return them
+                    return " | ".join(all_values)
+                logger.error(f"SNMP Error: {errorIndication}")
+                raise Exception("Error querying SNMP data")
+            elif errorStatus:
+                if all_values:  # If we have any values, return them
+                    return " | ".join(all_values)
+                logger.error(f"Error Status: {errorStatus.prettyPrint()} at {errorIndex}")
+                raise Exception("Error querying SNMP data")
+            else:
+                # Check if we've moved past our desired OID prefix
+                if not varBinds or not str(varBinds[0][0]).startswith(oid[:-2]):
+                    break
+                    
+                # Add the value to our results
+                all_values.append(varBinds[0][1].prettyPrint())
+                
+                # Update OID for next query
+                oid = str(varBinds[0][0])
+
+        return " | ".join(all_values) if all_values else "No data"
+                
     except Exception as e:
         logger.error(str(e))
         raise

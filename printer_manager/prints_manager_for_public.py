@@ -190,7 +190,7 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
             iterator = await asyncio.wait_for(get_specific(), timeout=7)
             errorIndication, errorStatus, errorIndex, varBinds = iterator
             
-            if not errorIndication and not errorStatus and varBinds[0][1]:
+            if not errorIndication and not errorStatus:
                 return varBinds[0][1].prettyPrint()
                 
         except Exception:

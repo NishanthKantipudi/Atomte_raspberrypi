@@ -70,6 +70,7 @@ def init_setup():
         try:
             socket.create_connection(("8.8.8.8", 53), timeout=5)
             offline_time = 0  # Reset counter when internet is available
+            break
         except OSError: 
             offline_time += 5  # Increase the offline counter
             if offline_time >= 120:  # If no internet for 2 mins

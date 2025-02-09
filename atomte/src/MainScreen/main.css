@@ -29,7 +29,7 @@
 }
 .CenterView .title-atomte{
     text-align: center;
-    font-size: 60px;
+    font-size: 40px;
     font-family: "Georgia";
     font-weight: bold;
     letter-spacing: 7px;
@@ -44,7 +44,7 @@
 .CenterView .title-atomte span p{
     margin: 0px;
     padding: 0px;
-    font-size: 20px;
+    font-size: 18px;
     color: rgb(66, 66, 66);
     text-align: center;
 }

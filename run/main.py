@@ -65,12 +65,17 @@ def run_web(command, project_dir):
 
 
 def init_setup():
-    while 1:
+    offline_time = 0  # Track how long the internet is down
+    while True:
         try:
-            socket.create_connection(("8.8.8.8", 53))
-            break
+            socket.create_connection(("8.8.8.8", 53), timeout=5)
+            offline_time = 0  # Reset counter when internet is available
         except OSError: 
-            time.sleep(1)
+            offline_time += 5  # Increase the offline counter
+            if offline_time >= 120:  # If no internet for 2 mins
+                run_subprocess(["sudo", "reboot"])
+                time.sleep(5)  # Prevent immediate loop execution
+        time.sleep(5)
     run_subprocess(["../../venv/bin/python3","../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
 def is_module_installed(module_name):
     spec = importlib.util.find_spec(module_name)

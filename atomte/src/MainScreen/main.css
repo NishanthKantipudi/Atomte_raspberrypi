@@ -26,7 +26,6 @@
 
 .CenterView{ 
     flex: 1;
-    
 }
 .CenterView .title-atomte{
     text-align: center;
@@ -37,11 +36,24 @@
     color: rgb(0, 0, 0);
     background-color: rgba(220, 219, 218, 0.426);
 }
+.CenterView .title-atomte span{
+    letter-spacing: 3px;
+    text-align: center;
+    width: 100%;
+}
+.CenterView .title-atomte span p{
+    margin: 0px;
+    padding: 0px;
+    font-size: 20px;
+    color: rgb(66, 66, 66);
+    text-align: center;
+}
 
 
 .MainScreen .CenterView{
     display: flex;
     flex-direction: column;
+    
     
 }
 

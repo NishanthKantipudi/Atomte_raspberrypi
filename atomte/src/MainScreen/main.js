@@ -63,14 +63,15 @@ export default function MainScreen() {
         </div>
         <div className="separator"></div>
         <div className="CenterView">
-          <h1 className="title-atomte">ATOMTE</h1>
+          <h1 className="title-atomte">ATOMTE<span><p>Any issues call 7569822055 Available 24/7</p></span></h1>
+          
           <RightTopView className="RightTopView" code={code} />
         </div>
       </div>
 
       <div className="separator"></div>
 
-      {/* Video Player */}
+      
       {ad1 && (
         <div>
           <VideoPlayer className="ad1" videoFile={ad1} width="100%" mute={false} />

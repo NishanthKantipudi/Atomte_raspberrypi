@@ -34,30 +34,30 @@ const RightTopView = ({code}) => {
     };
   }, []);
 
-  const fetchStatus = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/status');
-      const data = await response.json();
-      console.log(data);
-      if(data["data"]=="internet not connected"){
-          setNoInternet(true)
-      }else{
-          setNoInternet(false)
-      }
-      setStatus(data);
-    } catch (error) {
-      console.error("Error fetching status:", error);
-    }
-  };
+//   const fetchStatus = async () => {
+//     try {
+//       const response = await fetch('http://localhost:5000/status');
+//       const data = await response.json();
+//       console.log(data);
+//       if(data["data"]=="internet not connected"){
+//           setNoInternet(true)
+//       }else{
+//           setNoInternet(false)
+//       }
+//       setStatus(data);
+//     } catch (error) {
+//       console.error("Error fetching status:", error);
+//     }
+//   };
 
-  // Fetch status on component mount and every 5 seconds
-  useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(() => {
-      fetchStatus();
-    }, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval); // Clean up interval on component unmount
-  }, []);
+//   // Fetch status on component mount and every 5 seconds
+//   useEffect(() => {
+//     fetchStatus();
+//     const interval = setInterval(() => {
+//       fetchStatus();
+//     }, 5000); // Poll every 5 seconds
+//     return () => clearInterval(interval); // Clean up interval on component unmount
+//   }, []);
 
     const [printermessage,setPrintermessage] = useState(null);
     const [queuecount,setQueuecount] = useState(null);
@@ -67,22 +67,24 @@ const RightTopView = ({code}) => {
 	    if(data){
             setPrintermessage(data.value);}
         })
-    },[]);
+    },[code]);
     useEffect(() => {
         onValue(ref(getDatabase(app), 'Printers/'+code+"/printstodo"), (snapshot) => {
             if(snapshot.val()){
             const data=Object.keys(snapshot.val()).length;
             setQueuecount(data);}
         })
-    },[]);
+    },[code]);
     const [userPrintdata,setUserPrintdata] = useState(null);
     const [userPrintdata1,setUserPrintdata1] = useState(null);
     const [fileData,setFileData]=useState(null)
     const [fileData1,setFileData1]=useState(null)
     useEffect(() => {
+       
         onValue(ref(getDatabase(app), 'Printers/'+code+"/printstodo"), (snapshot) => {
             setFileData(null)
             const data=snapshot.val();
+      
             if(data){
                 const curr=Object.values(data)[0]
                 const user=curr.user
@@ -90,17 +92,28 @@ const RightTopView = ({code}) => {
                     const files=curr.files.split(",")
                     const currentprintingfile=curr.printing
                     const currentprintingfile1=curr.done_printing+1
-                    get(ref(getDatabase(app), 'users/'+user+'/details')).then((snapshot) => {
-
-                        setUserPrintdata(new userprintdata(snapshot.child("name").val(),snapshot.child("atomte_id").val(),files.length,currentprintingfile-1))
-                        setUserPrintdata1(new userprintdata(snapshot.child("name").val(),snapshot.child("atomte_id").val(),files.length,currentprintingfile1-1))
-                    })
-                    set(ref(getDatabase(app), 'Printers/'+code+"/nowprint/id"),Object.keys(data)[0])
+                
+                    get(ref(getDatabase(app), `users/${user}/details`)).then((snapshot) => {
+                        const userData = snapshot.val(); // Store snapshot data in a variable
+                       
+                        if (userData) {
+                            setUserPrintdata(new userprintdata(userData["name"], userData["atomte_id"], files.length, currentprintingfile - 1));
+                            setUserPrintdata1(new userprintdata(userData["name"], userData["atomte_id"], files.length, currentprintingfile1 - 1));
+                        } else {
+                            console.error("User details not found");
+                        }
+                    }).catch((error) => {
+                        console.error("Error fetching user details:", error);
+                    });
+                    
+                    // set(ref(getDatabase(app), 'Printers/'+code+"/nowprint/id"),Object.keys(data)[0])
                     setFileData(null)
                     setFileData1(null)
+
                     onValue(ref(getDatabase(app), 'users/'+user+'/printsdetails/'+files[currentprintingfile-1]), (snapshot) => {
                         const filesdata=snapshot.val()
 			                  if(filesdata){
+                            
                         setFileData(filesdata)}
         
                     })
@@ -112,7 +125,7 @@ const RightTopView = ({code}) => {
                 }
             }
         })
-    },[]);
+    },[code]);
     const ProgressBar = ({ progress,text }) => {
       return (
         <div className="progress-container">
@@ -143,18 +156,18 @@ const RightTopView = ({code}) => {
 	);
 
     }
-
     if(fileData){
         return (
             <div className="container">
-                <div className="message">
-                    <h2>{printermessage}</h2>
+               
+                <div className="queue-count">
+                    Total {queuecount} {queuecount === 1 ? "member is" : "members are"} in queue
                 </div>
-                <div className="queue-count">Total {queuecount} members are in queue</div>
+               
+                <div className="username">Hello, {userPrintdata.username} ({userPrintdata.id})</div>
                 <hr></hr>
                 <div className="print-details">
-                    <div className="username">Hello, {userPrintdata.username} ({userPrintdata.id})</div>
-                    <hr></hr>
+                    <div>
                     <h3>Downloaded files({userPrintdata.totaldone+1+"/"+userPrintdata.totalfiles})</h3>
                     <div className="file-details">
                         <div className="total-files">No of Files : {userPrintdata.totalfiles}</div>
@@ -176,8 +189,11 @@ const RightTopView = ({code}) => {
                             ))}
                         </div>
                     </div>
-                    {fileData1 ?<div>
-                      <hr></hr>
+                    </div>
+                    
+                    <div>
+                        {fileData1 ?<div>
+                  
                     <h3>Printed files({userPrintdata1.totaldone+1+"/"+userPrintdata1.totalfiles})</h3>
                     <div className="file-details">
                         <div className="total-files">No of Files : {userPrintdata1.totalfiles}</div>
@@ -199,6 +215,8 @@ const RightTopView = ({code}) => {
                         </div>
                     </div>
                     </div>:<></>}
+                    </div>
+                    
                     
     
                 </div>

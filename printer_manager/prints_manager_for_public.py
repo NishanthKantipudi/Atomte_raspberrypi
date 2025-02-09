@@ -210,7 +210,7 @@ async def query_snmp_data(snmpDispatcher, oid, ip):
             try:
                 iterator = await asyncio.wait_for(snmp_query(), timeout=7)
             except asyncio.TimeoutError:
-                if all_values:  # If we have any values, return them
+                if all_values:
                     return " | ".join(all_values)
                 raise Exception("SNMP query timed out")
 
@@ -285,7 +285,7 @@ async def get_snmp_data():
                 if(printer_ref.child("details").child("status_message").get()=="printer is restarting network issue at fetching data"):
                     printer_ref.child("details").child("status").set("Active")
                     printer_ref.child("details").child("status_message").set("Printer is Active")
-            if 'toner is out (black).' in results['Printer Detailed Status']:
+            if 'toner is out' in results['Printer Detailed Status']:
                 refund_all()
                 printer_ref.child("details").child("status").set("Inactive")
                 printer_ref.child("details").child("status_message").set("toner is empty...")
@@ -641,34 +641,34 @@ def on_value_change_with_snmp(event_key,data):
                 printed_sum=0
                 times=[0 for i in range(len(files))]
                 while True:
-                    times[i] += 1
-                    if times[i] > 60:
-                        state_description, state_reasons = get_print_job_state(conn, job_ids[i])
-                        logger.info(f"Print Job State: {state_description}")
-                        if state_reasons:
-                            logger.info(f"State Reasons: {state_reasons}")
-                        if state_description == "Completed":
-                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("now printing...")
-                            logger.info(f"Print job ID: {job_ids[i]}")
-                        elif state_description in ["Canceled", "Aborted", "Stopped"]:
-                            logger.info("Print job did not complete successfully.")
-                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
-                            logger.info('Error at printer')
-                            handle_print_error(user, files[i],"Error at printer taking too long try again")
-                            conn.cancelJob(job_ids[i])
-                            i+=1
-                            init_page_count-=printing_pages[i]
-                            continue
-                        else:
-                            if(times[i]>120):
-                                logger.info("Print job did not complete successfully.")
-                                db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
-                                logger.info('Error at printer')
-                                handle_print_error(user, files[i],"Error at printer taking too long try again")
-                                i+=1
-                                conn.cancelJob(job_ids[i])
-                                init_page_count-=printing_pages[i]
-                                continue
+                    # times[i] += 1
+                    # if times[i] > 60:
+                    #     state_description, state_reasons = get_print_job_state(conn, job_ids[i])
+                    #     logger.info(f"Print Job State: {state_description}")
+                    #     if state_reasons:
+                    #         logger.info(f"State Reasons: {state_reasons}")
+                    #     if state_description == "Completed":
+                    #         db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("now printing...")
+                    #         logger.info(f"Print job ID: {job_ids[i]}")
+                    #     elif state_description in ["Canceled", "Aborted", "Stopped"]:
+                    #         logger.info("Print job did not complete successfully.")
+                    #         db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
+                    #         logger.info('Error at printer')
+                    #         handle_print_error(user, files[i],"Error at printer taking too long try again")
+                    #         conn.cancelJob(job_ids[i])
+                    #         i+=1
+                    #         init_page_count-=printing_pages[i]
+                    #         continue
+                    #     else:
+                    #         if(times[i]>120):
+                    #             logger.info("Print job did not complete successfully.")
+                    #             db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Error at printer")
+                    #             logger.info('Error at printer')
+                    #             handle_print_error(user, files[i],"Error at printer taking too long try again")
+                    #             i+=1
+                    #             conn.cancelJob(job_ids[i])
+                    #             init_page_count-=printing_pages[i]
+                    #             continue
                     pages_printed = int(curr_page_count) - int(init_page_count)
                     if(len(printing_pages)<=i):
                         time.sleep(1)

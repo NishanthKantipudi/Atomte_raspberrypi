@@ -89,7 +89,7 @@ def init_setup():
         client = razorpay.Client(auth=(key, secret))
     except Exception as e:
         logger.error('razorpay client error '+str(e))
-    printer_name = printer_ref.child("details").child("username").get()
+    printer_name = main_data["pi_username"]
     def setup_cups():
         global conn
         conn = cups.Connection()
@@ -588,7 +588,7 @@ def on_value_change_with_snmp(event_key,data):
     user=""
     try:
         if event_key:
-            
+
             data = db.reference(f'Printers/{main_data["printer_id"]}/printstodo/{event_key}').get()
             if data:
                 init_page_count = curr_page_count

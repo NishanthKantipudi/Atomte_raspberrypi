@@ -52,7 +52,6 @@ def upload_file_to_firebase(file_path, firebase_path):
     print(f"Public URL: {blob.public_url}")
 def restart_raspberry_pi():
     try:
-        # Run the reboot command
         printer_ref.child("restart").set(False)
         subprocess.run(['sudo', 'reboot'], check=True)
     except subprocess.CalledProcessError as e:
@@ -111,10 +110,8 @@ while 1:
         listners.append(listner)
         listner1=printer_ref.child("getlogs").listen(sendlogs)
         listners.append(listner1)
-        listner2=printer_ref.child("restart_printer").listen(restart_printer)
-        listners.append(listner2)
-        listner3=printer_ref.child("website_active").listen(reload_website)
-        listners.append(listner3)
+        # listner2=printer_ref.child("restart_printer").listen(restart_printer)
+        # listners.append(listner2)
         while 1:
             time.sleep(10)
             if(network_error):
@@ -122,4 +119,4 @@ while 1:
                 raise Exception("Network error")
     except Exception as e:
         logger.error(str(e))
-        time.sleep(10)
+        time.sleep(30)

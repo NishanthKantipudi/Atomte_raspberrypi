@@ -104,7 +104,10 @@ listners=[]
 while 1:
     try:
         for listner in listners:
-            listner.close()
+            try:
+                listner.close()
+            except Exception as e:
+                logger.error(str(e))
         listners=[]
         listner=printer_ref.child("restart").listen(restart)
         listners.append(listner)

@@ -89,7 +89,7 @@ def init_setup():
         client = razorpay.Client(auth=(key, secret))
     except Exception as e:
         logger.error('razorpay client error '+str(e))
-    printer_name = printer_ref.child("details").child("name").get()
+    printer_name = printer_ref.child("details").child("username").get()
     def setup_cups():
         global conn
         conn = cups.Connection()
@@ -100,7 +100,7 @@ def init_setup():
     setup_cups()
 init_setup()        
 
-def send_high_priority_notification(self,token,title="",body="",data={}):
+def send_high_priority_notification(token,title="",body="",data={}):
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
@@ -541,7 +541,6 @@ def print_file_with_snmp(user, file):
     options["copies"]= str(file_data["count"])
     timestamp = str(int(time.time()))
     try:
-       
         retry_count = 0
         while True:
             retry_count += 1

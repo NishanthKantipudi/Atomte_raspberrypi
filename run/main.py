@@ -1,5 +1,6 @@
 import os,logging,time,subprocess,socket,threading
 import importlib.util
+import nmap
 
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -238,6 +239,7 @@ if(db.reference('/').child("Printers").child(data["code"]).child("updates").get(
 #                capture_output=True, 
 #                text=True,env=env)
 
+
 w_t = threading.Thread(target=run_command, args=("../venv/bin/python3 run/startweb.py","run/startweb.log"))
 w_t.start()
 
@@ -254,6 +256,20 @@ t3.start()
 
 
 printer_ip=db.reference('/').child("Printers").child(data["code"]).child("details").child("ip").get()
+def get_ip():
+    nm = nmap.PortScanner()
+    nm.scan(hosts='192.168.2.0/24', arguments='-sn --host-timeout .2s')
+    hosts_up = nm.all_hosts()
+    for host in hosts_up:
+        if(host!="192.168.2.1"):	
+            print(host)
+            return host
+    return None
+
+# ip_address=get_ip()
+# if(ip_address!=None):
+#     db.reference('/').child("Printers").child(data["code"]).child("states").child("printer_connection").set(True)
+#     db.reference('/').child("Printers").child(data["code"]).child("details").child("ip").set(ip_address)
 if(printer_ip!=None and printer_ip!=""):
     if(db.reference('/').child("Printers").child(data["code"]).child("details").child("type").get()=="public"):
         t6 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py","printer_manager/prints_manager_for_public.log"))

@@ -774,7 +774,11 @@ def main():
                     logger.error('error i_error or p_error'+str(i_error)+str(p_error))
                     listner.close()
                     raise Exception("i_error or p_error")
-                time.sleep(1)
+                time.sleep(4)
+                if(listner._thread.is_alive()):
+                    continue
+                else:
+                    raise Exception("listner error")
         except Exception as e:
             refund_all()
             try:

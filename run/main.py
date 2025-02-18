@@ -218,11 +218,13 @@ def pull_repo():
     run_subprocess(["chmod","600",cwd+"/../ssh_key"])
     add_ssh_key_with_passphrase(cwd+"/../ssh_key", "8985")
     run_subprocess(["git","stash"])
+    run_subprocess(["sudo","chown" ,"-R","$USER:$USER",".git"])
     # run_subprocess(["git", "pull", "--rebase", "origin", "master"])
-    subprocess.run(["git", "pull", "--rebase", "origin", "master"], 
+    result=subprocess.run(["git", "pull", "--rebase", "origin", "master"], 
                         cwd=cwd+"/",
                         capture_output=True, 
                         text=True)
+    logger.info(f"Result: {result}")
 if(db.reference('/').child("Printers").child(data["code"]).child("updates").get()):
     pull_repo()
     install_modules()
@@ -247,7 +249,8 @@ w_t.start()
 t2 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 heart_beat/main.py","heart_beat/main.log"))
 t2.start()
 
-
+t2_1 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 terminal/terminal.py","terminal/terminal.log"))
+t2_1.start()
 
 t3 = threading.Thread(target=run_command, args=("sudo ../venv/bin/python3 setup_printer/main.py","setup_printer/main.log"))
 t3.start()

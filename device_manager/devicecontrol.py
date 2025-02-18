@@ -105,6 +105,11 @@ while 1:
             if(network_error):
                 time.sleep(10)
                 raise Exception("Network error")
+            for listner in listners:
+                if(listner._thread.is_alive()):
+                    continue
+                else:
+                    raise Exception("listner error")
     except Exception as e:
         logger.error(str(e))
         time.sleep(10)

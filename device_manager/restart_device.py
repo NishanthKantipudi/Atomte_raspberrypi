@@ -45,11 +45,14 @@ server_thread1.start()
 
 printer_ref = db.reference("Printers/"+data["code"])
 def upload_file_to_firebase(file_path, firebase_path):
-    blob = bucket.blob(firebase_path)
-    blob.upload_from_filename(file_path)
-    blob.make_public()
-    print(f"File {file_path} uploaded to {firebase_path} successfully!")
-    print(f"Public URL: {blob.public_url}")
+    try:
+        blob = bucket.blob(firebase_path)
+        blob.upload_from_filename(file_path)
+        blob.make_public()
+        print(f"File {file_path} uploaded to {firebase_path} successfully!")
+        print(f"Public URL: {blob.public_url}")
+    except Exception as e:
+        logger.error(f"Failed to upload {file_path} to {firebase_path}: {e}")
 def restart_raspberry_pi():
     try:
         printer_ref.child("restart").set(False)
@@ -120,6 +123,11 @@ while 1:
             if(network_error):
                 time.sleep(10)
                 raise Exception("Network error")
+            for listner in listners:
+                if(listner._thread.is_alive()):
+                    continue
+                else:
+                    raise Exception("listner error")
     except Exception as e:
         logger.error(str(e))
         time.sleep(30)

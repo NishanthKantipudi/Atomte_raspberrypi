@@ -5,6 +5,8 @@
     width: 100%;
     overflow: hidden;
 }
+
+
 .MainScreen{
     display: flex;
     height: 40vh;

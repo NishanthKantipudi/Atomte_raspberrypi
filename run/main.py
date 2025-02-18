@@ -219,7 +219,7 @@ def pull_repo():
     run_subprocess(["chmod","600",cwd+"/../ssh_key"])
     add_ssh_key_with_passphrase(cwd+"/../ssh_key", "8985")
     run_subprocess(["git","stash"])
-    run_subprocess(["sudo","chown" ,"-R","$USER:$USER",".git"])
+    run_subprocess(["sudo","chown" ,"-R","atomte"+data["code"]+":"+"atomte"+data["code"],".git"])
     # run_subprocess(["git", "pull", "--rebase", "origin", "master"])
     result=subprocess.run(["git", "pull", "--rebase", "origin", "master"], 
                         cwd=cwd+"/",

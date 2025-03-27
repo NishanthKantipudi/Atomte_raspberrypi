@@ -61,13 +61,13 @@ export default function MainScreen() {
         <div className="LeftView">
           <LeftView code={code} />
         </div>
-        <div className="separator"></div>
+        {/* <div className="separator"></div> */}
         <div className="CenterView">
           <div className="logo-container">
             <img src={logo} className="logo" alt="A"/>
             <h1 className="title-atomte">TOMTE</h1>
           </div>
-          <span><p>For Assistance Call 9849033249, Available 24/7</p></span>
+          <span><p>For Assistance Call <span>9849033249 </span>(Available 24/7)</p></span>
           <RightTopView className="RightTopView" code={code} />
         </div>
       </div>

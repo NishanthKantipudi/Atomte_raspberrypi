@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './rightview.css';
+
 const WelcomeMessage = () => {
   const messages = [
     "Welcome to our service!",
@@ -25,23 +26,103 @@ const WelcomeMessage = () => {
   ];
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isOffline, setIsOffline] = useState(false);
+
+  const checkInternetConnection = async () => {
+    if (!navigator.onLine) {
+      setIsOffline(true);
+      return;
+    }
+  
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000); // 3-second timeout
+  
+      await fetch("https://www.gstatic.com/generate_204", {
+        method: "GET",
+        mode: "no-cors",
+        signal: controller.signal
+      });
+  
+      clearTimeout(timeout);
+      setIsOffline(false); // Internet is active
+    } catch (error) {
+      // Retry after 1 second to avoid false positives
+      setTimeout(async () => {
+        try {
+          await fetch("https://www.gstatic.com/generate_204", { method: "GET", mode: "no-cors" });
+          setIsOffline(false);
+        } catch (err) {
+          setIsOffline(true);
+        }
+      }, 1000);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Message rotation interval
+    const messageInterval = setInterval(() => {
       setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % messages.length);
     }, 60000); // Change message every minute (60000 ms)
     
-    return () => clearInterval(interval);
+    // Internet connection check
+    checkInternetConnection();
+    const connectionInterval = setInterval(checkInternetConnection, 3000);
+    
+    return () => {
+      clearInterval(messageInterval);
+      clearInterval(connectionInterval);
+    };
   }, []);
+
+  if (isOffline) {
+    return (
+      <div className="container">
+        <h1 className="title">Connection Error</h1>
+        <p className="message">No Internet Connection</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
-      <h1 className="title">Welcome!</h1>
-      <h2 className="big-text">Innovate, Automate, Excel</h2>
-      <p className="message">{messages[currentMessageIndex]}</p>
-      <h2 className="big-text">Your Future, Our Technology</h2>
+      <div className="guide-steps">
+        <div className="guide-step">
+          <div className="step-number">1</div>
+          <div className="step-content">
+            <h3>Scan QR Code</h3>
+            <p>Scan the QR code located at the top-left of the screen.</p>
+
+          </div>
+        </div>
+
+        <div className="guide-step">
+          <div className="step-number">2</div>
+          <div className="step-content">
+            <h3>Upload Files</h3>
+            <p>Select and upload the files you want to print.</p>
+          </div>
+        </div>
+
+        <div className="guide-step">
+          <div className="step-number">3</div>
+          <div className="step-content">
+            <h3>Make Payment</h3>
+            <p>Choose a payment method and Complete the payment securely.</p>
+          </div>
+        </div>
+
+        <div className="guide-step">
+          <div className="step-number">4</div>
+          <div className="step-content">
+            <h3>Collect Prints</h3>
+            <p>Collect your printed documents from the printer.</p>
+          </div>
+        </div>
+      </div>
       <p className="thank-you">Thank you for using our service!</p>
     </div>
+
   );
 };
 

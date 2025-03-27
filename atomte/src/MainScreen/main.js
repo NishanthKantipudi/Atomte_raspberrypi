@@ -5,14 +5,13 @@ import VideoPlayer from "./RightView/rightcenterview";
 import SuperRightView from "./RightView/superrightview";
 import "./main.css";
 
+
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import app from "../firebase/firebase";
 import ad1 from "./ads/ad1.mp4";
 import ad2 from "./ads/ad2.mp4";
 import ad3 from "./ads/ad3.mp4";
-
-
-
+import PrinterErrorPopup from "./Popups/popup";
 
 export default function MainScreen() {
   const [code, setCode] = useState(null);
@@ -56,7 +55,9 @@ export default function MainScreen() {
   
 
   return (
+    
     <div className="Total">
+      
       <div className="MainScreen">
         <div className="LeftView">
           <LeftView code={code} />
@@ -80,9 +81,13 @@ export default function MainScreen() {
 
       <div className="separator"></div>
 
-      <div className="RightView">
+      {/* <div className="RightView">
         <SuperRightView code={code} videoFile1={ad2} videoFile2={ad3} />
-      </div>
+      </div> */}
+
+
+      <PrinterErrorPopup code={code} />
+      
     </div>
   );
 }

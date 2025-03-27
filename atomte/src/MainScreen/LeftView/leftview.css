@@ -26,8 +26,9 @@
   /* src/DetailsCard.css */
 
 .details-card {
+    margin-top: 20px;
     padding: 5px;
-    margin-left: 10px;
+    margin-left: 25px;
     background-color: #fff;
   }
   
@@ -41,8 +42,8 @@
   
   .description {
     font-size: 13px;
-    color: #666;
-    margin-bottom: 2px;
+    color: #000000;
+    margin-bottom: 10px;
   }
   
   .print-properties {

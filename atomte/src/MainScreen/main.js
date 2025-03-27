@@ -67,23 +67,23 @@ export default function MainScreen() {
             <img src={logo} className="logo" alt="A"/>
             <h1 className="title-atomte">TOMTE</h1>
           </div>
-          <span><p>Any issues call 9849033249, Available 24/7</p></span>
+          <span><p>For Assistance Call 9849033249, Available 24/7</p></span>
           <RightTopView className="RightTopView" code={code} />
         </div>
       </div>
-      <div className="separator"></div>
+      <div className="separatorHorizontal"></div>
 
 
       
-      {/* {ad1 && (
+      {ad1 && (
         <div className="ad1-container">
           <VideoPlayer className="ad1" videoFile={ad1} width="100%" height="100%" mute={false} />
         </div>
-      )} */}
+      )}
 
-      {/* <div className="RightView full-screen">
+      <div className="RightView full-screen">
         <SuperRightView code={code} videoFile1={ad2} videoFile2={ad3} />
-      </div> */}
+      </div>
 
 
       <PrinterErrorPopup code={code} />

@@ -30,7 +30,11 @@
     flex: 0 0 1px;
     background-color: black;
     border: 1px solid #e0e0e0;
-    margin: 2px 0;
+    margin: 10px 0;
+}
+.separatorHorizontal{
+    flex: 0 0 1px;
+    margin: auto 0;
 }
 
 .CenterView{ 

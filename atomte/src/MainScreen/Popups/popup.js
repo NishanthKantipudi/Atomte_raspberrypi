@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import app from "../../firebase/firebase";
 import { getDatabase, ref, onValue } from "firebase/database";
 import "./popup.css";
+import VideoPlayer from "../RightView/rightcenterview";
+import ad1 from "../ads/ad1.mp4"; //testing
 
 const PrinterErrorPopup = ({ code }) => {
   const [error, setError] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [errVideo, setErrVideo] = useState("");
   const db = getDatabase(app);
 
   const checkInternetConnection = async () => {
@@ -57,6 +60,21 @@ const PrinterErrorPopup = ({ code }) => {
 
       if (errorMessage && !errorMessage.toLowerCase().includes("active")) {
         setError(errorMessage);
+        if(errorMessage.toLowerCase().includes("jammed")){
+          setErrVideo("")
+        }
+        else if(errorMessage.toLowerCase().includes("empty")){
+          setErrVideo("https://atomte.com/printer-error.mp4")
+        }
+        else if(errorMessage.toLowerCase().includes("toner")){
+          setErrVideo("https://atomte.com/printer-error.mp4")
+        }
+        else if(errorMessage.toLowerCase().includes("power")){
+          setErrVideo(ad1)
+        }
+      else{
+        setErrVideo("https://atomte.com/printer-error.mp4")
+      }
         setShowPopup(true);
       } else {
         setError(null);
@@ -103,13 +121,9 @@ const PrinterErrorPopup = ({ code }) => {
             <p className="error-message">
               <strong>Printer Error:</strong> {error}
             </p>
-            <video controls autoPlay className="error-video">
-              <source src="https://example.com/your-video.mp4" type="video/mp4"/>
-              Your browser does not support the video tag.
-            </video>
+            <VideoPlayer className="error-video" videoFile={errVideo} width="100%" height="100%" mute={false} />
           </>
         )}
-        {/* <button onClick={() => setShowPopup(false)}>Close</button> */}
       </div>
     </div>
   );

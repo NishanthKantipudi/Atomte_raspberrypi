@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './rightview.css';
+import { WifiOff } from "lucide-react";
 
 const WelcomeMessage = () => {
   const messages = [
@@ -79,7 +80,9 @@ const WelcomeMessage = () => {
     return (
       <div className="container">
         <h1 className="title">Connection Error</h1>
-        <p className="message">No Internet Connection</p>
+        <p className="message">
+          <WifiOff size={70} /> No Internet Connection
+        </p>
       </div>
     );
   }

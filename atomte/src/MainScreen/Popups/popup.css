@@ -31,7 +31,9 @@
   .error-message{
     text-align: center;
     margin: 10px;
-    font-size: 20px;
+    font-size: 25px;
+    color: rgb(210, 0, 0);
+    
   }
 
   .contact-info strong{
@@ -57,4 +59,11 @@
   button:hover {
     background-color: #0056b3;
   }
-  
+  .message {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    color: #dc2626; /* Tailwind's red-500 */
+  }

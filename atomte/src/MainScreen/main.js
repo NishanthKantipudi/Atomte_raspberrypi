@@ -4,14 +4,14 @@ import RightTopView from "./RightView/righttopview";
 import VideoPlayer from "./RightView/rightcenterview";
 import SuperRightView from "./RightView/superrightview";
 import "./main.css";
-
+import PrinterErrorPopup from "./Popups/popup";
 
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import app from "../firebase/firebase";
 import ad1 from "./ads/ad1.mp4";
 import ad2 from "./ads/ad2.mp4";
 import ad3 from "./ads/ad3.mp4";
-import PrinterErrorPopup from "./Popups/popup";
+import logo from "../media/A.png"
 
 export default function MainScreen() {
   const [code, setCode] = useState(null);
@@ -52,7 +52,6 @@ export default function MainScreen() {
     loginWithEmailPassword(email, password);
   }, [email, password, userLoggedIn]);
 
-  
 
   return (
     
@@ -64,24 +63,25 @@ export default function MainScreen() {
         </div>
         <div className="separator"></div>
         <div className="CenterView">
-          <h1 className="title-atomte">ATOMTE<span><p>Any issues call 7569822055 Available 24/7</p></span></h1>
-          
+          <div className="logo-container">
+            <img src={logo} className="logo" alt="A"/>
+            <h1 className="title-atomte">TOMTE</h1>
+          </div>
+          <span><p>Any issues call 9849033249, Available 24/7</p></span>
           <RightTopView className="RightTopView" code={code} />
         </div>
       </div>
-
       <div className="separator"></div>
+
 
       
-      {ad1 && (
-        <div>
-          <VideoPlayer className="ad1" videoFile={ad1} width="100%" mute={false} />
+      {/* {ad1 && (
+        <div className="ad1-container">
+          <VideoPlayer className="ad1" videoFile={ad1} width="100%" height="100%" mute={false} />
         </div>
-      )}
+      )} */}
 
-      <div className="separator"></div>
-
-      {/* <div className="RightView">
+      {/* <div className="RightView full-screen">
         <SuperRightView code={code} videoFile1={ad2} videoFile2={ad3} />
       </div> */}
 

@@ -89,7 +89,7 @@ const PrinterErrorPopup = ({ code }) => {
         {isOffline ? (
           <>
           <p className="contact-info">
-              For assistance, call: <strong>7569822055</strong> (Available 24/7)
+              For assistance, call: <strong>9849033249</strong> (Available 24/7)
             </p>
             <p className="contact-info">
               <strong>NO Internet Connection</strong>
@@ -98,7 +98,7 @@ const PrinterErrorPopup = ({ code }) => {
         ) : (
           <>
             <p className="contact-info">
-              For assistance, call: <strong>7569822055</strong>
+              For assistance, call: <strong>9849033249</strong>
             </p>
             <p className="error-message">
               <strong>Printer Error:</strong> {error}

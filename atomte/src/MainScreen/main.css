@@ -1,9 +1,16 @@
+.bungee-outline-regular {
+    font-family: "Bungee Outline", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
 .Total{
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100%;
     overflow: hidden;
+    background-color: #f4f6f9;
 }
 
 
@@ -29,28 +36,51 @@
 .CenterView{ 
     flex: 1;
 }
-.CenterView .title-atomte{
-    text-align: center;
-    font-size: 40px;
-    font-family: "Georgia";
-    font-weight: bold;
-    letter-spacing: 7px;
-    color: rgb(0, 0, 0);
-    background-color: rgba(220, 219, 218, 0.426);
+
+.logo-container {
+    margin-top: 8px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0px;
+    background-color: white;
+    width: fit-content; /* Makes container only as wide as its content */
+    margin-left: auto;
+    margin-right: auto; /* Centers the container if needed */
+    border-radius: 8px;;
 }
-.CenterView .title-atomte span{
-    letter-spacing: 3px;
-    text-align: center;
-    width: 100%;
-}
-.CenterView .title-atomte span p{
-    margin: 0px;
-    padding: 0px;
-    font-size: 18px;
-    color: rgb(66, 66, 66);
-    text-align: center;
+.logo {
+    height: 65px; /* Adjust as needed */
+    width: auto;  /* Maintains aspect ratio */
+    border-radius: 8px;
+    position: relative;
+    left: 8px;
 }
 
+.title-atomte {
+    margin: 0;
+    margin-bottom:4px;
+    position: relative;
+}
+.CenterView .title-atomte{
+    margin-top: 5px;
+    text-align: center;
+    font-size: 43px;
+    /* font-family: "Bungee Outline", sans-serif; */
+    letter-spacing: 4px;
+    color: rgb(84, 84, 84);
+    padding-right: 8px;
+}
+
+.CenterView span p{
+    margin: 0px;
+    margin-bottom: 10px;
+    padding: 0px;
+    font-size: 18px;
+    color: rgb(0, 0, 0);
+    text-align: center;
+}
 
 .MainScreen .CenterView{
     display: flex;
@@ -63,4 +93,3 @@
 .MainScreen .CenterView .RightTopView{
     flex:1;
 }
-

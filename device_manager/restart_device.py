@@ -1,133 +1,165 @@
+import os
+import json
 import time
-import firebase_admin
-from firebase_admin import credentials, db,storage
+import socket
 import logging
-import json,os
 import threading
 import subprocess
-cwd = os.getcwd()
-import socket
 
+import firebase_admin
+from firebase_admin import credentials, db, storage
+
+# Setup
+cwd = os.getcwd()
+CONFIG_PATH = os.path.join(cwd, "../secrets/details.json")
+CRED_PATH = os.path.join(cwd, "secrets/key.json")
+
+# Load configuration
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
-        data = json.load(file)
-        return data
-data = read_json_file(cwd+"/../secrets/details.json")
+        return json.load(file)
+
+data = read_json_file(CONFIG_PATH)
+
 # Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Firebase initialization
-cred = credentials.Certificate(cwd+"/secrets/key.json")
+cred = credentials.Certificate(CRED_PATH)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'storageBucket': 'skilldevelopmentapp.appspot.com',
-    'httpTimeout':10
+    'httpTimeout': 10
 })
 bucket = storage.bucket()
-network_error=False
+printer_ref = db.reference(f"Printers/{data['code']}")
+
+# Global flag
+network_error = False
+
+# Monitor network connectivity
 def check_network():
     global network_error
-    network_error=False
-    while 1:
+    while True:
         try:
-            socket.create_connection(("8.8.8.8", 53))
-            network_error=False
-            time.sleep(10)
+            socket.create_connection(("8.8.8.8", 53), timeout=5)
+            network_error = False
         except Exception as e:
-            network_error=True
-            logger.error("check network error : "+str(e))
-            time.sleep(5)
-server_thread1 = threading.Thread(target=check_network)
-server_thread1.daemon = True
-server_thread1.start()
+            network_error = True
+            logger.error(f"Network check failed: {e}")
+        time.sleep(10 if not network_error else 5)
 
-
-printer_ref = db.reference("Printers/"+data["code"])
-def upload_file_to_firebase(file_path, firebase_path):
+# Upload logs to Firebase Storage
+def upload_file_to_firebase(local_path, firebase_path):
     try:
         blob = bucket.blob(firebase_path)
-        blob.upload_from_filename(file_path)
+        blob.upload_from_filename(local_path)
         blob.make_public()
-        print(f"File {file_path} uploaded to {firebase_path} successfully!")
-        print(f"Public URL: {blob.public_url}")
+        logger.info(f"Uploaded {local_path} to {firebase_path}")
     except Exception as e:
-        logger.error(f"Failed to upload {file_path} to {firebase_path}: {e}")
+        logger.error(f"Upload failed ({local_path}): {e}")
+
+def send_logs(event):
+    if not event.data:
+        return
+
+    log_files = {
+        "device_manager/printer_restart.log": f"logs/{data['code']}/device_manager/printer_restart.log",
+        "device_manager/restart_device.log": f"logs/{data['code']}/device_manager/restart_device.log",
+        "heart_beat/main.log": f"logs/{data['code']}/heart_beat/main.log",
+        "setup_printer/main.log": f"logs/{data['code']}/setup_printer/main.log",
+        "setup_wifi/main.log": f"logs/{data['code']}/setup_wifi/main.log",
+        "printer_manager/files_from_server.log": f"logs/{data['code']}/printer_manager/files_from_server.log",
+        "printer_manager/prints_manager_for_private.log": f"logs/{data['code']}/printer_manager/prints_manager_for_private.log",
+        "printer_manager/prints_manager_for_public.log": f"logs/{data['code']}/printer_manager/prints_manager_for_public.log",
+        "run/main.log": f"logs/{data['code']}/run/main.log",
+    }
+
+    try:
+        for local_path, firebase_path in log_files.items():
+            if os.path.exists(local_path):
+                upload_file_to_firebase(local_path, firebase_path)
+        printer_ref.child("getlogs").set(False)
+    except Exception as e:
+        logger.error(f"Error uploading logs: {e}")
+
+# Restart Raspberry Pi
 def restart_raspberry_pi():
     try:
         printer_ref.child("restart").set(False)
         subprocess.run(['sudo', 'reboot'], check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to restart Raspberry Pi: {e}")
-def run_command(command, log_file):
-    with open(log_file, 'a') as log:
-        log.write(f"\n=== Reboot Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
-        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
-        process.communicate()
-def sendlogs(event):
-    if(event.data):
-        files={
-            "device_manager/printer_restart.log": "logs/"+data["code"]+"/device_manager/printer_restart.log",
-            "device_manager/restart_device.log": "logs/"+data["code"]+"/device_manager/restart_device.log",
-            "heart_beat/main.log": "logs/"+data["code"]+"/heart_beat/main.log",
-            "setup_printer/main.log": "logs/"+data["code"]+"/setup_printer/main.log",
-            "setup_wifi/main.log": "logs/"+data["code"]+"/setup_wifi/main.log",
-            "printer_manager/files_from_server.log": "logs/"+data["code"]+"/printer_manager/files_from_server.log",
-            "printer_manager/prints_manager_for_private.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_private.log",
-            "printer_manager/prints_manager_for_public.log": "logs/"+data["code"]+"/printer_manager/prints_manager_for_public.log",
-            "run/main.log": "logs/"+data["code"]+"/run/main.log",
-        }
-        try:
-            for file_path, firebase_path in files.items():
-                if not os.path.exists(file_path):
-                    continue
-                upload_file_to_firebase(file_path, firebase_path)
-            printer_ref.child("getlogs").set(False)
-        except Exception as e:
-            logger.error(str(e))
-def restart(event):
-    if(event.data):
+        logger.error(f"Failed to reboot: {e}")
+
+def restart_pi_listener(event):
+    if event.data:
         restart_raspberry_pi()
 
-def restart_printer(event):
-    if(event.data):
-        try:
-            run_command(cwd + "../venv/bin/python3 device_manager/printer_restart.py", cwd+"/device_manager/printer_restart.log")
-        except Exception as e:
-            logger.error(str(e))
+# Generic function to run Python commands and log
+def run_command(command, log_file):
+    with open(log_file, 'a') as log:
+        log.write(f"\n=== Triggered at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT)
+        process.communicate()
 
-def reload_website(event):
-    if(event.data):
+# Restart printer listener
+def restart_printer_listener(event):
+    if event.data:
         try:
-            run_command(cwd + "../venv/bin/python3 device_manager/printer_restart.py", cwd+"/device_manager/printer_restart.log")
+            script_path = os.path.join(cwd, "../venv/bin/python3 device_manager/printer_restart.py")
+            log_path = os.path.join(cwd, "device_manager/printer_restart.log")
+            run_command(script_path, log_path)
         except Exception as e:
-            logger.error(str(e))
-listners=[]
+            logger.error(f"Error restarting printer: {e}")
 
-while 1:
-    try:
-        for listner in listners:
-            try:
-                listner.close()
-            except Exception as e:
-                logger.error(str(e))
-        listners=[]
-        listner=printer_ref.child("restart").listen(restart)
-        listners.append(listner)
-        listner1=printer_ref.child("getlogs").listen(sendlogs)
-        listners.append(listner1)
-        # listner2=printer_ref.child("restart_printer").listen(restart_printer)
-        # listners.append(listner2)
-        while 1:
-            time.sleep(10)
-            if(network_error):
+# Website reload listener (same command reused)
+def reload_website_listener(event):
+    if event.data:
+        try:
+            script_path = os.path.join(cwd, "../venv/bin/python3 device_manager/printer_restart.py")
+            log_path = os.path.join(cwd, "device_manager/printer_restart.log")
+            run_command(script_path, log_path)
+        except Exception as e:
+            logger.error(f"Error reloading website: {e}")
+
+# Launch background network thread
+network_thread = threading.Thread(target=check_network, daemon=True)
+network_thread.start()
+
+# Main listener loop
+def firebase_listener_loop():
+    listners = []
+    while True:
+        try:
+            # Close old listeners
+            for l in listners:
+                try:
+                    l.close()
+                except Exception as e:
+                    logger.warning(f"Listener close failed: {e}")
+            listners.clear()
+
+            # Add new listeners
+            listners.append(printer_ref.child("restart").listen(restart_pi_listener))
+            listners.append(printer_ref.child("getlogs").listen(send_logs))
+            # Uncomment when needed
+            # listners.append(printer_ref.child("restart_printer").listen(restart_printer_listener))
+            # listners.append(printer_ref.child("reload_website").listen(reload_website_listener))
+
+            while True:
                 time.sleep(10)
-                raise Exception("Network error")
-            for listner in listners:
-                if(listner._thread.is_alive()):
-                    continue
-                else:
-                    raise Exception("listner error")
-    except Exception as e:
-        logger.error(str(e))
-        time.sleep(30)
+                if network_error:
+                    raise Exception("Network error detected")
+                for listener in listners:
+                    if not listener._thread.is_alive():
+                        raise Exception("Listener thread dead")
+
+        except Exception as e:
+            logger.error(f"Listener loop error: {e}")
+            time.sleep(30)
+
+# Run main loop
+if __name__ == "__main__":
+    firebase_listener_loop()
+

@@ -2,300 +2,237 @@ import subprocess
 import threading
 import queue
 import time
-import traceback
-import json
 import os
+import json
 import logging
 import firebase_admin
 from firebase_admin import credentials, db
 
-def setup_logger():
-    """Configure and return a logger with more robust logging."""
-    logging.basicConfig(
-        level=logging.INFO, 
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('printer_setup.log'),  # Log to file
-            logging.StreamHandler()  # Also log to console
-        ]
-    )
-    return logging.getLogger(__name__)
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.FileHandler('printer_setup.log'), logging.StreamHandler()]
+)
+logger = logging.getLogger(__name__)
 
-logger = setup_logger()
+# Get configuration paths
+CWD = os.path.dirname(os.path.abspath(__file__))
+KEY_PATH = os.path.join(CWD, "..", "secrets", "key.json")
+DETAILS_PATH = os.path.join(CWD, "..", "..", "secrets", "details.json")
+DB_URL = 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/'
+STORAGE_BUCKET = 'skilldevelopmentapp.appspot.com'
 
-def load_configuration():
-    """
-    Safely load configuration files with error handling.
-    Returns a tuple of (current working directory, secrets data)
-    """
+def load_config():
+    """Load configuration data from JSON files"""
     try:
-        cwd = os.path.dirname(os.path.abspath(__file__))
-        key_path = os.path.join(cwd,"..", "secrets", "key.json")
-        details_path = os.path.join(cwd,"..", "..", "secrets", "details.json")
-        
-        if not os.path.exists(key_path):
-            logger.error(f"Firebase credentials file not found: {key_path}")
-            return None, None
-        
-        if not os.path.exists(details_path):
-            logger.error(f"Details file not found: {details_path}")
-            return None, None
-        
-        # Load credentials and details
-        cred = credentials.Certificate(key_path)
-        with open(details_path, "r") as f:
-            s_data = json.load(f)
-        
-        return cwd, s_data
+        if not os.path.exists(KEY_PATH) or not os.path.exists(DETAILS_PATH):
+            logger.error("Required configuration files not found")
+            return None
+            
+        with open(DETAILS_PATH, "r") as f:
+            return json.load(f)
     except Exception as e:
-        logger.error(f"Error loading configuration: {e}")
-        return None, None
+        logger.error(f"Configuration error: {e}")
+        return None
 
-def initialize_firebase(cred, database_url):
-    """
-    Initialize Firebase with robust error handling
-    """
+def init_firebase():
+    """Initialize Firebase connection"""
     try:
+        cred = credentials.Certificate(KEY_PATH)
         firebase_admin.initialize_app(cred, {
-            'databaseURL': database_url,
-            'storageBucket': 'skilldevelopmentapp.appspot.com'
+            'databaseURL': DB_URL,
+            'storageBucket': STORAGE_BUCKET
         })
         logger.info("Firebase initialized successfully")
+        return True
     except Exception as e:
         logger.error(f"Firebase initialization failed: {e}")
-        raise
+        return False
 
-def run_command_with_timeout(command, timeout=30):
-    """
-    Enhanced command execution with better error handling and logging
-    """
+def run_command(command, timeout=30):
+    """Execute a command with timeout and return results"""
     output_queue = queue.Queue()
     error_queue = queue.Queue()
     
-    def target():
+    def execute():
         try:
-            logger.info(f"Executing command: {' '.join(command)}")
+            logger.info(f"Running: {' '.join(command)}")
             process = subprocess.Popen(
-                command, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, 
-                text=True,
-                universal_newlines=True
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
             )
             stdout, stderr = process.communicate()
-            output_queue.put(stdout)
-            error_queue.put(stderr)
-            output_queue.put(process.returncode)
+            output_queue.put((process.returncode, stdout, stderr))
         except Exception as e:
-            logger.error(f"Command execution failed: {e}")
-            error_queue.put(str(e))
-            output_queue.put(None)
+            logger.error(f"Command execution error: {e}")
+            output_queue.put((None, None, str(e)))
     
-    thread = threading.Thread(target=target)
+    thread = threading.Thread(target=execute)
     thread.daemon = True
     thread.start()
-    
     thread.join(timeout)
     
     if thread.is_alive():
-        logger.warning(f"Command timed out after {timeout} seconds")
-        return (None, None, f"Command timed out after {timeout} seconds")
+        return None, None, "Command timed out"
     
     try:
-        return_code = output_queue.get(block=False)
-        stdout = output_queue.get(block=False)
-        stderr = error_queue.get(block=False)
-        
-        if return_code != 0:
-            logger.error(f"Command failed with return code {return_code}")
-            logger.error(f"Stderr: {stderr}")
-        
-        return (return_code, stdout, stderr)
+        return_code, stdout, stderr = output_queue.get(block=False)
+        return return_code, stdout, stderr
     except queue.Empty:
-        logger.error("Failed to retrieve command output")
-        return (None, None, "Failed to retrieve command output")
+        return None, None, "Failed to get command output"
 
-def get_printer_properties(printer_name, timeout=10):
-    """
-    Retrieve and parse printer properties with enhanced error handling
-    """
-    try:
-        command = ["lpoptions", "-p", printer_name, "-l"]
-        return_code, stdout, stderr = run_command_with_timeout(command, timeout)
-        logger.info(f"{return_code}, {stdout}, {stderr}")
-        if stdout is None or stdout != 0:
-            logger.error(f"Failed to get properties for printer '{printer_name}': {stderr}")
-            return None
-        
-        properties = {}
-        for line in return_code.strip().split("\n"):
-            if ":" in line:
-                line_parts = line.split(":")
-                option_name = line_parts[0].replace("/", ":")
-                choices = line_parts[1].split()
-                
-                if len(choices) > 1:
-                    properties[option_name] = [
-                        {"name": choice, "cost": 0.0} 
-                        for choice in choices
-                        if choice
-                    ]
-        
-        if not properties:
-            logger.warning("No printer properties retrieved")
-            return None
-        
-        logger.info(f"Printer Properties: {properties}")
-        return properties
-    
-    except Exception as e:
-        logger.error(f"Unexpected error retrieving printer properties: {e}")
-        traceback.print_exc()
-        return None
+def get_default_printer_properties():
+    """Return default printer properties"""
+    return {
+        "media": [
+            {"name": "iso_a4_210x297mm A4", "value": 0, "cost": 1, "pc": 1},
+            {"name": "na_letter_8.5x11in", "value": 0, "cost": 0, "pc": 1},
+            {"name": "na_legal_8.5x14in", "value": 0, "cost": 0, "pc": 1},
+            {"name": "iso_a3_297x420mm", "value": 0, "cost": 0, "pc": 1},
+            {"name": "na_tabloid_11x17in", "value": 0, "cost": 0, "pc": 1},
+            {"name": "custom", "value": 0, "cost": 0, "pc": 1}
+        ],
+        "orientation-requested": [
+            {"name": "3 potrait", "value": 0, "cost": 1, "pc": 1},
+            {"name": "4 landscape", "value": 0, "cost": 1, "pc": 1}
+        ],
+        "print_quality": [
+            {"name": "draft", "value": 0, "cost": 0, "pc": 1},
+            {"name": "normal", "value": 0, "cost": 0, "pc": 1},
+            {"name": "high", "value": 0, "cost": 0, "pc": 1},
+            {"name": "photo", "value": 0, "cost": 0, "pc": 1}
+        ],
+        "color_mode": [
+            {"name": "color", "value": 0, "cost": 0, "pc": 1},
+            {"name": "monochrome", "value": 0, "cost": 0, "pc": 1},
+            {"name": "black_and_white", "value": 0, "cost": 1, "pc": 1}
+        ],
+        "sides": [
+            {"name": "one-sided", "value": 1.5, "cost": 1.5, "pc": 1},
+            {"name": "two-sided-long-edge", "value": 2, "cost": 2, "pc": 0.5},
+            {"name": "two-sided-short-edge", "value": 2, "cost": 2, "pc": 0.5}
+        ],
+        "number_up": [
+            {"name": "1 1_page_per_side", "value": 0, "cost": 0, "pc": 1},
+            {"name": "2 2_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+            {"name": "4 4_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+            {"name": "6 6_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+            {"name": "9 9_pages_per_side", "value": 0, "cost": 0, "pc": 1},
+            {"name": "16 16_pages_per_side", "value": 0, "cost": 0, "pc": 1}
+        ],
+        "printer_resolution": [
+            {"name": "300x300dpi", "value": 0, "cost": 0, "pc": 1},
+            {"name": "600x600dpi", "value": 0, "cost": 0, "pc": 1},
+            {"name": "1200x1200dpi", "value": 0, "cost": 0, "pc": 1}
+        ],
+        "output_bin": [
+            {"name": "face-down", "value": 0, "cost": 0, "pc": 1},
+            {"name": "face-up", "value": 0, "cost": 0, "pc": 1}
+        ]
+    }
 
-def setup(snap):
-    """
-    Enhanced printer setup with comprehensive error handling and logging
-    """
-    if not snap.data:
-        logger.warning("No printer setup data provided.")
+def setup_printer(data_snapshot):
+    """Handle printer setup requests from Firebase"""
+    if not data_snapshot.data:
+        logger.warning("No setup data provided")
         return
-    try:
-        printer_ref = db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process")
-        
-        if printer_ref.child("start").get():
-            printer_ref.child("start").set(False)
-            data = printer_ref.get()
-            required_keys = [ 'printer_ip']
-            if not all(key in data for key in required_keys):
-                logger.error("Missing required printer setup data")
-                printer_ref.child("status").set("failed-missing_data")
-                return
-            command = [
-                "lpadmin", 
-                "-p", db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"),
-                "-E", 
-                "-v", f"ipp://{data['printer_ip']}/ipp/print", 
-                "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
-            ]
-            return_code, stdout, stderr = run_command_with_timeout(command, timeout=15)
-            printer_ref.child("status").set("connecting")
-            logger.info(f"{return_code}, {stdout}, {stderr}")
-            if stdout == 0:
-                logger.info("Printer added successfully!")
-                try:
-                    props = get_printer_properties(db.reference("/").child("Printers").child(s_data["code"]).child("details").child("name").get().replace(" ", "_"))
-
-                    props = {
-                        "media": [
-                            {"name": "iso_a4_210x297mm A4", "value": 0, "cost": 1, "pc": 1},
-                            {"name": "na_letter_8.5x11in", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "na_legal_8.5x14in", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "iso_a3_297x420mm", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "na_tabloid_11x17in", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "custom", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "orientation-requested": [
-                            {"name": "3 potrait", "value": 0, "cost": 1, "pc": 1},
-                            {"name": "4 landscape", "value": 0, "cost": 1, "pc": 1}
-                        ],
-                        "print_quality": [
-                            {"name": "draft", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "normal", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "high", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "photo", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "color_mode": [
-                            {"name": "color", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "monochrome", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "black_and_white", "value": 0, "cost": 1, "pc": 1}
-                        ],
-                        "sides": [
-                            {"name": "one-sided", "value": 1.5, "cost": 1.5, "pc": 1},
-                            {"name": "two-sided-long-edge", "value": 2, "cost": 2, "pc": 0.5},
-                            {"name": "two-sided-short-edge", "value": 2, "cost": 2, "pc": 0.5}
-                        ],
-                        "number_up": [
-                            {"name": "1 1_page_per_side", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "2 2_pages_per_side", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "4 4_pages_per_side", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "6 6_pages_per_side", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "9 9_pages_per_side", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "16 16_pages_per_side", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "printer_resolution": [
-                            {"name": "300x300dpi", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "600x600dpi", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "1200x1200dpi", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "output_bin": [
-                            {"name": "face-down", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "face-up", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "finishings": [
-                            {"name": "3", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "4", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "5", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "6", "value": 0, "cost": 0, "pc": 1}
-                        ],
-                        "media_margins": [
-                            {"name": "0", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "635", "value": 0, "cost": 0, "pc": 1},
-                            {"name": "1270", "value": 0, "cost": 0, "pc": 1}
-                        ]
-                    }
-
-                    for category in props.values():
-                        for item in category:
-                            item["value"] = item["cost"]
-
-
-                    if props is not None:
-                        printer_ref.child("properties").set(props)
-                        printer_ref.child("connection").set("success")
-                        printer_ref.child("status").set("success")
-                        time.sleep(2)
-                        db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup").set(True)
-                        db.reference("/").child("Printers").child(s_data["code"]).child("select_properties").set(True)
-                    else:
-                        logger.warning("Failed to retrieve printer properties")
-                        printer_ref.child("status").set("failed-no_properties")
-                        printer_ref.child("connection").set("failed")
-                
-                except Exception as prop_error:
-                    logger.error(f"Error retrieving printer properties: {prop_error}")
-                    printer_ref.child("status").set(f"failed-{str(prop_error)}")
-                    printer_ref.child("connection").set("failed")
-            
-            else:
-                logger.error(f"Printer addition failed. Stderr: {stderr}")
-                printer_ref.child("status").set(f"failed-{stderr}")
-                printer_ref.child("connection").set("failed")
-        
-        else:
-            logger.warning("No active printer setup process found.")
-            printer_ref.child("status").set("failed")
     
-    except Exception as e:
-        logger.error(f"Unexpected error in printer setup: {e}")
-        traceback.print_exc()
+    config = load_config()
+    if not config:
+        logger.error("Failed to load configuration")
+        return
+    
+    try:
+        # Get printer setup reference
+        printer_ref = db.reference("/").child("Printers").child(config["code"]).child("printer_setup_process")
         
+        # Check if setup is requested
+        if not printer_ref.child("start").get():
+            logger.info("No active printer setup process")
+            return
+            
+        # Reset start flag
+        printer_ref.child("start").set(False)
+        
+        # Get setup data
+        setup_data = printer_ref.get()
+        printer_ref.child("status").set("connecting")
+        
+        # Validate data
+        if "printer_ip" not in setup_data:
+            logger.error("Missing required printer IP")
+            printer_ref.child("status").set("failed-missing_data")
+            printer_ref.child("connection").set("failed")
+            return
+            
+            
+        printer_name = f"atomte{config['code']}"
+        
+        # Setup printer
+        command = [
+            "lpadmin", 
+            "-p", printer_name,
+            "-E", 
+            "-v", f"ipp://{setup_data['printer_ip']}/ipp/print", 
+            "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
+        ]
+        
+        returncode, stdout, stderr = run_command(command, timeout=15)
+        
+        # Process result
+        if returncode == 0:
+            logger.info("Printer added successfully")
+            
+            # Set printer properties
+            properties = get_default_printer_properties()
+            for category in properties.values():
+                for item in category:
+                    item["value"] = item["cost"]
+                    
+            # Update Firebase
+            printer_ref.child("properties").set(properties)
+            printer_ref.child("connection").set("success")
+            printer_ref.child("status").set("success")
+            
+            # Update printer setup status
+            db_ref = db.reference("/").child("Printers").child(config["code"])
+            db_ref.child("printer_setup").set(True)
+            db_ref.child("select_properties").set(True)
+            db_ref.child("details").child("ip").set(setup_data['printer_ip'])
+        else:
+            logger.error(f"Printer setup failed: {stderr}")
+            printer_ref.child("status").set(f"failed-{stderr}")
+            printer_ref.child("connection").set("failed")
+            
+    except Exception as e:
+        logger.error(f"Printer setup error: {e}")
         try:
             printer_ref.child("status").set(f"failed-{str(e)}")
             printer_ref.child("connection").set("failed")
-        except Exception as network_error:
-            logger.error(f"Network error setting printer setup status: {network_error}")
+        except:
+            logger.error("Could not update error status in Firebase")
 
-# Configuration and initialization
-cwd, s_data = load_configuration()
-if cwd and s_data:
+def main():
+    """Main function to initialize and start listening for printer setup requests"""
+    config = load_config()
+    if not config:
+        logger.error("Cannot proceed without configuration")
+        return
+        
+    if not init_firebase():
+        logger.error("Cannot proceed without Firebase")
+        return
+        
     try:
-        initialize_firebase(
-            credentials.Certificate(os.path.join(cwd, "..","secrets", "key.json")), 
-            'https://skilldevelopmentapp-default-rtdb.firebaseio.com/'
-        )
-        db.reference("/").child("Printers").child(s_data["code"]).child("printer_setup_process").child("start").listen(setup)
-    except Exception as init_error:
-        logger.error(f"Initialization failed: {init_error}")
-else:
-    logger.error("Failed to load configuration. Exiting.")
+        # Listen for printer setup requests
+        logger.info(f"Starting printer setup listener for printer code: {config['code']}")
+        db.reference("/").child("Printers").child(config["code"]) \
+          .child("printer_setup_process").child("start").listen(setup_printer)
+    except Exception as e:
+        logger.error(f"Listener setup failed: {e}")
+
+if __name__ == "__main__":
+    main()

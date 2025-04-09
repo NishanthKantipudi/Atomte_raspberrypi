@@ -25,7 +25,7 @@ firebase_admin.initialize_app(cred, {
 })
 
 printer_ref = db.reference("Printers/"+data["code"])
-e_c = 0 
+
 def check_internet_connection():
     while True:
         try:
@@ -36,7 +36,6 @@ def check_internet_connection():
             time.sleep(1)
 
 def update_heartbeat():
-    global e_c
     check_internet_connection()
     while True:
         try:

@@ -153,7 +153,7 @@ def pull_repository():
             if "dubious ownership" in e.stderr:
                 logger.info("Dubious ownership detected. Configuring safe.directory.")
                 run_subprocess(["git", "config", "--global", "--add", "safe.directory", "*"])
-                run_subprocess(["git", "pull", "--rebase", "origin", "master"])
+                run_subprocess(["git", "pull", "origin", "master"])
             else:
                 # If it's another error, handle it
                 if "rebase" in e.stderr:

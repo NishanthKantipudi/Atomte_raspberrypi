@@ -176,8 +176,8 @@ def setup_printer(data_snapshot):
             "lpadmin", 
             "-p", printer_name,
             "-E", 
-            "-v", f"ipp://{setup_data['printer_ip']}/ipp/print", 
-            "-m", "lsb/usr/cupsfilters/Generic-PDF_Printer-PDF.ppd"
+            "-v", f"socket://{setup_data['printer_ip']}:9100", 
+            "-m", "drv:///sample.drv/generpcl.ppd"
         ]
         
         returncode, stdout, stderr = run_command(command, timeout=15)

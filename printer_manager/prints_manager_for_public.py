@@ -553,13 +553,13 @@ async def monitor_printer_status() -> None:
     if not snmp_enabled:
         logger.info("SNMP monitoring disabled")
         return
-    
+    oid_data=printer_ref.child("oids").get()
     oids = {
-        "status": config["oids"]["oid1"],
-        "pages_printed": config["oids"]["oid2"],
-        "toner_level": config["oids"]["oid3"],
-        "tray1": config["oids"]["oid4"],
-        "tray2": config["oids"]["oid5"],
+        "status": oid_data["oid1"],
+        "pages_printed": oid_data["oid2"],
+        "toner_level": oid_data["oid3"],
+        "tray1": oid_data["oid4"],
+        "tray2": oid_data["oid5"],
     }
     
     error_count = 0

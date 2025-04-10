@@ -129,7 +129,7 @@ def pull_repository():
             run_subprocess(["git", "stash"])
         
         # Now try the pull
-        result = run_subprocess(["git", "pull", "--rebase", "origin", "master"])
+        result = run_subprocess(["sudo","git", "pull", "--rebase", "origin", "master"])
         logger.info("✅ Git pull completed successfully.")
         
         # Apply stashed changes if we stashed them

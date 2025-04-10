@@ -30,11 +30,13 @@ const DetailsCard = ({code, name, description, properties, status, statusMessage
         </div>
       ))}
         </ul> */}
-        <div className={`status ${status.toLowerCase()=="active"?"active":"inactive"}`}>
-          <span className="status-indicator"></span>
-          {status}
+        <div className="status-container">
+            <div className={`status ${status.toLowerCase()=="active"?"active":"inactive"}`}>
+                <span className="status-indicator"></span>
+                {status}
+            </div>
+            <p className="status-message">{statusMessage}</p>
         </div>
-        <p className="status-message">{statusMessage}</p>
       </div>
     );
   };
@@ -64,7 +66,7 @@ export default function LeftView({code}) {
     return (
         <div>
             <div className="qrcode">
-                <h3>Scan to connect</h3>
+                <h3>Scan to Print</h3>
             <QRCode
                 value={'https://atomte.com/redirect?code='+code}
                 size={250}

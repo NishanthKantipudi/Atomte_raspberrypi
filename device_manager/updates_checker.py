@@ -159,16 +159,6 @@ def pull_repository():
         logger.info("✅ Git pull completed successfully.")
         config["updates"] = True
         write_json_file(CONFIG_PATH, config)
-        
-        # Apply stashed changes if we stashed them
-        if stashed:
-            logger.info("Applying stashed changes.")
-            try:
-                run_subprocess(["git", "stash", "pop"])
-                logger.info("✅ Stashed changes applied successfully.")
-            except subprocess.CalledProcessError:
-                logger.warning("⚠️ Conflict when applying stashed changes. Manual resolution needed.")
-        
         return True
     except Exception as e:
         logger.error(f"Repository pull error: {e}")

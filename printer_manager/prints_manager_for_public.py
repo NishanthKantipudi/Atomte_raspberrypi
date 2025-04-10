@@ -135,7 +135,7 @@ def resolve_mdns_name(hostname: str) -> Optional[str]:
 
 def get_printer_connection_info() -> None:
     """Get printer IP address either from DNS or direct configuration"""
-    global printer_error, printer_ip, printer_dns_name, printer_ref, printer_name
+    global printer_error, printer_ip, printer_dns_name, printer_ref, printer_name,snmp_enabled
     
     printer_ref = db.reference(f"Printers/{config['printer_id']}")
     printer_ref.child("details").child("status_message").set("Fetching IP address")

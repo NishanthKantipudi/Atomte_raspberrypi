@@ -118,11 +118,11 @@ def pull_repository():
     
     # Check if .git directory exists before trying to change ownership
     if os.path.exists(".git"):
-        run_subprocess(["sudo", "chown", "-R", f"atomte{config['code']}:atomte{config['code']}", ".git"])
+        run_subprocess(["chown", "-R", f"atomte{config['code']}:atomte{config['code']}", ".git"])
     
     try:
         # First check for and handle unstaged changes
-        status = run_subprocess(["git", "status", "--porcelain"], capture_output=True, text=True)
+        status = run_subprocess(["git", "status", "--porcelain"])
         
         if status.stdout.strip():
             logger.info("Unstaged changes detected. Stashing changes before pull.")

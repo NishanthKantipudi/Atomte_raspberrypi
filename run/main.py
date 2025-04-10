@@ -129,7 +129,7 @@ def pull_repository():
             run_subprocess(["git", "stash"])
         
         # Now try the pull
-        result = run_subprocess(["sudo","git", "pull", "--rebase", "origin", "master"])
+        result = run_subprocess(["git", "pull", "--rebase", "origin", "master"])
         logger.info("✅ Git pull completed successfully.")
         
         # Apply stashed changes if we stashed them
@@ -161,6 +161,23 @@ def initialize_display():
 def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 
+def write_json_file(file_path, data):
+    """Write data to a JSON file"""
+    try:
+        # Create directory if it doesn't exist
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+            
+        # Write JSON data with pretty formatting
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
+        logger.info(f"Successfully wrote data to {file_path}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to write JSON file {file_path}: {e}")
+        return False
+    
 # Main initialization
 def first_time_setup():
     wait_for_internet()
@@ -234,8 +251,8 @@ if __name__ == "__main__":
         db.reference('/').child("Printers").child(config["code"]).child("details").child("device_ip").set(get_ip_address())
         
         # Check for updates
-        if db.reference('/').child("Printers").child(config["code"]).child("updates").get():
-            pull_repository()
+        if config.get("updates", False):
+            # pull_repository()
             install_modules()
             
             if config["type"] == "display":
@@ -244,6 +261,8 @@ if __name__ == "__main__":
                 
             db.reference('/').child("Printers").child(config["code"]).child("updates").set(False)
             run_subprocess(["sudo", "reboot"])
+            config["updates"] = False
+            write_json_file(cwd+"/../../secrets/details.json", config)
          
         # Start web interface if needed
         if config["type"] == "display":
@@ -302,6 +321,10 @@ if __name__ == "__main__":
                                      args=("sudo ../venv/bin/python3 device_manager/restart_device.py", 
                                           "device_manager/restart_device.log")))
         
+        threads.append(threading.Thread(target=run_command, 
+                                     args=("sudo ../venv/bin/python3 device_manager/updates_checker.py", 
+                                          "device_manager/updates_checker.log")))
+
         threads.append(threading.Thread(target=run_command, 
                                      args=("sudo ../venv/bin/python3 ads_manager/main.py", 
                                           "ads_manager/main.log")))

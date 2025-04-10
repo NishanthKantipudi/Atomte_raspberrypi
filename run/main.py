@@ -204,6 +204,11 @@ def first_time_setup():
         "mic": 50,
         "secrets": config
     })
+    install_modules()
+            
+    if config["type"] == "display":
+        run_web(['npm', 'install'], '/../atomte/')
+        run_web(['npm', 'run', 'build'], '/../atomte/')
     
     # Update local config
     config["setup"] = True

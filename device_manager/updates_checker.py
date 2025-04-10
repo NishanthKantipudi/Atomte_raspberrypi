@@ -145,24 +145,14 @@ def pull_repository():
     repo_dir = cwd
     os.chdir(repo_dir)
     
-    try:
-        # Check for unstaged changes
-        status = run_subprocess(["git", "status", "--porcelain"])
-        
-        if status.stdout.strip():
-            logger.info("Unstaged changes detected. Stashing changes before pull.")
-            run_subprocess(["git", "stash"])
-            stashed = True
-        else:
-            stashed = False
-            
+    try:      
         # Configure repository as safe directory if needed
         try:
             run_subprocess(["git", "pull", "--rebase", "origin", "master"])
         except subprocess.CalledProcessError as e:
             if "dubious ownership" in e.stderr:
                 logger.info("Dubious ownership detected. Configuring safe.directory.")
-                run_subprocess(["git", "config", "--global", "--add", "safe.directory", repo_dir])
+                run_subprocess(["git", "config", "--global", "--add", "safe.directory", "*"])
                 run_subprocess(["git", "pull", "--rebase", "origin", "master"])
             else:
                 # If it's another error, handle it
@@ -191,7 +181,7 @@ def pull_repository():
 
 def on_updates_change(event):
     """Firebase event handler for updates"""
-    if event.data:
+    if event.data==True:
         logger.info("Update detected in Firebase. Pulling repository...")
         pull_repository()
 

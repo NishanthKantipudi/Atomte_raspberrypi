@@ -148,19 +148,14 @@ def pull_repository():
     try:      
         # Configure repository as safe directory if needed
         try:
-            run_subprocess(["git", "pull", "--rebase", "origin", "master"])
+            run_subprocess(["git", "pull", "origin", "master"])
         except subprocess.CalledProcessError as e:
             if "dubious ownership" in e.stderr:
                 logger.info("Dubious ownership detected. Configuring safe.directory.")
                 run_subprocess(["git", "config", "--global", "--add", "safe.directory", "*"])
                 run_subprocess(["git", "pull", "origin", "master"])
             else:
-                # If it's another error, handle it
-                if "rebase" in e.stderr:
-                    logger.warning("Git rebase failed. Aborting rebase.")
-                    run_subprocess(["git", "rebase", "--abort"])
                 raise
-        
         logger.info("✅ Git pull completed successfully.")
         config["updates"] = True
         write_json_file(CONFIG_PATH, config)

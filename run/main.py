@@ -112,17 +112,41 @@ def add_ssh_key(passphrase):
     except Exception as e:
         logger.error(f"SSH key error: {e}")
         return False
+    
 def pull_repository():
     setup_ssh()
-    run_subprocess(["sudo", "chown", "-R", f"atomte{config['code']}:atomte{config['code']}", ".git"])
-    run_subprocess(["git", "fetch", "origin", "master"])
+    
+    # Check if .git directory exists before trying to change ownership
+    if os.path.exists(".git"):
+        run_subprocess(["sudo", "chown", "-R", f"atomte{config['code']}:atomte{config['code']}", ".git"])
+    
     try:
+        # First check for and handle unstaged changes
+        status = run_subprocess(["git", "status", "--porcelain"], capture_output=True, text=True)
+        
+        if status.stdout.strip():
+            logger.info("Unstaged changes detected. Stashing changes before pull.")
+            run_subprocess(["git", "stash"])
+        
+        # Now try the pull
         result = run_subprocess(["git", "pull", "--rebase", "origin", "master"])
         logger.info("✅ Git pull completed successfully.")
+        
+        # Apply stashed changes if we stashed them
+        if status.stdout.strip():
+            logger.info("Applying stashed changes.")
+            try:
+                run_subprocess(["git", "stash", "pop"])
+                logger.info("✅ Stashed changes applied successfully.")
+            except subprocess.CalledProcessError:
+                logger.warning("⚠️ Conflict when applying stashed changes. Manual resolution needed.")
+    
     except subprocess.CalledProcessError:
+        logger.error("⚠️ Git operation failed.")
         run_subprocess(["git", "rebase", "--abort"])
         logger.error("⚠️ Git rebase failed due to conflict. Rebase aborted.")
         result = None
+    
     return result
 
 

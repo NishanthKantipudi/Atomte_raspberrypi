@@ -182,7 +182,7 @@ def pull_repository():
 def on_updates_change(event):
     """Firebase event handler for updates"""
     if event.data==True:
-        logger.info("Update detected in Firebase. Pulling repository...")
+        logger.info("Update detected in Firebase. Pulling repo itory...")
         pull_repository()
 
 def firebase_listener_loop():

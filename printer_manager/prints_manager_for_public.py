@@ -485,7 +485,7 @@ async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
     try:
         # First try GET for specific OID
         async def get_specific():
-            return await getCmd(
+            return await get_cmd(
                 dispatcher,
                 CommunityData(SNMP_COMMUNITY, mpModel=0),
                 await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),
@@ -503,7 +503,7 @@ async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
             
         # Fallback to GETNEXT if GET fails
         async def snmp_query():
-            return await nextCmd(
+            return await next_cmd(
                 dispatcher,
                 CommunityData(SNMP_COMMUNITY, mpModel=0),
                 await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),

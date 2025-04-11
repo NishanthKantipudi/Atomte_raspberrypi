@@ -250,13 +250,13 @@ def monitor_network() -> None:
             socket.create_connection(("8.8.8.8", 53), timeout=5)
             error_count = 0
             internet_error = False
-            printer_ref.child("states").child("internet").set(True)
+            # printer_ref.child("states").child("internet").set(True)
         except Exception as e:
             error_count += 1
             if error_count >= 3:
                 error_count = 0
                 internet_error = True
-                printer_ref.child("states").child("internet").set(False)
+                # printer_ref.child("states").child("internet").set(False)
                 logger.error(f"Network error: {e}")
         
         time.sleep(PRINTER_CHECK_INTERVAL)
@@ -548,7 +548,7 @@ async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
 
 async def monitor_printer_status() -> None:
     """Monitor printer status via SNMP"""
-    global printer_error, current_page_count
+    global printer_error, current_page_count,printer_ip
     
     if not snmp_enabled:
         logger.info("SNMP monitoring disabled")

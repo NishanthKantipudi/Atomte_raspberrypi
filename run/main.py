@@ -202,7 +202,9 @@ def first_time_setup():
         "updates": True,
         "audio": 50,
         "mic": 50,
-        "secrets": config
+        "secrets": config,
+        "details/pagecount": 0,
+        "details/printed": 0,
     })
     install_modules()
             

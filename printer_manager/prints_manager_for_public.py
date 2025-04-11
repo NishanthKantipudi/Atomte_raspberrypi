@@ -741,7 +741,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         
         file_ref.child("status").set("Printing...")
         return True, print_job_id
-        
+    
     except Exception as e:
         logger.error(f"Print job failed: {e}")
         file_ref.child("status").set("Printing error")
@@ -815,8 +815,145 @@ def process_print_job_without_snmp(user: str, filename: str) -> Tuple[bool, int]
         file_ref.child("states").child("print").set(False)
         raise PrintJobError("Print job processing failed")
 
+def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
+    """Process a print queue job with status tracking using threading"""
+    global printer_error, internet_error, conn
+    user = ""
+    try:
+        if event_key:
+            files = job_data["files"].split(",")
+            user = job_data["user"]
+            user_ref = db.reference(f'users/{user}/details')
+            init_page_count = current_page_count
+            printing_pages = []
+            job_ids = []
+            total_cost = 0
+            printed_sum = 0
+            i = 0
+            
+            # Define thread function for processing print jobs
+            def print_processing_thread():
+                nonlocal total_cost, printing_pages, job_ids
+                try:
+                    for count, filename in enumerate(files, 1):
+                        try:
+                            # Update job status
+                            db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').update({
+                                "printing": count,
+                                "done_printing": i,
+                                "user": user,
+                                "files": job_data["files"]
+                            })
+                            logger.info(f"Printing: {filename}")
+                            
+                            # Calculate cost
+                            file_cost = db.reference(f'users/{user}/printsdetails/{filename}').child('cost').get()
+                            total_cost += file_cost
+                            
+                            # Process the print job
+                            success, job_id = process_print_job_with_snmp(user, filename)
+                            
+                            if success:
+                                # Calculate pages based on original code's logic
+                                up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
+                                total_pc = math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
+                                printing_pages.append(total_pc)
+                                job_ids.append(job_id)
+                                logger.info("Sent to printer")
+                            else:
+                                printing_pages.append(0)
+                                job_ids.append(job_id)
+                                handle_print_error(user, filename, "Printing error")
+                        except Exception as e:
+                            printing_pages.append(0)
+                            job_ids.append(0)
+                            logger.error(f"Error at printing {filename}: {e}")
+                            handle_print_error(user, filename)
+                except Exception as e:
+                    logger.error(f"Error in print thread: {e}")
+            
+            # Start the thread for print processing
+            print_thread = threading.Thread(target=print_processing_thread)
+            print_thread.daemon = True
+            print_thread.start()
+            
+            # Monitor printing progress in the main thread
+            while True:
+                pages_printed = int(current_page_count) - int(init_page_count)
+                
+                # Make sure we have data for the current index
+                if i < len(files) and len(printing_pages) > i:
+                    # Update progress in the database
+                    db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(
+                        f"{pages_printed-printed_sum}/{printing_pages[i]-printed_sum}"
+                    )
+                    
+                    # Check if current file is done printing
+                    if pages_printed >= printing_pages[i]:
+                        printed_sum = printing_pages[i]
+                        db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set("Done printing")
+                        db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').child("done_printing").set(i+1)
+                        i += 1
+                        
+                        # All files are done
+                        if i == len(files):
+                            db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').delete()
+                            db.reference(f'Printers/{config["printer_id"]}/printeddetails').child(
+                                datetime.datetime.now().strftime("%d-%m-%y")
+                            ).push().set({
+                                "user": job_data["user"],
+                                "user_id": user_ref.child("atomte_id").get(),
+                                "files": job_data["files"],
+                                "status": "Success",
+                                "time": datetime.datetime.now().isoformat(),
+                                "name": user_ref.child("name").get(),
+                                "totalcost": total_cost
+                            })
+                            break
+                
+                # Check for errors
+                if printer_error or internet_error:
+                    refund_all_print_jobs(error="Error at printer taking too long try again")
+                    db.reference(f'Printers/{config["printer_id"]}/printeddetails').child(
+                        datetime.datetime.now().strftime("%d-%m-%y")
+                    ).push().set({
+                        "user": job_data["user"],
+                        "user_id": user_ref.child("atomte_id").get(),
+                        "files": job_data["files"],
+                        "status": "Error",
+                        "time": datetime.datetime.now().isoformat(),
+                        "name": user_ref.child("name").get(),
+                        "totalcost": total_cost
+                    })
+                    logger.error('Error at page count diff printer_error')
+                    break
+                
+                # Check if print thread is still alive
+                if not print_thread.is_alive() and i >= len(printing_pages):
+                    # Thread is done and all files processed
+                    break
+                    
+                time.sleep(1)
+                
+    except Exception as e:
+        logger.error(f'Error in print queue processing: {str(e)}')
+        try:
+            db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').delete()
+            db.reference(f'Printers/{config["printer_id"]}/printeddetails').child(
+                datetime.datetime.now().strftime("%d-%m-%y")
+            ).push().set({
+                "user": job_data["user"],
+                "user_id": user_ref.child("atomte_id").get() if user_ref else "unknown",
+                "files": job_data["files"],
+                "status": "Error",
+                "time": datetime.datetime.now().isoformat(),
+                "name": user_ref.child("name").get() if user_ref else "unknown",
+                "totalcost": total_cost
+            })
+        except Exception as nested_e:
+            logger.error(f"Failed to clean up failed job: {nested_e}")
 
-def process_print_queue(event_key: str, job_data: Dict) -> None:
+def process_print_queue_non_snmp(event_key: str, job_data: Dict) -> None:
     """Process a print queue job"""
     global printer_error, internet_error
     
@@ -899,7 +1036,10 @@ def on_print_job_added(event) -> None:
         if first_job:
             job_id, job_data = first_job
             logger.info(f"New print job: {job_id}")
-            process_print_queue(job_id, job_data)
+            if snmp_enabled:
+                process_print_queue_for_snmp(job_id, job_data)
+            else:
+                process_print_queue_non_snmp(job_id, job_data)
 
 
 def main() -> None:

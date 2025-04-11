@@ -335,7 +335,7 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         total_size = int(response.headers.get('content-length', 0))
         
         # Download file
-        response = download_with_retry(url, stream=True)
+        response = download_with_retry(url)
         temp_file = f"printfile.{file_type}"
         downloaded_size = 0
         previous_percentage = 0

@@ -480,62 +480,71 @@ def get_print_job_status(job_id: int) -> Tuple[Optional[str], Optional[str]]:
         return None, None
 
 
-async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
+async def query_printer_snmp(snmpDispatcher, oid, ip):
     try:
+        # First try to get the specific OID value
         async def get_specific():
             return await get_cmd(
-                dispatcher,
-                CommunityData(SNMP_COMMUNITY, mpModel=0),
-                await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),
-                ObjectType(ObjectIdentity(oid).addAsn1MibSource(None))  # Disable MIB loading
+                snmpDispatcher,
+                CommunityData("public", mpModel=0),
+                await UdpTransportTarget.create((ip, 161), timeout=7, retries=3),
+                ObjectType(ObjectIdentity(oid))
             )
 
         try:
-            iterator = await asyncio.wait_for(get_specific(), timeout=SNMP_TIMEOUT)
-            error_indication, error_status, error_index, var_binds = iterator
-
-            if not error_indication and not error_status:
-                return var_binds[0][1].prettyPrint()
+            iterator = await asyncio.wait_for(get_specific(), timeout=7)
+            errorIndication, errorStatus, errorIndex, varBinds = iterator
+            
+            if not errorIndication and not errorStatus:
+                return varBinds[0][1].prettyPrint()
+                
         except Exception:
-            pass
-
+            pass  # Continue to GETNEXT if GET fails
+            
+        # If specific get didn't work or we want to get next values, use GETNEXT
         async def snmp_query():
             return await next_cmd(
-                dispatcher,
-                CommunityData(SNMP_COMMUNITY, mpModel=0),
-                await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),
-                ObjectType(ObjectIdentity(oid).addAsn1MibSource(None))
+                snmpDispatcher,
+                CommunityData("public", mpModel=0),
+                await UdpTransportTarget.create((ip, 161), timeout=7, retries=3),
+                ObjectType(ObjectIdentity(oid))
             )
-
+        
         all_values = []
         while True:
             try:
-                iterator = await asyncio.wait_for(snmp_query(), timeout=SNMP_TIMEOUT)
+                iterator = await asyncio.wait_for(snmp_query(), timeout=7)
             except asyncio.TimeoutError:
                 if all_values:
                     return " | ".join(all_values)
-                raise PrinterConnectionError("SNMP query timed out")
+                raise Exception("SNMP query timed out")
 
-            error_indication, error_status, error_index, var_binds = iterator
-            if error_indication:
-                if all_values:
+            errorIndication, errorStatus, errorIndex, varBinds = iterator
+            if errorIndication:
+                if all_values:  # If we have any values, return them
                     return " | ".join(all_values)
-                raise PrinterConnectionError(f"SNMP Error: {error_indication}")
-            elif error_status:
-                if all_values:
+                logger.error(f"SNMP Error: {errorIndication}")
+                raise Exception("Error querying SNMP data")
+            elif errorStatus:
+                if all_values:  # If we have any values, return them
                     return " | ".join(all_values)
-                raise PrinterConnectionError(f"Error Status: {error_status.prettyPrint()} at {error_index}")
+                logger.error(f"Error Status: {errorStatus.prettyPrint()} at {errorIndex}")
+                raise Exception("Error querying SNMP data")
             else:
-                if not var_binds or not str(var_binds[0][0]).startswith(oid[:-2]):
+                # Check if we've moved past our desired OID prefix
+                if not varBinds or not str(varBinds[0][0]).startswith(oid[:-2]):
                     break
-
-                all_values.append(var_binds[0][1].prettyPrint())
-                oid = str(var_binds[0][0])
+                    
+                # Add the value to our results
+                all_values.append(varBinds[0][1].prettyPrint())
+                
+                # Update OID for next query
+                oid = str(varBinds[0][0])
 
         return " | ".join(all_values) if all_values else "No data"
-
+                
     except Exception as e:
-        logger.error(f"SNMP query failed: {e}")
+        logger.error(str(e))
         raise
 
 
@@ -562,12 +571,13 @@ async def monitor_printer_status() -> None:
         "no_toner": False,
         "connection_error": False
     }
+    snmpDispatcher = SnmpDispatcher()
     
     while True:
         try:
             results = {}
             for name, oid in oids.items():
-                results[name] = await query_printer_snmp(SnmpDispatcher(), oid, printer_ip)
+                results[name] = await query_printer_snmp(snmpDispatcher, oid, printer_ip)
                 
             printer_error = False
             error_count = 0

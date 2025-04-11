@@ -481,35 +481,32 @@ def get_print_job_status(job_id: int) -> Tuple[Optional[str], Optional[str]]:
 
 
 async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
-    """Query printer via SNMP with GET and GETNEXT fallback"""
     try:
-        # First try GET for specific OID
         async def get_specific():
             return await get_cmd(
                 dispatcher,
                 CommunityData(SNMP_COMMUNITY, mpModel=0),
                 await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),
-                ObjectType(ObjectIdentity(oid))
+                ObjectType(ObjectIdentity(oid).addAsn1MibSource(None))  # Disable MIB loading
             )
 
         try:
             iterator = await asyncio.wait_for(get_specific(), timeout=SNMP_TIMEOUT)
             error_indication, error_status, error_index, var_binds = iterator
-            
+
             if not error_indication and not error_status:
                 return var_binds[0][1].prettyPrint()
         except Exception:
-            pass  # Continue to GETNEXT if GET fails
-            
-        # Fallback to GETNEXT if GET fails
+            pass
+
         async def snmp_query():
             return await next_cmd(
                 dispatcher,
                 CommunityData(SNMP_COMMUNITY, mpModel=0),
                 await UdpTransportTarget.create((ip, SNMP_PORT), timeout=SNMP_TIMEOUT, retries=SNMP_RETRIES),
-                ObjectType(ObjectIdentity(oid))
+                ObjectType(ObjectIdentity(oid).addAsn1MibSource(None))
             )
-        
+
         all_values = []
         while True:
             try:
@@ -529,18 +526,14 @@ async def query_printer_snmp(dispatcher, oid: str, ip: str) -> str:
                     return " | ".join(all_values)
                 raise PrinterConnectionError(f"Error Status: {error_status.prettyPrint()} at {error_index}")
             else:
-                # Check if we've moved past our desired OID prefix
                 if not var_binds or not str(var_binds[0][0]).startswith(oid[:-2]):
                     break
-                    
-                # Add the value to our results
+
                 all_values.append(var_binds[0][1].prettyPrint())
-                
-                # Update OID for next query
                 oid = str(var_binds[0][0])
 
         return " | ".join(all_values) if all_values else "No data"
-                
+
     except Exception as e:
         logger.error(f"SNMP query failed: {e}")
         raise

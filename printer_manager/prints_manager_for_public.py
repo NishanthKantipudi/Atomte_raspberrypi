@@ -215,7 +215,7 @@ def initialize_system() -> None:
     
     # Start monitoring threads
     threading.Thread(target=monitor_network, daemon=True).start()
-    threading.Thread(target=monitor_printer_connection, daemon=True).start()
+    # threading.Thread(target=monitor_printer_connection, daemon=True).start()
     
     if snmp_enabled:
         threading.Thread(target=run_snmp_loop, daemon=True).start()

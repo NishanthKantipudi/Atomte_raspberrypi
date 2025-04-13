@@ -21,7 +21,7 @@ data = read_json_file(CONFIG_PATH)
 
 # ========== CONFIG ==========
 PRINTER_ID = data["code"]  # <-- Replace this with actual printer_id
-VIDEO_FOLDER = 'videos'
+VIDEO_FOLDER = cwd+'/videos'
 JSON_STATE_FILE = 'video_state.json'
 
 # ========== INIT FIREBASE ==========

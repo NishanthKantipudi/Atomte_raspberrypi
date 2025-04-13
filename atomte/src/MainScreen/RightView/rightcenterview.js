@@ -6,7 +6,7 @@ const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400"
     <div>
       <video
         ref={videoRef}
-        src={window.location.origin + videoFile}
+        src={videoFile}
         width={width}
         height={height}
         crossOrigin="anonymous"
@@ -15,7 +15,7 @@ const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400"
         autoPlay
         playsInline
         preload="auto"
-        style={{
+        style={{ 
           display: "block",
           margin: "0 auto",
           objectFit: "cover",

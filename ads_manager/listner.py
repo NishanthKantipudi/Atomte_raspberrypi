@@ -31,8 +31,8 @@ if not data:
 
 # ========== CONFIG ==========
 PRINTER_ID = data["code"]  # <-- Replace this with actual printer_id
-VIDEO_FOLDER = cwd + '/videos'
-JSON_STATE_FILE = cwd+'/video_state.json'
+VIDEO_FOLDER = cwd + '/ads_manager/videos'
+JSON_STATE_FILE = cwd+'/ads_manager/video_state.json'
 MAX_RETRY_COUNT = 5
 RETRY_DELAY = 10  # seconds
 

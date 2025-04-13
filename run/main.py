@@ -337,6 +337,14 @@ if __name__ == "__main__":
                                           "ads_manager/main.log")))
         
         threads.append(threading.Thread(target=run_command, 
+                                     args=("sudo ../venv/bin/python3 ads_manager/files_server.py", 
+                                          "ads_manager/files_server.log")))
+        
+        threads.append(threading.Thread(target=run_command, 
+                                     args=("sudo ../venv/bin/python3 ads_manager/listner.py", 
+                                          "ads_manager/listner.log")))
+        
+        threads.append(threading.Thread(target=run_command, 
                                      args=("sudo ../venv/bin/python3 paper_manager/main1.py", 
                                           "paper_manager/main1.log")))
         

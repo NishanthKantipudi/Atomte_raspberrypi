@@ -8,9 +8,7 @@ import PrinterErrorPopup from "./Popups/popup";
 
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import app from "../firebase/firebase";
-import ad1 from "./ads/ad1.mp4";
-import ad2 from "./ads/ad2.mp4";
-import ad3 from "./ads/ad3.mp4";
+
 import logo from "../media/A.png"
 
 export default function MainScreen() {
@@ -75,14 +73,14 @@ export default function MainScreen() {
 
 
       
-      {ad1 && (
+      {(
         <div className="ad1-container">
-          <VideoPlayer className="ad1" videoFile={ad1} width="100%" height="100%" mute={false} />
+          <VideoPlayer className="ad1" videoFile={"http://localhost:7000/videos/ad1.mp4"} width="100%" height="100%" mute={false} />
         </div>
       )}
 
       <div className="RightView full-screen">
-        <SuperRightView code={code} videoFile1={ad2} videoFile2={ad3} />
+        <SuperRightView code={code} videoFile1={"http://localhost:7000/videos/ad2.mp4"} videoFile2={"http://localhost:7000/videos/ad3.mp4"} />
       </div>
 
 

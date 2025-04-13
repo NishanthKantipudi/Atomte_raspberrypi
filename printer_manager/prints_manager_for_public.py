@@ -665,7 +665,7 @@ async def monitor_printer_status() -> None:
             
         except Exception as e:
             error_count += 1
-            if error_count > 5:
+            if error_count > 3:
                 printer_error = True
                 error_count = 0
                 printer_ref.child("states").child("snmp").set(False)

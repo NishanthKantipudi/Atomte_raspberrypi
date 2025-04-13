@@ -3,7 +3,6 @@ import app from "../../firebase/firebase";
 import { getDatabase, ref, onValue } from "firebase/database";
 import "./popup.css";
 import VideoPlayer from "../RightView/rightcenterview";
-import ad1 from "../ads/ad1.mp4"; //testing
 
 const PrinterErrorPopup = ({ code }) => {
   const [error, setError] = useState(null);
@@ -23,19 +22,19 @@ const PrinterErrorPopup = ({ code }) => {
       if (errorMessage && !errorMessage.toLowerCase().includes("active")) {
         setError(errorMessage);
         if(errorMessage.toLowerCase().includes("jammed")){
-          setErrVideo("")
+          setErrVideo("http://localhost:7000/videos/jammed.mp4")
         }
         else if(errorMessage.toLowerCase().includes("empty")){
-          setErrVideo("https://atomte.com/printer-error.mp4")
+          setErrVideo("http://localhost:7000/videos/empty.mp4")
         }
         else if(errorMessage.toLowerCase().includes("toner")){
-          setErrVideo("https://atomte.com/printer-error.mp4")
+          setErrVideo("http://localhost:7000/videos/tonor.mp4")
         }
         else if(errorMessage.toLowerCase().includes("power")){
-          setErrVideo(ad1)
+          setErrVideo("http://localhost:7000/videos/power.mp4")
         }
         else{
-          setErrVideo("https://atomte.com/printer-error.mp4")
+          setErrVideo("http://localhost:7000/videos/unknown.mp4")
         }
         setShowPopup(true);
       } else {

@@ -26,7 +26,7 @@ JSON_STATE_FILE = 'video_state.json'
 
 # ========== INIT FIREBASE ==========
 
-cred = credentials.Certificate(cwd+"/../secrets/key.json")
+cred = credentials.Certificate(cwd+"/secrets/key.json")
 firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10

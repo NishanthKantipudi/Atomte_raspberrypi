@@ -6,7 +6,7 @@ const VideoPlayer = ({ videoFile = "/ads/ad1.mp4", width = "640", height = "400"
     <div>
       <video
         ref={videoRef}
-        src={videoFile}
+        src={`${videoFile}?t=${Date.now()}`}
         width={width}
         height={height}
         crossOrigin="anonymous"

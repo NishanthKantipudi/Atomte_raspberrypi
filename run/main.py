@@ -252,7 +252,13 @@ if __name__ == "__main__":
         })
         
         # Set internet connection status
-        db.reference('/').child("Printers").child(config["code"]).child("states").child("internet").set(True)
+        while 1:
+            try:
+                db.reference('/').child("Printers").child(config["code"]).child("states").child("internet").set(True)
+                break
+            except Exception as e:
+                logger.error(f"Internet connection error. Retrying... {e}")
+                time.sleep(3)
         
         # Update IP address
         db.reference('/').child("Printers").child(config["code"]).child("details").child("device_ip").set(get_ip_address())

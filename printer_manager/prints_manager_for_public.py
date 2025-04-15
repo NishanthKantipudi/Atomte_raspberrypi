@@ -353,7 +353,8 @@ def download_print_file(url: str, user: str, filename: str) -> str:
                             previous_percentage = progress
                     else:
                         executor.submit(update_print_progress, user, filename, 100)
-        
+            else:
+                executor.submit(update_print_progress, user, filename, 100)
         # Convert to PDF if needed
         if file_type != "pdf":
             convert_to_pdf(temp_file, "printfile.pdf")
@@ -383,11 +384,32 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
         device_id = db.reference(f'users/{user}/details').child("device_id").get()
         web_device_id = db.reference(f'users/{user}/details').child("web_device_id").get()
         amount = int(user_ref.child("cost").get() * 100)
+        printed = user_ref.child("printed").get()
+        name = user_ref.child("name").get()
+
         
+
+        m=1
+        if printed:
+            done, total = map(int, printed.split("/"))
+            refund = amount * (1 - done / total)
+            amount = math.ceil(refund)
+
         # Update status
         user_ref.child("status").set(f"{error}, money will be refunded")
         user_ref.child("states").child("print").set(False)
-        
+
+
+        if payment_id=="none":
+            curr_wallet_money = db.reference(f'users/{user}/wallet/balence').get()
+            db.reference(f'users/{user}/wallet/balence').set(curr_wallet_money+amount)
+            db.reference(f'users/{user}/wallet').child("transactions").child("credit").push({
+                "amount": amount,
+                "timestamp": int(time.time()),
+                "description": f"Refund for {name} due to {error}"})
+            db.reference(f'users/{user}/printsdetails/{filename}').child("status").set(f"{error}, Money added to wallet")
+
+
         # Process refund
         refund_success = False
         try:
@@ -411,19 +433,19 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
                 send_notification(
                     device_id,
                     f"Refund initiated Rs.{amount/100}",
-                    f"Refund for {filename} initiated due to {error}",
+                    f"Refund for {name} initiated due to {error} will be deposited in 2-3 days",
                     notification_data
                 )
             if web_device_id:
                 send_notification(
                     web_device_id,
                     f"Refund initiated Rs.{amount/100}",
-                    f"Refund for {filename} initiated due to {error}",
+                    f"Refund for {name} initiated due to {error} will be deposited in 2-3 days",
                     notification_data
                 )
             
             # Update status
-            user_ref.child("status").set(f"{error}, money refunded, refund id: {refund.get('id', '')}")
+            user_ref.child("status").set(f"{error}, money refunded, refund id: {refund.get('id', '')}, will be deposited in 2-3 days")
             user_ref.child("refund_id").set(str(refund.get("id", "")))
             logger.info("Refund processed successfully")
         else:
@@ -451,8 +473,8 @@ def refund_all_print_jobs(error: str = "Printing error") -> None:
         for job_id, job_data in jobs.items():
             user = job_data["user"]
             files = job_data["files"].split(",")
-            
-            for file in files:
+            printing=job_data.get("done_printing",0)
+            for file in files[printing:]:
                 handle_print_error(user, file, error)
                 
         ref.delete()
@@ -711,6 +733,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         file_ref.child("printprogress").set(0)
         local_file = download_print_file(file_data["link"], user, filename)
         file_ref.child("states").child("download").set(True)
+
         logger.info("File downloaded successfully")
         
         # Prepare print options

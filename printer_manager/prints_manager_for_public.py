@@ -442,7 +442,7 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
                     f"Refund initiated Rs.{amount/100}",
                     f"Refund for {name} initiated due to {error} will be deposited in 2-3 days",
                     notification_data
-                )
+                )                                                                                                                   
             
             # Update status
             user_ref.child("status").set(f"{error}, money refunded, refund id: {refund.get('id', '')}, will be deposited in 2-3 days")

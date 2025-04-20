@@ -53,19 +53,16 @@ def get_available_networks():
         
         if CONFIG["code"] == printer_id:
             return jsonify({
-                'status': 'success',
-                'networks': networks
+                'status': 'success'
             })
         else:
             return jsonify({
-                'status': 'error',
-                'message': "Invalid printer ID"
+                'status': 'error'
             }), 500
     
     except Exception as e:
         return jsonify({
-            'status': 'error',
-            'message': str(e)
+            'status': 'error'
         }), 500
 
 @app.route('/available_networks', methods=['GET'])

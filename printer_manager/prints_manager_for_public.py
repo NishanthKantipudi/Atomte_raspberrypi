@@ -762,6 +762,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     raise
                 time.sleep(3)
         
+        
         file_ref.child("status").set("Printing...")
         return True, print_job_id
     
@@ -875,6 +876,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
+                            
                             
                             if success:
                                 # Calculate pages based on original code's logic

@@ -46,7 +46,7 @@ def update_firebase_ip(ip_address):
 
 # Routes
 @app.route('/check_printer', methods=['POST'])
-def get_available_networks():
+def check_printer():
     """Get a list of available WiFi networks"""
     try:
         printer_id = request.get_json().get('printer_id', '')

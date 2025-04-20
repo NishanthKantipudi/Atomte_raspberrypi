@@ -45,6 +45,29 @@ def update_firebase_ip(ip_address):
     db.reference('/').child("Printers").child(CONFIG["code"]).child("details").child("device_ip").set(ip_address)
 
 # Routes
+@app.route('/check_printer', methods=['POST'])
+def get_available_networks():
+    """Get a list of available WiFi networks"""
+    try:
+        printer_id = request.get_json().get('printer_id', '')
+        
+        if CONFIG["code"] == printer_id:
+            return jsonify({
+                'status': 'success',
+                'networks': networks
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': "Invalid printer ID"
+            }), 500
+    
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
 @app.route('/available_networks', methods=['GET'])
 def get_available_networks():
     """Get a list of available WiFi networks"""

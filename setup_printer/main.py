@@ -139,12 +139,12 @@ def setup_printer(data_snapshot):
     if not data_snapshot.data:
         logger.warning("No setup data provided")
         return
-    
+        
     config = load_config()
     if not config:
         logger.error("Failed to load configuration")
         return
-    
+        
     try:
         # Get printer setup reference
         printer_ref = db.reference("/").child("Printers").child(config["code"]).child("printer_setup_process")
@@ -154,66 +154,141 @@ def setup_printer(data_snapshot):
             logger.info("No active printer setup process")
             return
             
-        # Reset start flag
+        # Reset start flag and set initial status
         printer_ref.child("start").set(False)
+        printer_ref.child("status").set("connecting")
         
         # Get setup data
         setup_data = printer_ref.get()
-        printer_ref.child("status").set("connecting")
         
-        # Validate data
-        if "printer_ip" not in setup_data:
-            logger.error("Missing required printer IP")
+        # Validate required data
+        required_fields = ["printer_ip", "model"]
+        missing_fields = [field for field in required_fields if field not in setup_data]
+        
+        if missing_fields:
+            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+            logger.error(error_msg)
             printer_ref.child("status").set("failed-missing_data")
             printer_ref.child("connection").set("failed")
             return
             
-            
+        # Step 1: Get printer IP and model
+        printer_ip = setup_data["printer_ip"]
+        printer_model = setup_data["model"]
         printer_name = f"atomte{config['code']}"
         
-        # Setup printer
+        logger.info(f"Setting up printer: {printer_name} with IP: {printer_ip}, Model: {printer_model}")
+        printer_ref.child("status").set("downloading_driver")
+        
+        # Step 2: Download PPD file
+        ppd_url = f"printers_data/{printer_model}/ppd"
+        ppd_path = f"/tmp/{printer_model}.ppd"
+        
+        ppd_url=db.reference("/").child(ppd_url).get()
+        download_result = download_file(ppd_url, ppd_path)
+        if not download_result:
+            logger.error(f"Failed to download PPD file from {ppd_url}")
+            printer_ref.child("status").set("failed-ppd_download")
+            printer_ref.child("connection").set("failed")
+            return
+            
+        printer_ref.child("status").set("installing_printer")
+        
+        # Step 3: Add the printer
         command = [
-            "lpadmin", 
+            "lpadmin",
             "-p", printer_name,
-            "-E", 
-            "-v", f"socket://{setup_data['printer_ip']}:9100", 
-            "-m", "drv:///sample.drv/generpcl.ppd"
+            "-E",
+            "-v", f"socket://{printer_ip}:9100",
+            "-P", ppd_path
         ]
         
-        returncode, stdout, stderr = run_command(command, timeout=15)
+        returncode, stdout, stderr = run_command(command, timeout=30)
         
-        # Process result
-        if returncode == 0:
-            logger.info("Printer added successfully")
-            
-            # Set printer properties
-            properties = get_default_printer_properties()
-            for category in properties.values():
-                for item in category:
-                    item["value"] = item["cost"]
-                    
-            # Update Firebase
-            printer_ref.child("properties").set(properties)
-            printer_ref.child("connection").set("success")
-            printer_ref.child("status").set("success")
-            
-            # Update printer setup status
-            db_ref = db.reference("/").child("Printers").child(config["code"])
-            db_ref.child("printer_setup").set(True)
-            db_ref.child("select_properties").set(True)
-            db_ref.child("details").child("ip").set(setup_data['printer_ip'])
-        else:
+        if returncode != 0:
             logger.error(f"Printer setup failed: {stderr}")
             printer_ref.child("status").set(f"failed-{stderr}")
             printer_ref.child("connection").set("failed")
+            return
             
+        logger.info("Printer added successfully")
+        printer_ref.child("status").set("configuring_properties")
+        
+        # Step 4: Fetch and set options
+        properties_url = f"printers_data/{printer_model}/properties"
+        properties = db.reference("/").child(properties_url).get()
+        
+        if not properties:
+            logger.warning(f"Could not fetch properties from {properties_url}, using defaults")
+            properties = get_default_printer_properties()
+            
+       
+        
+        # Update properties in Firebase
+        for category in properties.values():
+            for item in category:
+                item["value"] = item["cost"]
+                
+        # Update Firebase with success status
+        printer_ref.child("properties").set(properties)
+        printer_ref.child("connection").set("success")
+        printer_ref.child("status").set("success")
+        
+        # Update printer details in the database
+        db_ref = db.reference("/").child("Printers").child(config["code"])
+        db_ref.child("printer_setup").set(True)
+        db_ref.child("select_properties").set(True)
+        
+        # Update printer details
+        details_to_update = {
+            "ip": setup_data.get("printer_ip", ""),
+            "name": setup_data.get("name", ""),
+            "description": setup_data.get("description", ""),
+            "type": setup_data.get("type", ""),
+            "dns_name": setup_data.get("dns_name", ""),
+            "printer_ip": setup_data.get("printer_ip", ""),
+            "model": setup_data.get("model", "")
+        }
+        
+        for key, value in details_to_update.items():
+            db_ref.child("details").child(key).set(value)
+            
+        logger.info(f"Printer {printer_name} setup completed successfully")
+        
     except Exception as e:
         logger.error(f"Printer setup error: {e}")
         try:
             printer_ref.child("status").set(f"failed-{str(e)}")
             printer_ref.child("connection").set("failed")
-        except:
-            logger.error("Could not update error status in Firebase")
+        except Exception as update_error:
+            logger.error(f"Could not update error status in Firebase: {update_error}")
+
+
+def download_file(url, destination):
+    """Download a file from the given URL to the destination path"""
+    try:
+        # This function would implement the actual download logic
+        # You could use requests, urllib, or a custom method depending on the URL scheme
+        logger.info(f"Downloading file from {url} to {destination}")
+        
+        # Example implementation (replace with actual logic):
+        import requests
+        response = requests.get(url, timeout=30)
+        
+        if response.status_code == 200:
+            with open(destination, 'wb') as f:
+                f.write(response.content)
+            return True
+        else:
+            logger.error(f"Download failed with status code: {response.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
+        return False
+
+
+
+
 
 def main():
     """Main function to initialize and start listening for printer setup requests"""

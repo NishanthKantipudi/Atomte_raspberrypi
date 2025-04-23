@@ -238,6 +238,7 @@ def setup_printer(data_snapshot):
         db_ref = db.reference("/").child("Printers").child(config["code"])
         db_ref.child("printer_setup").set(True)
         db_ref.child("select_properties").set(True)
+        db_ref.child("oids").set(db.reference("/").child("printers_data").child(printer_model).child("oids").get())
         
         # Update printer details
         details_to_update = {

@@ -626,6 +626,13 @@ async def monitor_printer_status() -> None:
                 })
                 status_flags["no_toner"] = True
                 
+            if 'cover' in status_message:
+                refund_all_print_jobs()
+                printer_ref.child("details").update({
+                    "status": "Inactive",
+                    "status_message": "Printer cover is open"
+                })
+                status_flags["cover"] = True
             if results['tray1'] == "0" and results['tray2'] == "0":
                 refund_all_print_jobs()
                 printer_ref.child("details").update({
@@ -668,6 +675,13 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["paper_jam"] = False
+
+            if status_flags["cover"] and "cover" not in status_message.lower():
+                printer_ref.child("details").update({
+                    "status": "Active",
+                    "status_message": "Printer is Active"
+                })
+                status_flags["cover"] = False
                 
             if status_flags["no_toner"] and not ("empty" in status_message.lower() and "toner" in status_message.lower()):
                 printer_ref.child("details").update({

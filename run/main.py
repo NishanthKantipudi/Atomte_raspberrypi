@@ -201,6 +201,7 @@ def first_time_setup():
         "select_properties": False,
         "updates": True,
         "audio": 50,
+        "snmp":True,
         "mic": 50,
         "secrets": config,
         "details/pagecount": 0,

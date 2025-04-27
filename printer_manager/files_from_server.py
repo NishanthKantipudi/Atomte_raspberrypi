@@ -4,6 +4,20 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import logging,csv,json
+
+CONFIG_FILE = "../secrets/details.json"
+def load_config() -> Dict:
+    """Load configuration from JSON file"""
+    try:
+        with open(os.path.join(os.getcwd(), CONFIG_FILE), 'r') as file:
+            config = json.load(file)
+            config["printer_id"] = config.get("code", "")
+            return config
+    except Exception as e:
+        logger.error(f"Failed to load config: {e}")
+        raise
+config = load_config()
+
 def setup_logger():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     return logging.getLogger(__name__)
@@ -76,4 +90,4 @@ def save_user_files():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002, debug=False)
+    app.run(host='0.0.0.0', port=5002, debug=False, ssl_context=('/home/atomte'+config["code"]+'/cert.pem', '/home/atomte'+config["code"]+'/key.pem'))

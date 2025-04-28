@@ -72,7 +72,14 @@ def save_user_files():
     user_files = {}
     if os.path.exists(JSON_FILE):
         with open(JSON_FILE, 'r') as f:
-            user_files = json.load(f)
+            try:
+                content = f.read().strip()
+                if content:  # Only try loading if file is not empty
+                    user_files = json.loads(content)
+            except json.JSONDecodeError:
+                # If file is invalid, you can choose to reset or raise error
+                print("Warning: JSON file is invalid, starting fresh.")
+                user_files = {}
 
     # Update the user's file IDs, avoiding duplicates
     if user_id in user_files:

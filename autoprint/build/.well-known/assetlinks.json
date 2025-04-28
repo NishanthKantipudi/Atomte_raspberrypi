@@ -1,0 +1,13 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.delta.atomte",
+        "sha256_cert_fingerprints": [
+          "5A:F0:CC:81:60:A1:0B:7E:75:93:1C:7F:98:CD:DF:CE:C0:25:FC:58:3E:22:DE:BB:5D:66:AC:3B:AA:27:50:B0"
+        ]
+      }
+    }
+  ]
+  

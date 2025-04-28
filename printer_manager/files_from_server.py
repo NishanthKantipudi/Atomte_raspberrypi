@@ -91,4 +91,4 @@ def save_user_files():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5002, debug=False, ssl_context=('/home/atomte'+config["code"]+'/cert.pem', '/home/atomte'+config["code"]+'/key.pem'))
+    app.run(host='0.0.0.0', port=5002, debug=False)

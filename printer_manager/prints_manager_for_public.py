@@ -627,7 +627,7 @@ async def monitor_printer_status() -> None:
                 status_flags["no_toner"] = True
                 
             if 'cover' in status_message:
-                refund_all_print_jobs()
+                # refund_all_print_jobs()
                 printer_ref.child("details").update({
                     "status": "Inactive",
                     "status_message": "Printer cover is open"
@@ -919,7 +919,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             
             # Monitor printing progress in the main thread
             while True:
-                pages_printed = int(current_page_count) - int(init_page_count)
+                pages_printed = int(current_page_count) - int(init_page_count) 
                 
                 # Make sure we have data for the current index
                 if i < len(files) and len(printing_pages) > i:

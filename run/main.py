@@ -161,6 +161,9 @@ def initialize_display():
 def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 
+def web_server_thread_for_users():
+    run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')
+
 def write_json_file(file_path, data):
     """Write data to a JSON file"""
     try:
@@ -316,6 +319,9 @@ if __name__ == "__main__":
                                              args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
                                                   "printer_manager/prints_manager_for_public.log")))
             else:
+                web_thread_for_users = threading.Thread(target=web_server_thread)
+                web_thread_for_users.start()
+
                 threads.append(threading.Thread(target=run_command, 
                                              args=("sudo ../venv/bin/python3 qr_manager/qr_scanner.py", 
                                                   "qr_manager/qr_scanner.log")))

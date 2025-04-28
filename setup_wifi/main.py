@@ -65,6 +65,10 @@ def check_printer():
             'status': 'error'
         }), 500
 
+@app.route('/get_printer_code', methods=['GET'])
+def get_printer_code():
+    return jsonify({"code": CONFIG["code"]}), 200
+
 @app.route('/available_networks', methods=['GET'])
 def get_available_networks():
     """Get a list of available WiFi networks"""

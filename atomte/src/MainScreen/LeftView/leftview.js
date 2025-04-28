@@ -52,41 +52,62 @@ class printerdetails{
     }
 }
 
-export default function LeftView({code}) {
-    const [printerDetails,setPrinterdetails] = useState(null);
-    useEffect(() => {
-      if(code==null){
-        return;
+export default function LeftView({ code }) {
+  const [printerDetails, setPrinterdetails] = useState(null);
+
+  useEffect(() => {
+    if (code == null) {
+      return;
+    }
+    const db = getDatabase(app);
+    const printerRef = ref(db, 'Printers/' + code + "/details");
+
+    const unsubscribe = onValue(printerRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setPrinterdetails(new printerdetails(code, data.name, data.description, data.properties, data.status, data.status_message));
       }
-        onValue(ref(getDatabase(app), 'Printers/'+code+"/details"), (snapshot) => {
-            const data=snapshot.val();
-            setPrinterdetails(new printerdetails(code,data.name,data.description,data.properties,data.status,data.status_message));
-        })
-    },[code]);
+    });
+
+    return () => {
+      // Cleanup listener
+      unsubscribe();
+    };
+  }, [code]);
+
+  if (!code || !printerDetails) {
     return (
-        <div>
-            <div className="qrcode">
-                <h3>Scan to Print</h3>
-            <QRCode
-                value={'https://atomte.com/redirect?code='+code}
-                size={250}
-                bgColor="#ffffff"
-                fgColor="#000000"
-                level="H"
-                includeMargin={true}
-            />
-            </div>
-            {printerDetails!=null?
-            <DetailsCard
-                code={code}
-                name={printerDetails.name}
-                description={printerDetails.description}
-                properties={printerDetails.properties}
-                status={printerDetails.status}
-                statusMessage={printerDetails.statusMessage}
-            />:<></>}
-        </div>
+      <div className="loading flex flex-col items-center justify-center h-full w-full">
+        <p>Loading Printer Details...</p>
+      </div>
     );
+  }
+
+  return (
+    <div>
+      <div className="qrcode">
+        <h3>Scan to Print</h3>
+        <QRCode
+          value={'https://atomte.com/redirect?code=' + code}
+          size={250}
+          bgColor="#ffffff"
+          fgColor="#000000"
+          level="H"
+          includeMargin={true}
+        />
+      </div>
+
+      <DetailsCard
+        code={code}
+        name={printerDetails.name}
+        description={printerDetails.description}
+        properties={printerDetails.properties}
+        status={printerDetails.status}
+        statusMessage={printerDetails.statusMessage}
+      />
+    </div>
+  );
 }
+
 
 

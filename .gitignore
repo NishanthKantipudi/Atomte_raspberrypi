@@ -4,3 +4,4 @@ setup.py
 node_modules/
 atomte/build/
 setup_raspberrypi.py
+autoprint

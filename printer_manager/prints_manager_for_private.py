@@ -478,7 +478,8 @@ async def monitor_printer_status() -> None:
         "no_paper": False,
         "paper_jam": False,
         "no_toner": False,
-        "connection_error": False
+        "connection_error": False,
+        "cover": False,
     }
     snmpDispatcher = SnmpDispatcher()
     

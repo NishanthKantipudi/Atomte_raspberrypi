@@ -20,7 +20,7 @@ firebase_admin.initialize_app(cred, {
 
 ref = db.reference('Printers')
 
-with open('../secrets/details.json', 'r') as f:
+with open('../../secrets/details.json', 'r') as f:
     data1 = json.load(f)
 
 

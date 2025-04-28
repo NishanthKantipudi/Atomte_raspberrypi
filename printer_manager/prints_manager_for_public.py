@@ -895,16 +895,16 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             if success:
                                 # Calculate pages based on original code's logic
                                 up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
-                                total_pc = math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
+                                total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
                                 printing_pages.append(total_pc)
                                 job_ids.append(job_id)
                                 logger.info("Sent to printer")
                             else:
-                                printing_pages.append(0)
+                                printing_pages.append(total_pc)
                                 job_ids.append(job_id)
                                 handle_print_error(user, filename, "Printing error")
                         except Exception as e:
-                            printing_pages.append(0)
+                            printing_pages.append(total_pc)
                             job_ids.append(0)
                             logger.error(f"Error at printing {filename}: {e}")
                             handle_print_error(user, filename)

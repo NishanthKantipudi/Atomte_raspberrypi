@@ -251,7 +251,7 @@ if __name__ == "__main__":
                                              args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
                                                   "printer_manager/prints_manager_for_public.log")))
             else:
-                web_thread_for_users = threading.Thread(target=web_server_thread)
+                web_thread_for_users = threading.Thread(target=web_server_thread_for_users)
                 web_thread_for_users.start()
 
                 threads.append(threading.Thread(target=run_command, 

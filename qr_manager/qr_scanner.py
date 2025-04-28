@@ -20,7 +20,7 @@ firebase_admin.initialize_app(cred, {
 
 ref = db.reference('Printers')
 
-with open('../../secrets/details.json', 'r') as f:
+with open(cwd+'/../secrets/details.json', 'r') as f:
     data1 = json.load(f)
 
 
@@ -33,7 +33,7 @@ def read_qrcode_opencv():
 
     logger.info("Press 'q' to quit.")
     while True:
-        with open('user_files.json', 'r') as f:
+        with open(cwd+'/user_files.json', 'r') as f:
             data = json.load(f)
         try:
             ret, frame = cap.read()
@@ -52,7 +52,7 @@ def read_qrcode_opencv():
                 logger.info(data[qdata[::-1]])
                 ref.child(str(data1["code"])).child("printstodo").push().set({"user":qdata[::-1],"files":",".join(data[qdata[::-1]])})
                 del data[qdata[::-1]]
-                open("user_files.json", "w").write(json.dumps(data))
+                open(cwd+"/user_files.json", "w").write(json.dumps(data))
             time.sleep(0.5)
 
         except Exception as e:

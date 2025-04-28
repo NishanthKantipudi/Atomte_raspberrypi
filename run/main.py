@@ -56,6 +56,48 @@ def run_web(command, project_dir):
     except Exception as e:
         print(f"Web command error: {e}")
         return False
+    
+def run_web1(command, project_dir):
+    try:
+        cwd = os.getcwd()
+        full_path = os.path.abspath(os.path.join(cwd, project_dir))
+
+        # Open log file in append mode
+        log_file_path = os.path.join(full_path, 'webserver.log')
+        with open(log_file_path, 'a') as log_file:
+            log_file.write(f"\n\n--- Starting Web Server Command ---\n")
+            log_file.write(f"Command: {' '.join(command)}\n")
+            log_file.write(f"Directory: {full_path}\n")
+            
+            result = subprocess.run(
+                command,
+                cwd=full_path,
+                capture_output=True,
+                text=True
+            )
+
+            # Write stdout and stderr to log
+            log_file.write(f"STDOUT:\n{result.stdout}\n")
+            log_file.write(f"STDERR:\n{result.stderr}\n")
+            log_file.write(f"Return code: {result.returncode}\n")
+            log_file.write("--- End ---\n")
+
+            # Print to console too
+            print(f"STDOUT: {result.stdout}")
+            print(f"STDERR: {result.stderr}")
+            print(f"Return code: {result.returncode}")
+
+            return result.returncode == 0
+
+    except Exception as e:
+        print(f"Web command error: {e}")
+        # Also log the exception
+        try:
+            with open(log_file_path, 'a') as log_file:
+                log_file.write(f"Exception occurred: {str(e)}\n")
+        except:
+            pass
+        return False
 
 def wait_for_internet():
     while True:
@@ -94,7 +136,7 @@ def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 
 def web_server_thread_for_users():
-    run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')
+    run_web1(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')
 
 def write_json_file(file_path, data):
     """Write data to a JSON file"""

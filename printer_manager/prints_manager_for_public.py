@@ -867,11 +867,12 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             job_ids = []
             total_cost = 0
             printed_sum = 0
+            total_pc=0
             i = 0
             
             # Define thread function for processing print jobs
             def print_processing_thread():
-                nonlocal total_cost, printing_pages, job_ids
+                nonlocal total_cost, printing_pages, job_ids,total_pc
                 try:
                     for count, filename in enumerate(files, 1):
                         try:

@@ -14,6 +14,7 @@ with open(cwd+"/../secrets/details.json", "r") as f:
     data = json.load(f)
 options = Options()
 options.add_argument("--no-sandbox")
+options.add_argument('--disable-gpu')
 options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
 options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
 options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection

@@ -59,5 +59,26 @@ def read_qrcode_opencv():
             logger.info(f"Error: {str(e)}")
     cap.release()
 
+
+
+def read_barcode():
+    barcode = input().strip()
+    logger.info(f"Scanned barcode: {barcode}")
+    return barcode
+
 if __name__ == "__main__":
-    read_qrcode_opencv()
+    while True:
+        with open(cwd+'/user_files.json', 'r') as f:
+            data = json.load(f)
+        value=read_barcode()
+        if(value in data):
+            logger.info(data[value])
+            uid=db.reference('user_mappings').child(value).get()
+            ref.child(str(data1["code"])).child("printstodo").push().set({"user":uid,"files":",".join(data[value])})
+            del data[value]
+            open(cwd+"/user_files.json", "w").write(json.dumps(data))
+
+
+# if __name__ == "__main__":
+#     read_qrcode_opencv()
+

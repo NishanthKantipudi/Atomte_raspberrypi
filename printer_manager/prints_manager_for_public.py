@@ -57,13 +57,25 @@ active_listeners = []
 cups_connection = None
 razorpay_client = None
 
-# Initialize logging
+# Enhanced Logging Configuration
+LOG_FILE_PATH = "printer_errors.log"
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # Console
+        logging.FileHandler(LOG_FILE_PATH, mode='a')  # File logging
+    ]
 )
 logger = logging.getLogger(__name__)
+
 executor = ThreadPoolExecutor(max_workers=1)
+
+def log_error(error: Exception, context: str = "") -> None:
+    """Log errors with optional context and full traceback"""
+    logger.error(f"{context}: {str(error)}", exc_info=True)
+
 
 
 class PrinterManagementError(Exception):

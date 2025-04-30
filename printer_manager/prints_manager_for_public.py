@@ -760,7 +760,7 @@ async def monitor_printer_status() -> None:
                 except Exception as e:
                     logger.error(f"Failed to update printer status: {e}")
                     
-            logger.error(f"Printer monitoring error: {e}")
+            log_error(e, "Printer monitoring error")
             await asyncio.sleep(3)
 
 

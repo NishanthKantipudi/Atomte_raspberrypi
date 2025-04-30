@@ -721,7 +721,7 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["connection_error"] = False
-            # Track the printer state (idle, printing, aborted)
+             # Track the printer state (idle, printing, aborted)
             if results["printer_state"] != printer_state:
                 # ADD THIS LINE: Log every state transition
                 logger.info(f"Printer state changed from '{printer_state}' to '{results['printer_state']}'")
@@ -732,7 +732,7 @@ async def monitor_printer_status() -> None:
                 printer_ref.child("details").update({
                 "status": "Aborted",
                  "status_message": "Printer became idle before completing the print job"
-             })
+                })
                 refund_all_print_jobs()
                 printer_state = "Idle"
 

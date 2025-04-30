@@ -341,6 +341,9 @@ def download_with_retry(url: str, headers: Optional[Dict] = None) -> requests.Re
 def download_print_file(url: str, user: str, filename: str) -> str:
     """Download file for printing with progress tracking"""
     try:
+        # Log download start
+        logger.info(f"Starting download for user '{user}', file '{filename}'")
+        
         # Get file info
         response = download_with_retry(url)
         file_type = response.headers.get('Content-Type', '').split("/")[-1]
@@ -361,12 +364,18 @@ def download_print_file(url: str, user: str, filename: str) -> str:
                     if total_size:
                         progress = int((downloaded_size / total_size) * 100)
                         if progress - previous_percentage >= 10:
+                            # Log progress milestone
+                            logger.info(f"Download progress for user '{user}', file '{filename}': {progress}%")
                             executor.submit(update_print_progress, user, filename, progress)
                             previous_percentage = progress
                     else:
                         executor.submit(update_print_progress, user, filename, 100)
             else:
                 executor.submit(update_print_progress, user, filename, 100)
+        
+        # Log download completion
+        logger.info(f"Completed download for user '{user}', file '{filename}'")
+        
         # Convert to PDF if needed
         if file_type != "pdf":
             convert_to_pdf(temp_file, "printfile.pdf")
@@ -713,12 +722,17 @@ async def monitor_printer_status() -> None:
                 })
                 status_flags["connection_error"] = False
             # Track the printer state (idle, printing, aborted)
+            if results["printer_state"] != printer_state:
+                # ADD THIS LINE: Log every state transition
+                logger.info(f"Printer state changed from '{printer_state}' to '{results['printer_state']}'")
+                printer_state = results["printer_state"]
+
             if results["printer_state"] == "Idle" and printer_state != "Idle":
-                # Printer became idle before completing the print job
+                 # Printer became idle before completing the print job
                 printer_ref.child("details").update({
-                    "status": "Aborted",
-                    "status_message": "Printer became idle before completing the print job"
-                })
+                "status": "Aborted",
+                 "status_message": "Printer became idle before completing the print job"
+             })
                 refund_all_print_jobs()
                 printer_state = "Idle"
 
@@ -729,13 +743,11 @@ async def monitor_printer_status() -> None:
             elif results["printer_state"] == "Aborted" and printer_state != "Aborted":
                 # Printer aborted the print job
                 printer_ref.child("details").update({
-                    "status": "Aborted",
-                    "status_message": "Printer aborted the print job"
+                "status": "Aborted",
+                "status_message": "Printer aborted the print job"
                 })
                 refund_all_print_jobs()
                 printer_state = "Aborted"
-    
-                
             await asyncio.sleep(1)
             
         except Exception as e:

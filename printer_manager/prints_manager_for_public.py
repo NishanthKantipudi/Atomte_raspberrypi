@@ -584,6 +584,7 @@ async def monitor_printer_status() -> None:
         "toner_level": oid_data["oid3"],
         "tray1": oid_data["oid4"],
         "tray2": oid_data["oid5"],
+         "printer_state": oid_data["oid6"],  # New OID for printer state (idle, printing, aborted)
     }
     
     error_count = 0
@@ -594,6 +595,7 @@ async def monitor_printer_status() -> None:
         "connection_error": False
     }
     snmpDispatcher = SnmpDispatcher()
+    printer_state = None  # Variable to track the printer state (Idle, Printing, Aborted)
     
     while True:
         try:
@@ -608,6 +610,7 @@ async def monitor_printer_status() -> None:
             # Update printer status
             if results['pages_printed'] != "Error":
                 current_page_count = results['pages_printed']
+                
                 printer_ref.child("details").update({
                     "pages_printed": results['pages_printed'],
                     "tray_1": results['tray1'],
@@ -696,6 +699,29 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["connection_error"] = False
+            # Track the printer state (idle, printing, aborted)
+            if results["printer_state"] == "Idle" and printer_state != "Idle":
+                # Printer became idle before completing the print job
+                printer_ref.child("details").update({
+                    "status": "Aborted",
+                    "status_message": "Printer became idle before completing the print job"
+                })
+                refund_all_print_jobs()
+                printer_state = "Idle"
+
+            elif results["printer_state"] == "Printing" and printer_state != "Printing":
+                # Printer started printing
+                printer_state = "Printing"
+
+            elif results["printer_state"] == "Aborted" and printer_state != "Aborted":
+                # Printer aborted the print job
+                printer_ref.child("details").update({
+                    "status": "Aborted",
+                    "status_message": "Printer aborted the print job"
+                })
+                refund_all_print_jobs()
+                printer_state = "Aborted"
+    
                 
             await asyncio.sleep(1)
             
@@ -873,6 +899,9 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             # Define thread function for processing print jobs
             def print_processing_thread():
                 nonlocal total_cost, printing_pages, job_ids,total_pc
+                successful_jobs = 0  # ✅ Count how many jobs were accepted
+                rejected_jobs = 0    # ✅ Count how many jobs were rejected
+                total_pages_printed = 0  # ✅ Count total pages printed
                 try:
                     for count, filename in enumerate(files, 1):
                         try:
@@ -893,7 +922,29 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             success, job_id = process_print_job_with_snmp(user, filename)
                             
                             
-                            if success:
+                            if  success and job_id:
+                                # CUPS status check right after submitting the job
+                                status, reasons = get_print_job_status(job_id)
+                                logger.info(f"Job {job_id} status: {status} - {reasons}")
+
+                                if status in ["Canceled", "Aborted", "Stopped"]:
+                                    logger.error(f"Job {filename} rejected by printer: {status}")
+                                    # Log rejection reason in Firebase
+                                    db.reference(f'Printers/{config["printer_id"]}/rejected_jobs').child(
+                                        datetime.datetime.now().strftime("%d-%m-%y")
+                                    ).push().set({
+                                        "user": user,
+                                        "filename": filename,
+                                        "job_id": job_id,
+                                        "reason": f"{status}: {reasons}",
+                                        "time": datetime.datetime.now().isoformat()
+                                    })
+                                    # Handle print error
+                                    handle_print_error(user, filename, f"Rejected by printer: {status}")
+                                    printing_pages.append(total_pc)
+                                    job_ids.append(0)
+                                    continue
+                                
                                 # Calculate pages based on original code's logic
                                 up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
                                 total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()

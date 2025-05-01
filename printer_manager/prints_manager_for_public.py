@@ -815,7 +815,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         local_file = download_print_file(file_data["link"], user, filename)
         file_ref.child("states").child("download").set(True)
 
-        logger.info("File downloaded successfully")
+        logger.info("Cups Printing Progress")
         
         # Prepare print options
         options = {
@@ -1048,6 +1048,17 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                 
                 # Check for errors
                 if printer_error or internet_error:
+                    # Handle partial print for current file
+                    if i < len(files) and len(printing_pages) > i:
+                        file_pagecount = db.reference(f'users/{user}/printsdetails/{files[i]}').child('pagecount').get()
+                        pages_for_this_file = pages_printed - printed_sum
+                        if pages_for_this_file < file_pagecount:
+                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(
+                                f"{pages_for_this_file}/{file_pagecount}"
+                            )
+                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set(
+                                f"Partial print: {pages_for_this_file}/{file_pagecount} pages printed"
+                            )
                     refund_all_print_jobs(error="Error at printer taking too long try again")
                     db.reference(f'Printers/{config["printer_id"]}/printeddetails').child(
                         datetime.datetime.now().strftime("%d-%m-%y")

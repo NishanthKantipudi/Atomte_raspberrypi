@@ -480,7 +480,12 @@ def refund_all_print_jobs(error: str = "Printing error") -> None:
         ref.delete()
     except Exception as e:
         logger.error(f"Failed to refund all jobs: {e}")
-        ref.delete()
+        try:
+            ref.delete()
+            raise Exception("error refunding all jobs")
+        except Exception as e:
+            logger.error(f"Failed to delete print jobs reference: {e}")
+            raise Exception("Failed to delete print jobs reference")
 
 
 def get_print_job_status(job_id: int) -> Tuple[Optional[str], Optional[str]]:
@@ -607,14 +612,16 @@ async def monitor_printer_status() -> None:
             printer_ref.child("states").child("snmp").set(True)
             
             # Update printer status
-            if results['pages_printed'] != "Error":
-                current_page_count = results['pages_printed']
-                printer_ref.child("details").update({
-                    "pages_printed": results['pages_printed'],
-                    "tray_1": results['tray1'],
-                    "tray_2": results['tray2'],
-                    "toner_level": results['toner_level']
-                })
+            try:
+                current_page_count = int(results['pages_printed'])
+            except Exception as e:
+                logger.error(f"Failed to update current page count: {e}--> {results['pages_printed']}")
+            printer_ref.child("details").update({
+                "pages_printed": results['pages_printed'],
+                "tray_1": results['tray1'],
+                "tray_2": results['tray2'],
+                "toner_level": results['toner_level']
+            })
             
             # Check for errors
             status_message = results['status']
@@ -920,7 +927,12 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             
             # Monitor printing progress in the main thread
             while True:
-                pages_printed = int(current_page_count) - int(init_page_count) 
+                try:
+                    pages_printed = int(current_page_count) - int(init_page_count) 
+                except Exception as e:
+                    logger.error(f"Error getting current page count: {e}---{current_page_count}---{init_page_count}")
+                    logger.error(f"Error getting page count: {e}")
+        
                 
                 # Make sure we have data for the current index
                 if i < len(files) and len(printing_pages) > i:
@@ -1123,7 +1135,10 @@ def main() -> None:
                     
             except Exception as e:
                 logger.error(f"Main loop error: {e}")
-                refund_all_print_jobs("System error")
+                try:
+                    refund_all_print_jobs("System error")
+                except Exception as refund_error:
+                    logger.error(f"Failed to refund all jobs: {refund_error}")
                 
                 # Clean up listeners
                 for lst in active_listeners:

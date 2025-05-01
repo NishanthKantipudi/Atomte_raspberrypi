@@ -60,6 +60,17 @@ razorpay_client = None
 # Enhanced Logging Configuration
 LOG_FILE_PATH = "printer_errors.log"
 
+def wait_and_set_error(error_check_func, set_error_func, wait_seconds=300):
+    """
+    Waits for wait_seconds, then checks error condition.
+    If still present, sets error.
+    """
+    def thread_func():
+        time.sleep(wait_seconds)
+        if error_check_func():
+            set_error_func()
+    threading.Thread(target=thread_func, daemon=True).start()
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -657,34 +668,82 @@ async def monitor_printer_status() -> None:
             # Check for errors
             status_message = results['status']
             
-            if 'toner is out' in status_message:
-                refund_all_print_jobs()
+            if 'toner is out' in status_message.lower():
+                def check_no_toner():
+                    refreshed_status = printer_ref.child("details").child("status_message").get()
+                    return 'toner is out' in refreshed_status.lower()
+                def set_no_toner_error():
+                    global printer_error
+                    printer_error = True
+                    printer_ref.child("details").update({
+                        "status": "Inactive",
+                        "status_message": "Toner is empty...(not resolved after 5 minutes)"
+                    })
+                    # Now call refund after 5 minutes only if error persists
+                    refund_all_print_jobs()
+                wait_and_set_error(check_no_toner, set_no_toner_error, wait_seconds=300)
                 printer_ref.child("details").update({
                     "status": "Inactive",
-                    "status_message": "Toner is empty..."
+                    "status_message": "Toner is empty... (waiting for replacemnt)"
                 })
                 status_flags["no_toner"] = True
                 
-            if 'cover' in status_message:
-                refund_all_print_jobs()
+            if 'cover' in status_message.lower():
+                def check_cover():
+                    refreshed_status = printer_ref.child("details").child("status_message").get()
+                    return 'cover' in refreshed_status.lower()
+                def set_cover_error():
+                    global printer_error
+                    printer_error = True
+                    printer_ref.child("details").update({
+                        "status": "Inactive",
+                        "status_message": "Printer cover is open (not resolved after 5 minutes)"
+                    })
+                    # Now call refund after 5 minutes only if error persists
+                    refund_all_print_jobs()
+                wait_and_set_error(check_cover, set_cover_error, wait_seconds=300)
                 printer_ref.child("details").update({
                     "status": "Inactive",
-                    "status_message": "Printer cover is open"
+                    "status_message": "Printer cover is open (waiting for user to close)"
                 })
                 status_flags["cover"] = True
+            
             if results['tray1'] == "0" and results['tray2'] == "0":
-                refund_all_print_jobs()
+                def check_no_paper():
+                    tray1 = printer_ref.child("details").child("tray_1").get()
+                    tray2 = printer_ref.child("details").child("tray_2").get()
+                    return tray1 == "0" and tray2 == "0"
+                def set_no_paper_error():
+                    global printer_error
+                    printer_error = True
+                    printer_ref.child("details").update({
+                        "status": "Inactive",
+                        "status_message": "Printer is empty after 5 minutes"
+                    })
+                    refund_all_print_jobs()
+                wait_and_set_error(check_no_paper, set_no_paper_error, wait_seconds=300)
                 printer_ref.child("details").update({
                     "status": "Inactive",
-                    "status_message": "Printer is empty, please wait"
+                    "status_message": "Printer is empty, please wait (waiting for paper refill)"
                 })
                 status_flags["no_paper"] = True
-                
+    
             if "paper jam" in status_message.lower():
-                refund_all_print_jobs()
+                def check_paper_jam():
+                    refreshed_status = printer_ref.child("details").child("status_message").get()
+                    return "paper jam" in refreshed_status.lower()
+                def set_paper_jam_error():
+                    global printer_error
+                    printer_error = True
+                    printer_ref.child("details").update({
+                        "status": "Inactive",
+                        "status_message": "Paper jam not resolved after 5 minutes"
+                    })
+                    refund_all_print_jobs()
+                wait_and_set_error(check_paper_jam, set_paper_jam_error, wait_seconds=300)
                 printer_ref.child("details").update({
                     "status": "Inactive",
-                    "status_message": "Paper jammed, please wait",
+                    "status_message": "Paper jammed, please wait (waiting for user to clear)",
                     "error": "Paper jammed"
                 })
                 status_flags["paper_jam"] = True

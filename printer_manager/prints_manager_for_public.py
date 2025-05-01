@@ -598,7 +598,13 @@ async def monitor_printer_status() -> None:
     if not snmp_enabled:
         logger.info("SNMP monitoring disabled")
         return
+    
     oid_data=printer_ref.child("oids").get()
+    required_oids = ["oid1", "oid2", "oid3", "oid4", "oid5", "oid6"]
+    missing = [k for k in required_oids if k not in oid_data]
+    if missing:
+        logger.error(f"Missing OIDs in configuration: {missing}. Please check Firebase setup.")
+        return
     oids = {
         "status": oid_data["oid1"],
         "pages_printed": oid_data["oid2"],

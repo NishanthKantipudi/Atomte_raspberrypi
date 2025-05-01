@@ -826,6 +826,9 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     str(int(time.time())),
                     options
                 )
+                # Log CUPS job status right after submission
+                status, reasons = get_print_job_status(print_job_id)
+                logger.info(f"Job {print_job_id} status: {status} - {reasons}")
                 break
             except Exception as e:
                 logger.error(f"Print job submission failed (attempt {retry_count}): {e}")

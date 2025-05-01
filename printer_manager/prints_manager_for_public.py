@@ -590,6 +590,14 @@ async def query_printer_snmp(snmpDispatcher, oid, ip):
         logger.error(str(e))
         raise
 
+# SNMP Printer State Mapping (hrPrinterStatus)
+PRINTER_STATE_MAP = {
+    "1": "Other",
+    "2": "Unknown",
+    "3": "Idle",
+    "4": "Printing",
+    "5": "Warming Up"
+}
 
 async def monitor_printer_status() -> None:
     """Monitor printer status via SNMP"""
@@ -730,7 +738,9 @@ async def monitor_printer_status() -> None:
              # Track the printer state (idle, printing, aborted)
             if results["printer_state"] != printer_state:
                 # ADD THIS LINE: Log every state transition
-                logger.info(f"Printer state changed from '{printer_state}' to '{results['printer_state']}'")
+                prev_state = PRINTER_STATE_MAP.get(str(printer_state), str(printer_state))
+                new_state = PRINTER_STATE_MAP.get(str(results["printer_state"]), str(results["printer_state"]))
+                logger.info(f"Printer state changed from '{prev_state}' to '{new_state}'")
                 printer_state = results["printer_state"]
 
             if results["printer_state"] == "Idle" and printer_state != "Idle":

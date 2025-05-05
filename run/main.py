@@ -57,6 +57,7 @@ def run_web(command, project_dir):
         print(f"Web command error: {e}")
         return False
 
+
 def wait_for_internet():
     while True:
         try:
@@ -80,74 +81,6 @@ def get_ip_address():
 
 def install_modules():
     run_subprocess(["../../venv/bin/python3", "../../venv/bin/pip3", "install", "-r", "../requirements.txt"])
-
-def setup_ssh():
-    try:
-        result = subprocess.run(['ssh-agent', '-s'], capture_output=True, text=True, check=True)
-        output = result.stdout
-        logger.info(f"SSH Agent started: {output}")
-        
-        for line in output.splitlines():
-            if line.startswith('SSH_AUTH_SOCK'):
-                os.environ['SSH_AUTH_SOCK'] = line.split(';')[0].split('=')[1]
-            if line.startswith('SSH_AGENT_PID'):
-                os.environ['SSH_AGENT_PID'] = line.split(';')[0].split('=')[1]
-                
-        run_subprocess(["chmod", "600", cwd+"/../ssh_key"])
-        add_ssh_key("8985")
-    except Exception as e:
-        logger.error(f"SSH setup error: {e}")
-
-def add_ssh_key(passphrase):
-    try:
-        if 'SSH_AUTH_SOCK' not in os.environ:
-            raise Exception("SSH agent not running")
-        
-        child = pexpect.spawn(f'ssh-add {cwd}/../ssh_key')
-        child.expect('Enter passphrase', timeout=5)
-        child.sendline(passphrase)
-        child.expect(pexpect.EOF)
-        logger.info("SSH key added successfully")
-        return True
-    except Exception as e:
-        logger.error(f"SSH key error: {e}")
-        return False
-    
-def pull_repository():
-    setup_ssh()
-    
-    # Check if .git directory exists before trying to change ownership
-    if os.path.exists(".git"):
-        run_subprocess(["chown", "-R", f"atomte{config['code']}:atomte{config['code']}", ".git"])
-    
-    try:
-        # First check for and handle unstaged changes
-        status = run_subprocess(["git", "status", "--porcelain"])
-        
-        if status.stdout.strip():
-            logger.info("Unstaged changes detected. Stashing changes before pull.")
-            run_subprocess(["git", "stash"])
-        
-        # Now try the pull
-        result = run_subprocess(["git", "pull", "--rebase", "origin", "master"])
-        logger.info("✅ Git pull completed successfully.")
-        
-        # Apply stashed changes if we stashed them
-        if status.stdout.strip():
-            logger.info("Applying stashed changes.")
-            try:
-                run_subprocess(["git", "stash", "pop"])
-                logger.info("✅ Stashed changes applied successfully.")
-            except subprocess.CalledProcessError:
-                logger.warning("⚠️ Conflict when applying stashed changes. Manual resolution needed.")
-    
-    except subprocess.CalledProcessError:
-        logger.error("⚠️ Git operation failed.")
-        run_subprocess(["git", "rebase", "--abort"])
-        logger.error("⚠️ Git rebase failed due to conflict. Rebase aborted.")
-        result = None
-    
-    return result
 
 
 def initialize_display():
@@ -319,7 +252,7 @@ if __name__ == "__main__":
                                              args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
                                                   "printer_manager/prints_manager_for_public.log")))
             else:
-                web_thread_for_users = threading.Thread(target=web_server_thread)
+                web_thread_for_users = threading.Thread(target=web_server_thread_for_users)
                 web_thread_for_users.start()
 
                 threads.append(threading.Thread(target=run_command, 

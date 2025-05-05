@@ -292,12 +292,12 @@ def update_print_progress(user: str, filename: str, progress: int) -> None:
         logger.error(f"Failed to update print progress: {e}")
         raise
 
-
+import re
 def get_local_file_path(user: str, filename: str) -> str:
     """Get the local file path from the uid/filename structure"""
     cwd = os.getcwd()
     # Replace spaces with underscores in filename for filesystem compatibility
-    safe_filename = filename.replace(' ', '_')
+    safe_filename = re.sub(r'\s+', '_', filename)
     file_path = f"{cwd}/files/{user}/{safe_filename}"
     
     if not os.path.exists(file_path):

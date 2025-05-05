@@ -376,7 +376,7 @@ def download_print_file(url: str, user: str, filename: str) -> str:
                         progress = int((downloaded_size / total_size) * 100)
                         if progress - previous_percentage >= 10:
                             # Log progress milestone
-                            logger.info(f"Download progress for user '{user}', file '{filename}': {progress}%")
+                            # logger.info(f"Download progress for user '{user}', file '{filename}': {progress}%")
                             executor.submit(update_print_progress, user, filename, progress)
                             previous_percentage = progress
                     else:
@@ -640,6 +640,8 @@ async def monitor_printer_status() -> None:
         "no_toner": False,
         "connection_error": False,
         "cover": False,
+        "tray1": False,
+        "tray2": False,
     }
     
     status_flags_error_counter = {
@@ -699,7 +701,7 @@ async def monitor_printer_status() -> None:
                     status_flags_error_counter["cover"] = 0
                 
             
-            if "no paper" in status_message.lower():
+            if "no paper" in status_message.lower(): 
                 printer_ref.child("details").update({
                     "status": "Inactive",
                     "status_message": "Printer cover is open (waiting for user to close)"
@@ -731,7 +733,7 @@ async def monitor_printer_status() -> None:
                 if(status_flags_error_counter["connection_error"] > 300):
                     refund_all_print_jobs()
                     status_flags_error_counter["connection_error"] = 0        
-                
+                        
             elif "empty" in status_message.lower() and "toner" in status_message.lower():
                 refund_all_print_jobs()
                 printer_ref.child("details").update({
@@ -750,6 +752,7 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["no_paper"] = False
+                status_flags_error_counter["no_paper"] = 0
                 
             if status_flags["paper_jam"] and "paper jam" not in status_message.lower():
                 printer_ref.child("details").update({
@@ -757,6 +760,7 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["paper_jam"] = False
+                status_flags_error_counter["paper_jam"] = 0
 
             if status_flags["cover"] and "cover" not in status_message.lower():
                 printer_ref.child("details").update({
@@ -764,6 +768,7 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["cover"] = False
+                status_flags_error_counter["cover"] = 0
                 
             if status_flags["no_toner"] and not ("empty" in status_message.lower() and "toner" in status_message.lower()):
                 printer_ref.child("details").update({
@@ -771,13 +776,24 @@ async def monitor_printer_status() -> None:
                     "status_message": "Printer is Active"
                 })
                 status_flags["no_toner"] = False
-                
+                status_flags_error_counter["no_toner"] = 0
+            
+            if results['tray1'] == "0" and results['tray2'] == "0":
+                refund_all_print_jobs()
+                printer_ref.child("details").update({
+                    "status": "Inactive",
+                    "status_message": "Printer is empty, please wait"
+                })
+                status_flags["no_paper"] = True
+            
+                     
             if status_flags["connection_error"]:
                 printer_ref.child("details").update({
                     "status": "Active",
                     "status_message": "Printer is Active"
                 })
                 status_flags["connection_error"] = False
+                status_flags_error_counter["connection_error"] = 0
              # Track the printer state (idle, printing, aborted)
             if results["printer_state"] != printer_state:
                 # ADD THIS LINE: Log every state transition
@@ -801,11 +817,11 @@ async def monitor_printer_status() -> None:
 
             elif results["printer_state"] == "Aborted" and printer_state != "Aborted":
                 # Printer aborted the print job
-                printer_ref.child("details").update({
-                "status": "Aborted",
-                "status_message": "Printer aborted the print job"
-                })
-                refund_all_print_jobs()
+                # printer_ref.child("details").update({
+                # "status": "Aborted",
+                # "status_message": "Printer aborted the print job"
+                # })
+                # refund_all_print_jobs()
                 printer_state = "Aborted"
             await asyncio.sleep(1)
             
@@ -976,12 +992,12 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             user = job_data["user"]
             user_ref = db.reference(f'users/{user}/details')
             init_page_count = current_page_count
-            printing_pages = []
+            printing_pages = [] #tracking pages for each file
             job_ids = []
             total_cost = 0
             printed_sum = 0
             total_pc=0
-            i = 0
+            i = 0 # Index for the current file being processed
             
             # Define thread function for processing print jobs
             def print_processing_thread():

@@ -49,11 +49,17 @@ def run_subprocess(commands):
 def run_web(command, project_dir):
     try:
         result = subprocess.run(command, cwd=cwd+project_dir, capture_output=True, text=True)
+        logger.info(f"Running command: {' '.join(command)} in {cwd+project_dir}")
+        logger.info(f"STDOUT: {result.stdout.strip()}")
+        logger.warning(f"STDERR: {result.stderr.strip()}") if result.stderr else None
+        logger.info(f"Return code: {result.returncode}")
+
         print(f"STDOUT: {result.stdout}")
         print(f"STDERR: {result.stderr}")
         print(f"Return code: {result.returncode}")
         return result.returncode == 0
     except Exception as e:
+        logger.error(f"Web command error: {e}")
         print(f"Web command error: {e}")
         return False
 

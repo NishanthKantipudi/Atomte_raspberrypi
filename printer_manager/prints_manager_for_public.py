@@ -624,18 +624,13 @@ async def monitor_printer_status() -> None:
         return
     
     oid_data=printer_ref.child("oids").get()
-    required_oids = ["oid1", "oid2", "oid3", "oid4", "oid5", "oid6"]
-    missing = [k for k in required_oids if k not in oid_data]
-    if missing:
-        logger.error(f"Missing OIDs in configuration: {missing}. Please check Firebase setup.")
-        return
     oids = {
-        "status": oid_data["oid1"],
-        "pages_printed": oid_data["oid2"],
-        "toner_level": oid_data["oid3"],
-        "tray1": oid_data["oid4"],
-        "tray2": oid_data["oid5"],
-         "printer_state": oid_data["oid6"],  # New OID for printer state (idle, printing, aborted)
+        "status": oid_data.get("oid1",""),
+        "pages_printed": oid_data.get("oid2",""),
+        "toner_level": oid_data.get("oid3",""),
+        "tray1": oid_data.get("oid4",""),
+        "tray2": oid_data.get("oid5",""),
+         "printer_state": oid_data.get("oid6",""),  # New OID for printer state (idle, printing, aborted)
     }
     
     error_count = 0
@@ -1006,9 +1001,6 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             # Define thread function for processing print jobs
             def print_processing_thread():
                 nonlocal total_cost, printing_pages, job_ids,total_pc
-                successful_jobs = 0  # ✅ Count how many jobs were accepted
-                rejected_jobs = 0    # ✅ Count how many jobs were rejected
-                total_pages_printed = 0  # ✅ Count total pages printed
                 try:
                     for count, filename in enumerate(files, 1):
                         try:
@@ -1028,40 +1020,42 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
                             
-                            
-                            if  success and job_id:
-                                # CUPS status check right after submitting the job
-                                status, reasons = get_print_job_status(job_id)
-                                logger.info(f"Job {job_id} status: {status} - {reasons}")
+                            while 1:
+                                if  success and job_id:
+                                    # CUPS status check right after submitting the job
+                                    status, reasons = get_print_job_status(job_id)
+                                    logger.info(f"Job {job_id} status: {status} - {reasons}")
 
-                                if status in ["Canceled", "Aborted", "Stopped"]:
-                                    logger.error(f"Job {filename} rejected by printer: {status}")
-                                    # Log rejection reason in Firebase
-                                    db.reference(f'Printers/{config["printer_id"]}/rejected_jobs').child(
-                                        datetime.datetime.now().strftime("%d-%m-%y")
-                                    ).push().set({
-                                        "user": user,
-                                        "filename": filename,
-                                        "job_id": job_id,
-                                        "reason": f"{status}: {reasons}",
-                                        "time": datetime.datetime.now().isoformat()
-                                    })
-                                    # Handle print error
-                                    handle_print_error(user, filename, f"Rejected by printer: {status}")
+                                    if status in ["Canceled", "Aborted", "Stopped"]:
+                                        logger.error(f"Job {filename} rejected by printer: {status}")
+                                        # Log rejection reason in Firebase
+                                        db.reference(f'Printers/{config["printer_id"]}/rejected_jobs').child(
+                                            datetime.datetime.now().strftime("%d-%m-%y")
+                                        ).push().set({
+                                            "user": user,
+                                            "filename": filename,
+                                            "job_id": job_id,
+                                            "reason": f"{status}: {reasons}",
+                                            "time": datetime.datetime.now().isoformat()
+                                        })
+                                        # Handle print error
+                                        handle_print_error(user, filename, f"Rejected by printer: {status}")
+                                        printing_pages.append(total_pc)
+                                        job_ids.append(0)
+                                        break
+                                    if status=="Completed":
+                                        # Calculate pages based on original code's logic
+                                        up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
+                                        total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
+                                        printing_pages.append(total_pc)
+                                        job_ids.append(job_id)
+                                        logger.info("Sent to printer")
+                                        break
+                                else:
                                     printing_pages.append(total_pc)
-                                    job_ids.append(0)
-                                    continue
-                                
-                                # Calculate pages based on original code's logic
-                                up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
-                                total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
-                                printing_pages.append(total_pc)
-                                job_ids.append(job_id)
-                                logger.info("Sent to printer")
-                            else:
-                                printing_pages.append(total_pc)
-                                job_ids.append(job_id)
-                                handle_print_error(user, filename, "Printing error")
+                                    job_ids.append(job_id)
+                                    handle_print_error(user, filename, "Printing error")
+                                    break
                         except Exception as e:
                             printing_pages.append(total_pc)
                             job_ids.append(0)
@@ -1116,17 +1110,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                 
                 # Check for errors
                 if printer_error or internet_error:
-                    # Handle partial print for current file
-                    if i < len(files) and len(printing_pages) > i:
-                        file_pagecount = db.reference(f'users/{user}/printsdetails/{files[i]}').child('pagecount').get()
-                        pages_for_this_file = pages_printed - printed_sum
-                        if pages_for_this_file < file_pagecount:
-                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(
-                                f"{pages_for_this_file}/{file_pagecount}"
-                            )
-                            db.reference(f'users/{user}/printsdetails/{files[i]}').child("status").set(
-                                f"Partial print: {pages_for_this_file}/{file_pagecount} pages printed"
-                            )
+                
                     refund_all_print_jobs(error="Error at printer taking too long try again")
                     db.reference(f'Printers/{config["printer_id"]}/printeddetails').child(
                         datetime.datetime.now().strftime("%d-%m-%y")

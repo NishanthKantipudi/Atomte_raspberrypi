@@ -743,11 +743,13 @@ def process_print_job_without_snmp(user: str, filename: str) -> Tuple[bool, int]
 
 def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
     """Process a print queue job with status tracking using threading"""
+    logger.info("got data")
     global printer_error, internet_error
     user = ""
     try:
         if event_key:
             files = job_data["files"].split(",")
+            logger.info(files)
             user = job_data["user"]
             user_ref = db.reference(f'users/{user}/details')
             init_page_count = current_page_count
@@ -763,6 +765,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                 nonlocal total_cost, printing_pages, job_ids,total_pc
                 try:
                     for count, filename in enumerate(files, 1):
+                        logger.info(filename)
                         try:
                             # Update job status
                             db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').update({

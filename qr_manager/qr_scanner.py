@@ -9,7 +9,7 @@ import logging
 
 # ==== Setup ====
 cwd = os.getcwd()
-SECRETS_DIR = os.path.join(cwd, "../secrets")
+SECRETS_DIR = os.path.join(cwd, "secrets")
 USER_FILES_PATH = os.path.join(cwd, "user_files.json")
 DETAILS_PATH = os.path.join(SECRETS_DIR, "details.json")
 KEY_PATH = os.path.join(SECRETS_DIR, "key.json")

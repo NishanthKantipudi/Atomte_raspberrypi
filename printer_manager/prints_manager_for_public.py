@@ -1077,7 +1077,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                     logger.error(f"Error getting current page count: {e}---{current_page_count}---{init_page_count}")
                     logger.error(f"Error getting page count: {e}")
         
-                
+                logger.info(current_page_count,pages_printed,init_page_count)
                 # Make sure we have data for the current index
                 if i < len(files) and len(printing_pages) > i:
                     # Update progress in the database

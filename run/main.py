@@ -101,7 +101,7 @@ def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 
 def web_server_thread_for_users():
-    run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')
+    # run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')
 
 def write_json_file(file_path, data):
     """Write data to a JSON file"""

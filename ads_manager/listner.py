@@ -40,7 +40,8 @@ RETRY_DELAY = 10  # seconds
 def initialize_firebase():
     try:
         cred_path = cwd + "/secrets/key.json"
-        cred = credentials.Certificate(cred_path)
+        KEY_PATH = "/dev/shm/atomte_secrets.json"
+        cred = credentials.Certificate(KEY_PATH)
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
             'httpTimeout': 10

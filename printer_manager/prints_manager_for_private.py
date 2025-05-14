@@ -29,7 +29,8 @@ from typing import Dict, Tuple, Optional, List
 
 # Constants and Configuration
 CONFIG_FILE = "../secrets/details.json"
-FIREBASE_KEY_FILE = "secrets/key.json"
+#FIREBASE_KEY_FILE = "secrets/key.json"
+FIREBASE_KEY_FILE = "/dev/shm/atomte_secrets.json"
 FIREBASE_DB_URL = "https://skilldevelopmentapp-default-rtdb.firebaseio.com/"
 SNMP_COMMUNITY = "public"
 SNMP_PORT = 161
@@ -97,7 +98,8 @@ def initialize_firebase() -> bool:
     """Initialize Firebase connection"""
     try:
         cred = credentials.Certificate(
-            os.path.join(os.getcwd(), FIREBASE_KEY_FILE)
+            #os.path.join(os.getcwd(), FIREBASE_KEY_FILE)
+            FIREBASE_KEY_FILE
         )
         firebase_admin.initialize_app(cred, {
             'databaseURL': FIREBASE_DB_URL,

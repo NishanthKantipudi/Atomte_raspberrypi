@@ -7,8 +7,10 @@ import firebase_admin
 from firebase_admin import credentials, db
 import json
 
+KEY_PATH = "/dev/shm/atomte_secrets.json"
 cwd = os.getcwd()
-cred = credentials.Certificate(cwd+"/../secrets/key.json")
+#cred = credentials.Certificate(cwd+"/../secrets/key.json")
+cred = credentials.Certificate(KEY_PATH)
 firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout':10

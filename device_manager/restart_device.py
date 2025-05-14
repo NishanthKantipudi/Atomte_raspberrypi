@@ -13,6 +13,8 @@ from firebase_admin import credentials, db, storage
 cwd = os.getcwd()
 CONFIG_PATH = os.path.join(cwd, "../secrets/details.json")
 CRED_PATH = os.path.join(cwd, "secrets/key.json")
+KEY_PATH = "/dev/shm/atomte_secrets.json"
+
 
 # Load configuration
 def read_json_file(file_path):
@@ -26,7 +28,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Firebase initialization
-cred = credentials.Certificate(CRED_PATH)
+cred = credentials.Certificate(KEY_PATH)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'storageBucket': 'skilldevelopmentapp.appspot.com',

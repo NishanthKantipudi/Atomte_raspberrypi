@@ -23,7 +23,9 @@ def read_json_file(file_path):
         data = json.load(file)
         return data
 main_data = read_json_file(cwd+"/../secrets/details.json")
-cred = credentials.Certificate(cwd+"/secrets/key.json")
+#cred = credentials.Certificate(cwd+"/secrets/key.json")
+KEY_PATH = "/dev/shm/atomte_secrets.json"
+cred = credentials.Certificate(KEY_PATH)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'httpTimeout':10

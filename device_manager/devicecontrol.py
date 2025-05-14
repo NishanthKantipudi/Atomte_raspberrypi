@@ -24,7 +24,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Firebase initialization
-cred = credentials.Certificate(cwd+"/secrets/key.json")
+KEY_PATH = "/dev/shm/atomte_secrets.json"
+#cred = credentials.Certificate(cwd+"/secrets/key.json")
+cred = credentials.Certificate(KEY_PATH)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
     'storageBucket': 'skilldevelopmentapp.appspot.com',

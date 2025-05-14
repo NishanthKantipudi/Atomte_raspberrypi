@@ -7,6 +7,7 @@ import json
 import firebase_admin
 from firebase_admin import credentials, db
 
+KEY_PATH = "/dev/shm/atomte_secrets.json"
 app = Flask(__name__)
 CORS(app)
 
@@ -21,7 +22,7 @@ with open(CWD + "/../secrets/details.json", "r") as f:
 # Firebase initialization
 def init_firebase():
     if not firebase_admin._apps:
-        cred = credentials.Certificate(CWD + "/secrets/key.json")
+        cred = credentials.Certificate(KEY_PATH)
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
             'httpTimeout': 10

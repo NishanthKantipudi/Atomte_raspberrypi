@@ -32,7 +32,7 @@ from typing import Dict, Tuple, Optional, List
 # Constants and Configuration
 CONFIG_FILE = "../secrets/details.json"
 #FIREBASE_KEY_FILE = "secrets/key.json"
-FIREBASE_KEY_FILE ="/dev/shm/atomte_secrets.env"
+FIREBASE_KEY_FILE ="/dev/shm/atomte_secrets.json"
 FIREBASE_DB_URL = "https://skilldevelopmentapp-default-rtdb.firebaseio.com/"
 RAZORPAY_KEY = 'rzp_live_7p3oO9G6VYLXcd'
 RAZORPAY_SECRET = 'aEIdELoJ4GIDf03DqpfVrGpX'

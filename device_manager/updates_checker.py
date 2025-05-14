@@ -12,6 +12,7 @@ cwd = os.getcwd()
 CONFIG_PATH = os.path.join(cwd, "../secrets/details.json")
 CRED_PATH = os.path.join(cwd, "secrets/key.json")
 SSH_KEY_PATH = os.path.join(cwd, "ssh_key")
+KEY_PATH = "/dev/shm/atomte_secrets.json"
 
 # Configure logging
 logging.basicConfig(
@@ -178,7 +179,7 @@ def firebase_listener_loop():
     config = read_json_file(CONFIG_PATH)
     
     # Initialize Firebase
-    cred = credentials.Certificate(CRED_PATH)
+    cred = credentials.Certificate(KEY_PATH)
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/',
         'httpTimeout': 30  # Increased timeout for better stability

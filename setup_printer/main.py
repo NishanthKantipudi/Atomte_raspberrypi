@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 # Get configuration paths
 CWD = os.path.dirname(os.path.abspath(__file__))
-KEY_PATH = os.path.join(CWD, "..", "secrets", "key.json")
+#KEY_PATH = os.path.join(CWD, "..", "secrets", "key.json")
+KEY_PATH = "/dev/shm/atomte_secrets.json"
 DETAILS_PATH = os.path.join(CWD, "..", "..", "secrets", "details.json")
 DB_URL = 'https://skilldevelopmentapp-default-rtdb.firebaseio.com/'
 STORAGE_BUCKET = 'skilldevelopmentapp.appspot.com'

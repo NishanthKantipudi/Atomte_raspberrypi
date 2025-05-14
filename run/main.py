@@ -7,7 +7,7 @@ from firebase_admin import credentials, db
 import nmap
 
 
-ENV_PATH = "/dev/shm/atomte_secrets.env"
+ENV_PATH = "/dev/shm/atomte_secrets.json"
 
 def fetch_secrets():
     return {

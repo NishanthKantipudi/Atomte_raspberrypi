@@ -26,8 +26,7 @@ def fetch_secrets():
     
 def write_env_file(secrets):
     with open(ENV_PATH, "w") as f:
-        for key, value in secrets.items():
-            f.write(f"{key}={value}\n")
+        json.dump(secrets, f, indent=4)
     os.chmod(ENV_PATH, 0o600)  # Restrict permissions
     
     #cred = credentials.Certificate(ENV_PATH)

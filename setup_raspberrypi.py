@@ -105,7 +105,7 @@ def pull_repository():
                 # Clone the repository
                 logger.info("Cloning repository...")
                 # Adding StrictHostKeyChecking=no as a fallback
-                result = run_subprocess(f"GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=accept-new' git clone git@github.com:NishanthKantipudi/Atomte_raspberrypi.git {repo_dir}")
+                result = run_subprocess(f"GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=accept-new' git clone --depth=1 git@github.com:NishanthKantipudi/Atomte_raspberrypi.git {repo_dir}")
                 logger.info("✅ Git operation completed successfully.")
           
         except Exception as e:

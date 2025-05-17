@@ -45,6 +45,29 @@ def update_firebase_ip(ip_address):
     init_firebase()
     db.reference('/').child("Printers").child(CONFIG["code"]).child("details").child("device_ip").set(ip_address)
 
+def update_firebase_serial_number():
+    """Fetch and update the Raspberry Pi serial number in Firebase"""
+    # init_firebase()
+    
+    # Fetch serial number
+    serial_number = None
+    try:
+        with open('/proc/cpuinfo', 'r') as f:
+            for line in f:
+                if line.startswith('Serial'):
+                    serial_number = line.strip().split(':')[1].strip()
+                    break
+    except Exception as e:
+        print("Error reading serial number:", e)
+        return
+
+    # Update Firebase
+    if serial_number:
+        db.reference('/').child("Printers").child(CONFIG["code"]).child("details").child("SerialNumber").set(serial_number)
+        print("Serial number updated successfully in Firebase.")
+    else:
+        print("Failed to retrieve serial number.")
+        
 # Routes
 @app.route('/check_printer', methods=['POST'])
 def check_printer():

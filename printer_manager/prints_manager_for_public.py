@@ -355,7 +355,7 @@ def download_print_file(url: str, user: str, filename: str) -> str:
     """Download file for printing with progress tracking"""
     try:
         # Log download start
-        logger.info(f"Starting download for user '{user}', file '{filename}'")
+        #logger.info(f"Starting download for user '{user}', file '{filename}'")
         
         # Get file info
         response = download_with_retry(url)
@@ -387,7 +387,7 @@ def download_print_file(url: str, user: str, filename: str) -> str:
                 executor.submit(update_print_progress, user, filename, 100)
         
         # Log download completion
-        logger.info(f"Completed download for user '{user}', file '{filename}'")
+        #logger.info(f"Completed download for user '{user}', file '{filename}'")
         
         # Convert to PDF if needed
         if file_type != "pdf":
@@ -420,8 +420,6 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
         amount = int(user_ref.child("cost").get() * 100)
         printed = user_ref.child("printed").get()
         name = user_ref.child("name").get()
-
-        
 
         m=1
         if printed:
@@ -700,18 +698,17 @@ async def monitor_printer_status() -> None:
                 if(status_flags_error_counter["cover"] > 300):
                     refund_all_print_jobs()
                     status_flags_error_counter["cover"] = 0
-                
-            
-            if "no paper" in status_message.lower(): 
+                        
+            if results['tray1'] == "0" and results['tray2'] == "0":
                 printer_ref.child("details").update({
                     "status": "Inactive",
-                    "status_message": "Printer cover is open (waiting for user to close)"
+                    "status_message": "Printer is empty, please wait"
                 })
-                status_flags["cover"] = True
-                status_flags_error_counter["cover"] += 1
-                if(status_flags_error_counter["cover"] > 300):
+                status_flags["no_paper"] = True
+                status_flags_error_counter["no_paper"] += 1
+                if(status_flags_error_counter["no_paper"] > 300):
                     refund_all_print_jobs()
-                    status_flags_error_counter["cover"] = 0
+                    status_flags_error_counter["no_paper"] = 0
                 
             if "paper jam" in status_message.lower():
                 printer_ref.child("details").update({
@@ -779,13 +776,13 @@ async def monitor_printer_status() -> None:
                 status_flags["no_toner"] = False
                 status_flags_error_counter["no_toner"] = 0
             
-            if results['tray1'] == "0" and results['tray2'] == "0":
-                refund_all_print_jobs()
-                printer_ref.child("details").update({
-                    "status": "Inactive",
-                    "status_message": "Printer is empty, please wait"
-                })
-                status_flags["no_paper"] = True
+            # if results['tray1'] == "0" and results['tray2'] == "0":
+            #     refund_all_print_jobs()
+            #     printer_ref.child("details").update({
+            #         "status": "Inactive",
+            #         "status_message": "Printer is empty, please wait"
+            #     })
+            #     status_flags["no_paper"] = True
             
                      
             if status_flags["connection_error"]:

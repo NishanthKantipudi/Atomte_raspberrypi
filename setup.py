@@ -155,6 +155,10 @@ def main():
         "Atomte/venv/bin/python3 Atomte/setup/setup.py",
         # "echo 'SUBSYSTEMS==\"usb\", DRIVERS==\"usbhid\", ACTION==\"add\", ATTR{authorized}=\"0\"' | sudo tee /etc/udev/rules.d/99-com.rules",
         "sudo sed -i '/^#*PermitRootLogin/c\\PermitRootLogin no' /etc/ssh/sshd_config && sudo systemctl restart ssh",
+        "sudo cp /home/$USER/Atomte/boot_image/logo.png /usr/share/plymouth/themes/pix/splash.png",
+        "sudo plymouth-set-default-theme -R pix",
+        "sudo update-initramfs -u",
+        "sudo iw dev wlan0 set power_save off",
         "(crontab -l 2>/dev/null; echo \"@reboot sudo Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py >> Atomte/Atomte_raspberrypi/run/main.log 2>&1\") | crontab -",
         "sudo reboot"
     ]

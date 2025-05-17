@@ -775,6 +775,7 @@ async def monitor_printer_status() -> None:
                 })
                 status_flags["connection_error"] = False
                 status_flags_error_counter["connection_error"] = 0
+            await asyncio.sleep(1)
             
         except Exception as e:
             error_count += 1
@@ -853,21 +854,21 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     raise
                 time.sleep(3)
         
-        while 1:
-            status, reasons = get_print_job_status(print_job_id)
-            if status is None and reasons is None:
-                return False, print_job_id
+        # while 1:
+        #     status, reasons = get_print_job_status(print_job_id)
+        #     if status is None and reasons is None:
+        #         return False, print_job_id
                 
-            if status == "Completed":
-                logger.info(f"Print job completed: {print_job_id}")
-                file_ref.child("states").child("print").set(True)
-                return True, print_job_id
-            elif status in ["Canceled", "Aborted", "Stopped"]:
-                file_ref.child("status").set("Error at printer")
-                file_ref.child("states").child("print").set(False)
-                logger.error(f"Print job failed: {status} - {reasons}")
-                handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
-                return False, print_job_id
+        #     if status == "Completed":
+        #         logger.info(f"Print job completed: {print_job_id}")
+        #         file_ref.child("states").child("print").set(True)
+        #         return True, print_job_id
+        #     elif status in ["Canceled", "Aborted", "Stopped"]:
+        #         file_ref.child("status").set("Error at printer")
+        #         file_ref.child("states").child("print").set(False)
+        #         logger.error(f"Print job failed: {status} - {reasons}")
+        #         handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
+        #         return False, print_job_id
 
         file_ref.child("status").set("Printing...")
         return True, print_job_id

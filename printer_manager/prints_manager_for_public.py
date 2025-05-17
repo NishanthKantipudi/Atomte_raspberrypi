@@ -768,13 +768,13 @@ async def monitor_printer_status() -> None:
                 status_flags["no_toner"] = False
                 status_flags_error_counter["no_toner"] = 0
                      
-            # if status_flags["connection_error"]:
-            #     printer_ref.child("details").update({
-            #         "status": "Active",
-            #         "status_message": "Printer is Active"
-            #     })
-            #     status_flags["connection_error"] = False
-            #     status_flags_error_counter["connection_error"] = 0
+            if status_flags["connection_error"]:
+                printer_ref.child("details").update({
+                    "status": "Active",
+                    "status_message": "Printer is Active"
+                })
+                status_flags["connection_error"] = False
+                status_flags_error_counter["connection_error"] = 0
             
         except Exception as e:
             error_count += 1

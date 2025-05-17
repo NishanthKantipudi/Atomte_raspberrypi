@@ -61,12 +61,7 @@ razorpay_client = None
 
 
 
-def wait_and_set_error(error_check_func, set_error_func, wait_seconds=300):
-    def thread_func():
-        time.sleep(wait_seconds)
-        if error_check_func():
-            set_error_func()
-    threading.Thread(target=thread_func, daemon=True).start()
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -984,21 +979,18 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
+                            if  success and job_id:
+                                up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
+                                total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
+                                printing_pages.append(total_pc)
+                                job_ids.append(job_id)
+                                logger.info("Sent to printer")
                             
-                            while 1:
-                                if  success and job_id:
+                            else:
+                                printing_pages.append(total_pc)
+                                job_ids.append(job_id)
+                                handle_print_error(user, filename, "Printing error")
                                     
-                                    up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
-                                    total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
-                                    printing_pages.append(total_pc)
-                                    job_ids.append(job_id)
-                                    logger.info("Sent to printer")
-                                
-                                else:
-                                    printing_pages.append(total_pc)
-                                    job_ids.append(job_id)
-                                    handle_print_error(user, filename, "Printing error")
-                                    break
                         except Exception as e:
                             printing_pages.append(total_pc)
                             job_ids.append(0)

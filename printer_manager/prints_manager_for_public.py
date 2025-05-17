@@ -70,13 +70,10 @@ def wait_and_set_error(error_check_func, set_error_func, wait_seconds=300):
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # Console
-        logging.FileHandler(LOG_FILE_PATH, mode='a')  # File logging
-    ]
+    format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
 
 executor = ThreadPoolExecutor(max_workers=1)
 

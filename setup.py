@@ -159,6 +159,7 @@ def main():
         "sudo plymouth-set-default-theme -R pix",
         "sudo update-initramfs -u",
         "sudo iw dev wlan0 set power_save off",
+        "sudo sed -i '/^dtoverlay=disable-bt$/!s/^$/dtoverlay=disable-bt/' /boot/firmware/config.txt",
         "(crontab -l 2>/dev/null; echo \"@reboot sudo Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py >> Atomte/Atomte_raspberrypi/run/main.log 2>&1\") | crontab -",
         "sudo reboot"
     ]

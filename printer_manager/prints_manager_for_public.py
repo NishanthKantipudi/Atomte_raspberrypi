@@ -50,6 +50,7 @@ printer_error = False
 internet_error = False
 snmp_enabled = False
 current_page_count = 0
+printer_state = None
 printer_ip = ""
 printer_dns_name = ""
 printer_ref = None
@@ -58,14 +59,9 @@ active_listeners = []
 cups_connection = None
 razorpay_client = None
 
-# Enhanced Logging Configuration
-LOG_FILE_PATH = "printer_errors.log"
+
 
 def wait_and_set_error(error_check_func, set_error_func, wait_seconds=300):
-    """
-    Waits for wait_seconds, then checks error condition.
-    If still present, sets error.
-    """
     def thread_func():
         time.sleep(wait_seconds)
         if error_check_func():
@@ -83,11 +79,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 executor = ThreadPoolExecutor(max_workers=1)
-
-def log_error(error: Exception, context: str = "") -> None:
-    """Log errors with optional context and full traceback"""
-    logger.error(f"{context}: {str(error)}", exc_info=True)
-
 
 
 class PrinterManagementError(Exception):
@@ -617,7 +608,7 @@ PRINTER_STATE_MAP = {
 
 async def monitor_printer_status() -> None:
     """Monitor printer status via SNMP"""
-    global printer_error, current_page_count,printer_ip
+    global printer_error, current_page_count,printer_ip,printer_state
     
     if not snmp_enabled:
         logger.info("SNMP monitoring disabled")
@@ -667,11 +658,16 @@ async def monitor_printer_status() -> None:
                 current_page_count = int(results['pages_printed'])
             except Exception as e:
                 logger.error(f"Failed to update current page count: {e}--> {results['pages_printed']}")
+            try:
+                printer_state = results['printer_state']
+            except Exception as e:
+                logger.error(f"Failed to update printer state: {e}--> {results['printer_state']}")
             printer_ref.child("details").update({
                 "pages_printed": results['pages_printed'],
                 "tray_1": results['tray1'],
                 "tray_2": results['tray2'],
-                "toner_level": results['toner_level']
+                "toner_level": results['toner_level'],
+                "printer_state": results['printer_state'],
             })
             
             # Check for errors
@@ -719,19 +715,7 @@ async def monitor_printer_status() -> None:
                 status_flags_error_counter["paper_jam"] += 1
                 if(status_flags_error_counter["paper_jam"] > 300):
                     refund_all_print_jobs()
-                    status_flags_error_counter["paper_jam"] = 0
-            
-            if "error" in status_message.lower():
-                printer_ref.child("details").update({
-                    "status": "Inactive",
-                    "status_message": "Connection error (waiting for connection)"
-                })
-                status_flags["connection_error"] = True
-                status_flags_error_counter["connection_error"] += 1
-                if(status_flags_error_counter["connection_error"] > 300):
-                    refund_all_print_jobs()
-                    status_flags_error_counter["connection_error"] = 0        
-                        
+                    status_flags_error_counter["paper_jam"] = 0            
             elif "empty" in status_message.lower() and "toner" in status_message.lower():
                 refund_all_print_jobs()
                 printer_ref.child("details").update({
@@ -742,6 +726,17 @@ async def monitor_printer_status() -> None:
                 status_flags["no_toner"] = True
             else:
                 printer_ref.child("details").child("error").set(status_message)
+
+            # if "error" in status_message.lower():
+            #     printer_ref.child("details").update({
+            #         "status": "Inactive",
+            #         "status_message": "Connection error (waiting for connection)"
+            #     })
+            #     status_flags["connection_error"] = True
+            #     status_flags_error_counter["connection_error"] += 1
+            #     if(status_flags_error_counter["connection_error"] > 300):
+            #         refund_all_print_jobs()
+            #         status_flags_error_counter["connection_error"] = 0        
             
             # Check for resolved errors
             if status_flags["no_paper"] and (results['tray1'] != "0" or results['tray2'] != "0"):
@@ -775,53 +770,14 @@ async def monitor_printer_status() -> None:
                 })
                 status_flags["no_toner"] = False
                 status_flags_error_counter["no_toner"] = 0
-            
-            # if results['tray1'] == "0" and results['tray2'] == "0":
-            #     refund_all_print_jobs()
-            #     printer_ref.child("details").update({
-            #         "status": "Inactive",
-            #         "status_message": "Printer is empty, please wait"
-            #     })
-            #     status_flags["no_paper"] = True
-            
                      
-            if status_flags["connection_error"]:
-                printer_ref.child("details").update({
-                    "status": "Active",
-                    "status_message": "Printer is Active"
-                })
-                status_flags["connection_error"] = False
-                status_flags_error_counter["connection_error"] = 0
-             # Track the printer state (idle, printing, aborted)
-            if results["printer_state"] != printer_state:
-                # ADD THIS LINE: Log every state transition
-                prev_state = PRINTER_STATE_MAP.get(str(printer_state), str(printer_state))
-                new_state = PRINTER_STATE_MAP.get(str(results["printer_state"]), str(results["printer_state"]))
-                logger.info(f"Printer state changed from '{prev_state}' to '{new_state}'")
-                printer_state = results["printer_state"]
-
-            if results["printer_state"] == "Idle" and printer_state != "Idle":
-                 # Printer became idle before completing the print job
-                printer_ref.child("details").update({
-                "status": "Aborted",
-                 "status_message": "Printer became idle before completing the print job"
-                })
-                refund_all_print_jobs()
-                printer_state = "Idle"
-
-            elif results["printer_state"] == "Printing" and printer_state != "Printing":
-                # Printer started printing
-                printer_state = "Printing"
-
-            elif results["printer_state"] == "Aborted" and printer_state != "Aborted":
-                # Printer aborted the print job
-                # printer_ref.child("details").update({
-                # "status": "Aborted",
-                # "status_message": "Printer aborted the print job"
-                # })
-                # refund_all_print_jobs()
-                printer_state = "Aborted"
-            await asyncio.sleep(1)
+            # if status_flags["connection_error"]:
+            #     printer_ref.child("details").update({
+            #         "status": "Active",
+            #         "status_message": "Printer is Active"
+            #     })
+            #     status_flags["connection_error"] = False
+            #     status_flags_error_counter["connection_error"] = 0
             
         except Exception as e:
             error_count += 1
@@ -846,7 +802,6 @@ async def monitor_printer_status() -> None:
                 except Exception as e:
                     logger.error(f"Failed to update printer status: {e}")
                     
-            log_error(e, "Printer monitoring error")
             await asyncio.sleep(3)
 
 
@@ -893,8 +848,6 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     str(int(time.time())),
                     options
                 )
-                # Log CUPS job status right after submission
-                status, reasons = get_print_job_status(print_job_id)
                 logger.info(f"Job {print_job_id} status: {status} - {reasons}")
                 break
             except Exception as e:
@@ -903,7 +856,22 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     raise
                 time.sleep(3)
         
-        
+        while 1:
+            status, reasons = get_print_job_status(print_job_id)
+            if status is None and reasons is None:
+                return False, print_job_id
+                
+            if status == "Completed":
+                logger.info(f"Print job completed: {print_job_id}")
+                file_ref.child("states").child("print").set(True)
+                return True, print_job_id
+            elif status in ["Canceled", "Aborted", "Stopped"]:
+                file_ref.child("status").set("Error at printer")
+                file_ref.child("states").child("print").set(False)
+                logger.error(f"Print job failed: {status} - {reasons}")
+                handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
+                return False, print_job_id
+
         file_ref.child("status").set("Printing...")
         return True, print_job_id
     
@@ -982,7 +950,7 @@ def process_print_job_without_snmp(user: str, filename: str) -> Tuple[bool, int]
 
 def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
     """Process a print queue job with status tracking using threading"""
-    global printer_error, internet_error, conn
+    global printer_error, internet_error, conn,printer
     user = ""
     try:
         if event_key:
@@ -1021,35 +989,13 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             
                             while 1:
                                 if  success and job_id:
-                                    # CUPS status check right after submitting the job
-                                    status, reasons = get_print_job_status(job_id)
-                                    logger.info(f"Job {job_id} status: {status} - {reasons}")
-
-                                    if status in ["Canceled", "Aborted", "Stopped"]:
-                                        logger.error(f"Job {filename} rejected by printer: {status}")
-                                        # Log rejection reason in Firebase
-                                        db.reference(f'Printers/{config["printer_id"]}/rejected_jobs').child(
-                                            datetime.datetime.now().strftime("%d-%m-%y")
-                                        ).push().set({
-                                            "user": user,
-                                            "filename": filename,
-                                            "job_id": job_id,
-                                            "reason": f"{status}: {reasons}",
-                                            "time": datetime.datetime.now().isoformat()
-                                        })
-                                        # Handle print error
-                                        handle_print_error(user, filename, f"Rejected by printer: {status}")
-                                        printing_pages.append(total_pc)
-                                        job_ids.append(0)
-                                        break
-                                    if status=="Completed":
-                                        # Calculate pages based on original code's logic
-                                        up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
-                                        total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
-                                        printing_pages.append(total_pc)
-                                        job_ids.append(job_id)
-                                        logger.info("Sent to printer")
-                                        break
+                                    
+                                    up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
+                                    total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
+                                    printing_pages.append(total_pc)
+                                    job_ids.append(job_id)
+                                    logger.info("Sent to printer")
+                                
                                 else:
                                     printing_pages.append(total_pc)
                                     job_ids.append(job_id)
@@ -1070,6 +1016,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
      
             # Monitor printing progress in the main thread
             while True:
+            
                 try:
                     pages_printed = int(current_page_count) - int(init_page_count) 
                 except Exception as e:
@@ -1105,7 +1052,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                                 "totalcost": total_cost
                             })
                             break
-                
+                   
                 # Check for errors
                 if printer_error or internet_error:
                 

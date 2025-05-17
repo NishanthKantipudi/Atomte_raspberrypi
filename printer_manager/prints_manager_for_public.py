@@ -405,10 +405,13 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
         name = user_ref.child("name").get()
 
         m=1
-        if printed:
-            done, total = map(int, printed.split("/"))
-            refund = amount * (1 - done / total)
-            amount = math.ceil(refund)
+        if printed and printed != "undefined":
+            try:
+                done, total = map(int, printed.split("/"))
+                refund = amount * (1 - done / total)
+                amount = math.ceil(refund)
+            except Exception as e:
+                logger.error(f"Error calculating refund amount: {e}")
 
         # Update status
         user_ref.child("status").set(f"{error}, money will be refunded")
@@ -841,7 +844,6 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     str(int(time.time())),
                     options
                 )
-                logger.info(f"Job {print_job_id} status: {status} - {reasons}")
                 break
             except Exception as e:
                 logger.error(f"Print job submission failed (attempt {retry_count}): {e}")

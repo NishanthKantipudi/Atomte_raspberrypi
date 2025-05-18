@@ -255,7 +255,7 @@ def monitor_network() -> None:
     error_count = 0
     while True:
         try:
-            socket.create_connection(("8.8.8.8", 53), timeout=5)
+            socket.create_connection(("8.8.8.8", 53), timeout=15)
             error_count = 0
             internet_error = False
             # printer_ref.child("states").child("internet").set(True)
@@ -677,18 +677,7 @@ async def monitor_printer_status() -> None:
                 status_flags_error_counter["no_toner"] += 1
                 if(status_flags_error_counter["no_toner"] > 300):
                     refund_all_print_jobs()
-                    status_flags_error_counter["no_toner"] = 0
-                
-            if 'cover' in status_message.lower():
-                printer_ref.child("details").update({
-                    "status": "Inactive",
-                    "status_message": "Printer cover is open (waiting for user to close)"
-                })
-                status_flags["cover"] = True
-                status_flags_error_counter["cover"] += 1
-                if(status_flags_error_counter["cover"] > 300):
-                    refund_all_print_jobs()
-                    status_flags_error_counter["cover"] = 0
+                    status_flags_error_counter["no_toner"] = 0                
                         
             if results['tray1'] == "0" and results['tray2'] == "0":
                 printer_ref.child("details").update({
@@ -719,6 +708,16 @@ async def monitor_printer_status() -> None:
                     "error": "Toner empty"
                 })
                 status_flags["no_toner"] = True
+            elif  'cover' in status_message.lower():
+                printer_ref.child("details").update({
+                    "status": "Inactive",
+                    "status_message": "Printer cover is open (waiting for user to close)"
+                })
+                status_flags["cover"] = True
+                status_flags_error_counter["cover"] += 1
+                if(status_flags_error_counter["cover"] > 300):
+                    refund_all_print_jobs()
+                    status_flags_error_counter["cover"] = 0   
             else:
                 printer_ref.child("details").child("error").set(status_message)
 

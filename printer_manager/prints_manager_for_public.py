@@ -27,6 +27,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 import socket
 import json
 import subprocess
+import fitz
 from typing import Dict, Tuple, Optional, List
 
 # Constants and Configuration
@@ -375,9 +376,15 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         # Convert to PDF if needed
         if file_type != "pdf":
             convert_to_pdf(temp_file, "printfile.pdf")
-            return "printfile.pdf"
-        return temp_file
+            temp_file = "printfile.pdf"
+            #return "printfile.pdf"
+        #return temp_file
         
+        # Convert the PDF to grayscale
+        grayscale_file = "printfile_grayscale.pdf"
+        convert_pdf_to_grayscale(temp_file, grayscale_file)
+        return grayscale_file
+        return grayscale_file
     except Exception as e:
         logger.error(f"File download failed: {e}")
         raise PrintJobError("File download failed")
@@ -392,6 +399,24 @@ def convert_to_pdf(image_path: str, pdf_path: str) -> None:
         logger.error(f"PDF conversion failed: {e}")
         raise PrintJobError("PDF conversion failed")
 
+def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str) -> None:
+    """Convert a PDF file to grayscale PDF."""
+    try:
+        doc = fitz.open(input_pdf_path)
+        new_doc = fitz.open()
+        
+        for page in doc:
+            pix = page.get_pixmap(colorspace=fitz.csGRAY)
+            rect = page.rect
+            new_page = new_doc.new_page(width=rect.width, height=rect.height)
+            new_page.insert_image(rect, pixmap=pix)
+        
+        new_doc.save(output_pdf_path)
+        doc.close()
+        new_doc.close()
+    except Exception as e:
+        logger.error(f"PDF grayscale conversion failed: {e}")
+        raise PrintJobError("PDF grayscale conversion failed")
 
 def handle_print_error(user: str, filename: str, error: str = "Printing error") -> None:
     """Handle print errors and process refunds"""

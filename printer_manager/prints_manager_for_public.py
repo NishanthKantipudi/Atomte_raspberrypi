@@ -392,7 +392,7 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         logger.info(f"Python-based grayscale file: {grayscale_file}")
         logger.info(f"Ghostscript-based grayscale file: {grayscale_file_ghostscript}")
         
-        return grayscale_file
+        return grayscale_file_ghostscript
     except Exception as e:
         logger.error(f"File download failed: {e}")
         raise PrintJobError("File download failed")
@@ -434,13 +434,12 @@ def convert_to_grayscale_with_ghostscript(input_pdf: str, output_pdf: str) -> No
         start_time = time.time()  # Start timing
         subprocess.run([
             "gs",
+            "-sOutputFile=" + output_pdf,
             "-sDEVICE=pdfwrite",
-            "-dCompatibilityLevel=1.4",
+            "-dColorConversionStrategy=/Gray",
             "-dProcessColorModel=/DeviceGray",
-            "-dColorConversionStrategy=Gray",
             "-dNOPAUSE",
             "-dBATCH",
-            f"-sOutputFile={output_pdf}",
             input_pdf
         ], check=True)
         end_time = time.time()  # End timing

@@ -383,7 +383,15 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         # Convert the PDF to grayscale
         grayscale_file = "printfile_grayscale.pdf"
         convert_pdf_to_grayscale(temp_file, grayscale_file)
-        return grayscale_file
+        
+        # Convert the PDF to grayscale using Ghostscript
+        grayscale_file_ghostscript = "printfile_grayscale_ghostscript.pdf"
+        convert_to_grayscale_with_ghostscript(temp_file, grayscale_file_ghostscript)
+        
+        # Log file paths
+        logger.info(f"Python-based grayscale file: {grayscale_file}")
+        logger.info(f"Ghostscript-based grayscale file: {grayscale_file_ghostscript}")
+        
         return grayscale_file
     except Exception as e:
         logger.error(f"File download failed: {e}")
@@ -402,6 +410,7 @@ def convert_to_pdf(image_path: str, pdf_path: str) -> None:
 def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str) -> None:
     """Convert a PDF file to grayscale PDF."""
     try:
+        start_time = time.time()  # Start timing
         doc = fitz.open(input_pdf_path)
         new_doc = fitz.open()
         
@@ -414,10 +423,32 @@ def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str) -> None:
         new_doc.save(output_pdf_path)
         doc.close()
         new_doc.close()
+        end_time = time.time()  # End timing
+        logger.info(f"Python-based grayscale conversion completed in {end_time - start_time:.2f} seconds")
     except Exception as e:
         logger.error(f"PDF grayscale conversion failed: {e}")
         raise PrintJobError("PDF grayscale conversion failed")
-
+def convert_to_grayscale_with_ghostscript(input_pdf: str, output_pdf: str) -> None:
+    """Convert a PDF to grayscale using Ghostscript."""
+    try:
+        start_time = time.time()  # Start timing
+        subprocess.run([
+            "gs",
+            "-sDEVICE=pdfwrite",
+            "-dCompatibilityLevel=1.4",
+            "-dProcessColorModel=/DeviceGray",
+            "-dColorConversionStrategy=Gray",
+            "-dNOPAUSE",
+            "-dBATCH",
+            f"-sOutputFile={output_pdf}",
+            input_pdf
+        ], check=True)
+        end_time = time.time()  # End timing
+        logger.info(f"Ghostscript-based grayscale conversion completed in {end_time - start_time:.2f} seconds")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Ghostscript conversion failed: {e}")
+        raise PrintJobError("Ghostscript grayscale conversion failed")
+    
 def handle_print_error(user: str, filename: str, error: str = "Printing error") -> None:
     """Handle print errors and process refunds"""
     try:

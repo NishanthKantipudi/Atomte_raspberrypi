@@ -452,7 +452,7 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
             curr_wallet_money = db.reference(f'users/{user}/wallet/balance').get()
             db.reference(f'users/{user}/wallet/balance').set(curr_wallet_money+(amount / 100))
             db.reference(f'users/{user}/wallet').child("transactions").child("credit").push({
-                "amount": amount,
+                "amount": amount/100,
                 "timestamp": int(time.time()),
                 "description": f"Refund for {name} due to {error}"})
             db.reference(f'users/{user}/printsdetails/{filename}').child("status").set(f"{error}, Money added to wallet")

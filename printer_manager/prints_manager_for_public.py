@@ -456,23 +456,22 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
                 "timestamp": int(time.time()),
                 "description": f"Refund for {name} due to {error}"})
             db.reference(f'users/{user}/printsdetails/{filename}').child("status").set(f"{error}, Money added to wallet")
-
-
-        # Process refund
-        refund_success = False
-        try:
-            refund = razorpay_client.payment.refund(payment_id, {
-                "amount": str(amount),
-                "speed": "normal"
-            })
             refund_success = True
-        except Exception as e:
-            logger.error(f"Specific refund failed: {e}")
+        else:
+            refund_success = False
             try:
-                refund = razorpay_client.payment.refund(payment_id)
+                refund = razorpay_client.payment.refund(payment_id, {
+                    "amount": str(amount),
+                    "speed": "normal"
+                })
                 refund_success = True
             except Exception as e:
-                logger.error(f"Full refund failed: {e}")
+                logger.error(f"Specific refund failed: {e}")
+                try:
+                    refund = razorpay_client.payment.refund(payment_id)
+                    refund_success = True
+                except Exception as e:
+                    logger.error(f"Full refund failed: {e}")
         
         if refund_success:
             # Notify user

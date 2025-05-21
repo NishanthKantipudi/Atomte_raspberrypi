@@ -31,6 +31,7 @@ import fitz
 from typing import Dict, Tuple, Optional, List
 
 # Constants and Configuration
+
 CONFIG_FILE = "../secrets/details.json"
 #FIREBASE_KEY_FILE = "secrets/key.json"
 FIREBASE_KEY_FILE ="/dev/shm/atomte_secrets.json"
@@ -383,16 +384,8 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         # Convert the PDF to grayscale
         grayscale_file = "printfile_grayscale.pdf"
         convert_pdf_to_grayscale(temp_file, grayscale_file)
-        
-        # Convert the PDF to grayscale using Ghostscript
-        grayscale_file_ghostscript = "printfile_grayscale_ghostscript.pdf"
-        convert_to_grayscale_with_ghostscript(temp_file, grayscale_file_ghostscript)
-        
-        # Log file paths
-        logger.info(f"Python-based grayscale file: {grayscale_file}")
-        logger.info(f"Ghostscript-based grayscale file: {grayscale_file_ghostscript}")
-        
-        return grayscale_file_ghostscript
+
+        return grayscale_file
     except Exception as e:
         logger.error(f"File download failed: {e}")
         raise PrintJobError("File download failed")
@@ -428,25 +421,7 @@ def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str) -> None:
     except Exception as e:
         logger.error(f"PDF grayscale conversion failed: {e}")
         raise PrintJobError("PDF grayscale conversion failed")
-def convert_to_grayscale_with_ghostscript(input_pdf: str, output_pdf: str) -> None:
-    """Convert a PDF to grayscale using Ghostscript."""
-    try:
-        start_time = time.time()  # Start timing
-        subprocess.run([
-            "gs",
-            "-sOutputFile=" + output_pdf,
-            "-sDEVICE=pdfwrite",
-            "-dColorConversionStrategy=/Gray",
-            "-dProcessColorModel=/DeviceGray",
-            "-dNOPAUSE",
-            "-dBATCH",
-            input_pdf
-        ], check=True)
-        end_time = time.time()  # End timing
-        logger.info(f"Ghostscript-based grayscale conversion completed in {end_time - start_time:.2f} seconds")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ghostscript conversion failed: {e}")
-        raise PrintJobError("Ghostscript grayscale conversion failed")
+
     
 def handle_print_error(user: str, filename: str, error: str = "Printing error") -> None:
     """Handle print errors and process refunds"""
@@ -1045,13 +1020,13 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                             else:
                                 printing_pages.append(total_pc)
                                 job_ids.append(job_id)
-                                handle_print_error(user, filename, "Printing error")
+                                handle_print_error(user, filename, "printing error")
                                     
                         except Exception as e:
                             printing_pages.append(total_pc)
                             job_ids.append(0)
                             logger.error(f"Error at printing {filename}: {e}")
-                            handle_print_error(user, filename)
+                            handle_print_error(user, filename,f"{type(e).__name__}: {e}")
                 except Exception as e:
                     logger.error(f"Error in print thread: {e}")
             
@@ -1180,7 +1155,7 @@ def process_print_queue_non_snmp(event_key: str, job_data: Dict) -> None:
                 
             except Exception as e:
                 logger.error(f"Failed to process file {filename}: {e}")
-                handle_print_error(user, filename, "Printing error")
+                handle_print_error(user, filename, f"{type(e).__name__}: {e}")
         
         # Job completed successfully
         db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').delete()

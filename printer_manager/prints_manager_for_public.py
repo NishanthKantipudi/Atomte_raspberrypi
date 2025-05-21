@@ -448,7 +448,7 @@ def handle_print_error(user: str, filename: str, error: str = "Printing error") 
         user_ref.child("states").child("print").set(False)
 
 
-        if payment_id=="none":
+        if payment_id=="Paid Through Wallet":
             curr_wallet_money = db.reference(f'users/{user}/wallet/balence').get()
             db.reference(f'users/{user}/wallet/balence').set(curr_wallet_money+amount)
             db.reference(f'users/{user}/wallet').child("transactions").child("credit").push({

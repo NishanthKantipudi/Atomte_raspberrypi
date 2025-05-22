@@ -878,16 +878,15 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         options["copies"] = str(file_data["count"])
         
          # --- Wait for printer to become idle using global printer_state ---
-        state = PRINTER_STATE_MAP.get(str(printer_state), "Unknown")
         waited = 0
         max_wait = 300
         interval = 2
 
-        if state != "Idle":
+        # Check printer state directly (3 = Idle, 4 = Printing)
+        if str(printer_state) != "3":
             file_ref.child("status").set("Waiting for printer to become idle...")
             while waited < max_wait:
-                state = PRINTER_STATE_MAP.get(str(printer_state), "Unknown")
-                if state == "Idle":
+                if str(printer_state) == "3":
                     break
                 time.sleep(interval)
                 waited += interval

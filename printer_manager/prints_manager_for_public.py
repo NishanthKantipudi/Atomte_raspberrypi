@@ -400,24 +400,28 @@ def convert_to_pdf(image_path: str, pdf_path: str) -> None:
         logger.error(f"PDF conversion failed: {e}")
         raise PrintJobError("PDF conversion failed")
 
-def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str) -> None:
-    """Convert a PDF file to grayscale PDF."""
+def convert_pdf_to_grayscale(input_pdf_path: str, output_pdf_path: str, dpi: int = 300) -> None:
+    """Convert a PDF file to a high-quality grayscale PDF."""
     try:
         start_time = time.time()  # Start timing
         doc = fitz.open(input_pdf_path)
         new_doc = fitz.open()
-        
+
+        # Zoom factor for resolution
+        zoom = dpi / 72  # 72 is the default DPI
+        matrix = fitz.Matrix(zoom, zoom)
+
         for page in doc:
-            pix = page.get_pixmap(colorspace=fitz.csGRAY)
-            rect = page.rect
-            new_page = new_doc.new_page(width=rect.width, height=rect.height)
+            pix = page.get_pixmap(matrix=matrix, colorspace=fitz.csGRAY)
+            rect = fitz.Rect(0, 0, pix.width, pix.height)
+            new_page = new_doc.new_page(width=pix.width, height=pix.height)
             new_page.insert_image(rect, pixmap=pix)
-        
-        new_doc.save(output_pdf_path)
+
+        new_doc.save(output_pdf_path, deflate=True)
         doc.close()
         new_doc.close()
-        end_time = time.time()  # End timing
-        logger.info(f"Python-based grayscale conversion completed in {end_time - start_time:.2f} seconds")
+        end_time = time.time()
+        logger.info(f"High-quality grayscale conversion completed in {end_time - start_time:.2f} seconds")
     except Exception as e:
         logger.error(f"PDF grayscale conversion failed: {e}")
         raise PrintJobError("PDF grayscale conversion failed")

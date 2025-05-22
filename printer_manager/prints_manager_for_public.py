@@ -379,13 +379,13 @@ def download_print_file(url: str, user: str, filename: str) -> str:
             convert_to_pdf(temp_file, "printfile.pdf")
             temp_file = "printfile.pdf"
             #return "printfile.pdf"
-        #return temp_file
+        return temp_file
         
         # Convert the PDF to grayscale
         grayscale_file = "printfile_grayscale.pdf"
         convert_pdf_to_grayscale(temp_file, grayscale_file)
 
-        return grayscale_file
+        #return grayscale_file
     except Exception as e:
         logger.error(f"File download failed: {e}")
         raise PrintJobError("File download failed")

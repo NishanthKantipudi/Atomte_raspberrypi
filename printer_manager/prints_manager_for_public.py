@@ -634,6 +634,19 @@ PRINTER_STATE_MAP = {
     "5": "Warming Up"
 }
 
+def wait_until_printer_idle_by_state(max_wait=300, interval=3):
+    """Wait until the global printer_state is Idle before proceeding."""
+    waited = 0
+    while waited < max_wait:
+        # printer_state is a string like "3" (Idle), "4" (Printing), etc.
+        state = PRINTER_STATE_MAP.get(str(printer_state), "Unknown")
+        if state == "Idle":
+            return True
+        time.sleep(interval)
+        waited += interval
+    logger.error("Timeout waiting for printer to become idle.")
+    return False
+
 async def monitor_printer_status() -> None:
     """Monitor printer status via SNMP"""
     global printer_error, current_page_count,printer_ip,printer_state
@@ -863,6 +876,14 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
             for key, value in file_data["properties"].items()
         }
         options["copies"] = str(file_data["count"])
+        
+         # --- Wait for printer to become idle using global printer_state ---
+        file_ref.child("status").set("Waiting for printer to become idle...")
+        if not wait_until_printer_idle_by_state():
+            file_ref.child("status").set("Printer busy or unavailable")
+            file_ref.child("states").child("print").set(False)
+            logger.error("Printer did not become idle in time.")
+            return False, None
         
         # Submit print job with retries
         retry_count = 0

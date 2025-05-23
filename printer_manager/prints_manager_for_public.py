@@ -1022,7 +1022,7 @@ def process_print_job_without_snmp(user: str, filename: str) -> Tuple[bool, int]
 
 def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
     """Process a print queue job with status tracking using threading"""
-    global printer_error, internet_error, conn,printer
+    global printer_error, internet_error, conn,printer,pagecount_before
     user = ""
     try:
         if event_key:
@@ -1040,6 +1040,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             # Define thread function for processing print jobs
             def print_processing_thread():
                 nonlocal total_cost, printing_pages, job_ids, total_pc
+                global pagecount_before
                 try:
                     for count, filename in enumerate(files, 1):
                         try:
@@ -1107,7 +1108,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             while True:
             
                 try:
-                    pages_printed = int(current_page_count) - int(init_page_count) 
+                    pages_printed = int(current_page_count) - int(pagecount_before) 
                 except Exception as e:
                     logger.error(f"Error getting current page count: {e}---{current_page_count}---{init_page_count}")
                     logger.error(f"Error getting page count: {e}")

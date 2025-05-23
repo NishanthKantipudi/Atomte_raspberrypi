@@ -1060,7 +1060,7 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                                 continue
 
                             # Record page count before printing this file
-                            pagecount_before = int(current_page_count)
+                           
 
                             # Update job status
                             db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').update({
@@ -1070,13 +1070,14 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                                 "files": job_data["files"]
                             })
                             logger.info(f"Printing: {filename}")
-
+                            
                             # Calculate cost
                             file_cost = db.reference(f'users/{user}/printsdetails/{filename}').child('cost').get()
                             total_cost += file_cost
 
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
+                            pagecount_before = int(current_page_count)
                             if success and job_id:
                                 # Wait for job to finish and printer to become idle again
                                 waited = 0

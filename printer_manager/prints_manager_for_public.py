@@ -865,26 +865,26 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         options["copies"] = str(file_data["count"])
         
         #  # --- Wait for printer to become idle using global printer_state ---
-        # waited = 0
-        # max_wait = 300
-        # interval = 2
+        waited = 0
+        max_wait = 300
+        interval = 2
 
-        # # Check printer state directly (3 = Idle, 4 = Printing)
-        # if str(printer_state) != "3":
-        #     file_ref.child("status").set("Waiting for printer to become idle...")
-        #     while waited < max_wait:
-        #         if str(printer_state) == "3":
-        #             break
-        #         time.sleep(interval)
-        #         waited += interval
-        #     if waited >= max_wait:
-        #         file_ref.child("status").set("Printer busy or unavailable")
-        #         file_ref.child("states").child("print").set(False)
-        #         logger.error("Printer did not become idle in time.")
-        #         return False, None
+        # Check printer state directly (3 = Idle, 4 = Printing)
+        if str(printer_state) != "3":
+            file_ref.child("status").set("Waiting for printer to become idle...")
+            while waited < max_wait:
+                if str(printer_state) == "3":
+                    break
+                time.sleep(interval)
+                waited += interval
+            if waited >= max_wait:
+                file_ref.child("status").set("Printer busy or unavailable")
+                file_ref.child("states").child("print").set(False)
+                logger.error("Printer did not become idle in time.")
+                return False, None
 
         # # 1. Capture page count before the user's job starts
-        # pagecount_before = current_page_count
+        #pagecount_before = current_page_count
         
         # # Submit print job with retries
         retry_count = 0

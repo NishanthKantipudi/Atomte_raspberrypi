@@ -1059,10 +1059,6 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                                 printing_pages.append(total_pc)
                                 job_ids.append(0)
                                 continue
-
-                            # Record page count before printing this file
-                            pagecount_before = int(current_page_count)
-
                             # Update job status
                             db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').update({
                                 "printing": count,
@@ -1078,6 +1074,12 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
 
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
+                            if int(init_page_count) != int(current_page_count):
+                                logger.warning(f"Printer used externally: init={init_page_count}, current={current_page_count}")
+                                pagecount_before = int(current_page_count)
+                            else:
+                                pagecount_before = int(init_page_count)
+                                
                             if  success and job_id:
                                 up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
                                 total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()

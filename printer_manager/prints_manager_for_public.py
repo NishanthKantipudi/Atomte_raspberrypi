@@ -634,19 +634,6 @@ PRINTER_STATE_MAP = {
     "5": "Warming Up"
 }
 
-def wait_until_printer_idle_by_state(max_wait=300, interval=3):
-    """Wait until the global printer_state is Idle before proceeding."""
-    waited = 0
-    while waited < max_wait:
-        # printer_state is a string like "3" (Idle), "4" (Printing), etc.
-        state = PRINTER_STATE_MAP.get(str(printer_state), "Unknown")
-        if state == "Idle":
-            return True
-        time.sleep(interval)
-        waited += interval
-    logger.error("Timeout waiting for printer to become idle.")
-    return False
-
 async def monitor_printer_status() -> None:
     """Monitor printer status via SNMP"""
     global printer_error, current_page_count,printer_ip,printer_state
@@ -877,29 +864,29 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         }
         options["copies"] = str(file_data["count"])
         
-         # --- Wait for printer to become idle using global printer_state ---
-        waited = 0
-        max_wait = 300
-        interval = 2
+        #  # --- Wait for printer to become idle using global printer_state ---
+        # waited = 0
+        # max_wait = 300
+        # interval = 2
 
-        # Check printer state directly (3 = Idle, 4 = Printing)
-        if str(printer_state) != "3":
-            file_ref.child("status").set("Waiting for printer to become idle...")
-            while waited < max_wait:
-                if str(printer_state) == "3":
-                    break
-                time.sleep(interval)
-                waited += interval
-            if waited >= max_wait:
-                file_ref.child("status").set("Printer busy or unavailable")
-                file_ref.child("states").child("print").set(False)
-                logger.error("Printer did not become idle in time.")
-                return False, None
+        # # Check printer state directly (3 = Idle, 4 = Printing)
+        # if str(printer_state) != "3":
+        #     file_ref.child("status").set("Waiting for printer to become idle...")
+        #     while waited < max_wait:
+        #         if str(printer_state) == "3":
+        #             break
+        #         time.sleep(interval)
+        #         waited += interval
+        #     if waited >= max_wait:
+        #         file_ref.child("status").set("Printer busy or unavailable")
+        #         file_ref.child("states").child("print").set(False)
+        #         logger.error("Printer did not become idle in time.")
+        #         return False, None
 
-        # 1. Capture page count before the user's job starts
-        pagecount_before = current_page_count
+        # # 1. Capture page count before the user's job starts
+        # pagecount_before = current_page_count
         
-        # Submit print job with retries
+        # # Submit print job with retries
         retry_count = 0
         print_job_id = None
         while retry_count < 5:
@@ -918,33 +905,23 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                     raise
                 time.sleep(3)
         
-        while True:
+        while 1:
             status, reasons = get_print_job_status(print_job_id)
-            state = PRINTER_STATE_MAP.get(str(printer_state), "Unknown")
-            if status == "Completed" and state == "Idle":
-                break
+            if status is None and reasons is None:
+                return False, print_job_id
+                
+            if status == "Completed":
+                logger.info(f"Print job completed: {print_job_id}")
+                file_ref.child("states").child("print").set(True)
+                return True, print_job_id
             elif status in ["Canceled", "Aborted", "Stopped"]:
                 file_ref.child("status").set("Error at printer")
                 file_ref.child("states").child("print").set(False)
                 logger.error(f"Print job failed: {status} - {reasons}")
                 handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
                 return False, print_job_id
-            file_ref.child("status").set("Printing...")
-            time.sleep(2)
 
-        # 2. Capture page count after the user's job completes
-        pagecount_after = current_page_count
-
-        # 3. Calculate and update only this user's page count
-        pages_printed = pagecount_after - pagecount_before
-        if pages_printed < 0:
-            pages_printed = 0  # Defensive: shouldn't happen
-
-        file_ref.child("pages_printed").set(pages_printed)
-        #update_user_page_count(user, pages_printed)  # Your function to update user stats
-
-        file_ref.child("states").child("print").set(True)
-        file_ref.child("status").set("Done")
+        file_ref.child("status").set("Printing...")
         return True, print_job_id
 
     except Exception as e:

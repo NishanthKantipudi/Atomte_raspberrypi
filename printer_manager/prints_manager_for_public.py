@@ -1022,20 +1022,20 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                     for count, filename in enumerate(files, 1):
                         try:
                             # Wait for printer to become idle before starting this file
-                            waited = 0
-                            max_wait = 300
-                            interval = 2
-                            while str(printer_state) != "3" and waited < max_wait:
-                                if waited == 0:
-                                    db.reference(f'users/{user}/printsdetails/{filename}').child("status").set("Waiting for printer to become idle...")
-                                time.sleep(interval)
-                                waited += interval
-                            if waited >= max_wait:
-                                db.reference(f'users/{user}/printsdetails/{filename}').child("status").set("Printer busy or unavailable")
-                                handle_print_error(user, filename, "Printer did not become idle in time.")
-                                printing_pages.append(total_pc)
-                                job_ids.append(0)
-                                continue
+                            # waited = 0
+                            # max_wait = 300
+                            # interval = 2
+                            # while str(printer_state) != "3" and waited < max_wait:
+                            #     if waited == 0:
+                            #         db.reference(f'users/{user}/printsdetails/{filename}').child("status").set("Waiting for printer to become idle...")
+                            #     time.sleep(interval)
+                            #     waited += interval
+                            # if waited >= max_wait:
+                            #     db.reference(f'users/{user}/printsdetails/{filename}').child("status").set("Printer busy or unavailable")
+                            #     handle_print_error(user, filename, "Printer did not become idle in time.")
+                            #     printing_pages.append(total_pc)
+                            #     job_ids.append(0)
+                            #     continue
                             # Update job status
                             db.reference(f'Printers/{config["printer_id"]}/printstodo/{event_key}').update({
                                 "printing": count,

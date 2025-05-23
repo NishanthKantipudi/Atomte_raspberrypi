@@ -218,7 +218,7 @@ def first_time_setup():
     
     run_subprocess(["sudo", "reboot"])
 
-SERVER_URL = "http://192.168.29.188:5001/get_firebase_token"
+SERVER_URL = "https://atomte.com/api/get_firebase_token"
 
 def get_cpu_serial():
     try:

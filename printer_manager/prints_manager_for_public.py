@@ -839,6 +839,7 @@ def run_snmp_loop() -> None:
 
 
 def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
+    global pagecount_before
     """Process a single print job with SNMP monitoring"""
     file_ref = db.reference(f'users/{user}/printsdetails/{filename}')
     file_data = file_ref.get()
@@ -884,7 +885,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 return False, None
 
         # # 1. Capture page count before the user's job starts
-        #pagecount_before = current_page_count
+        pagecount_before = current_page_count
         
         # # Submit print job with retries
         retry_count = 0

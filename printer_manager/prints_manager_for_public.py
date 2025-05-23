@@ -1128,9 +1128,14 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                 # Make sure we have data for the current index
                 if i < len(files) and len(printing_pages) > i:
                     # Update progress in the database
-                    db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(
-                        f"{pages_printed-printed_sum}/{printing_pages[i]-printed_sum}"
-                    )
+                    # Only update if denominator is not zero
+                    if (printing_pages[i] - printed_sum) > 0:
+                        db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set(
+                            f"{pages_printed-printed_sum}/{printing_pages[i]-printed_sum}"
+                        )
+                    else:
+                        # Optionally, set a placeholder or skip updating until valid
+                        db.reference(f'users/{user}/printsdetails/{files[i]}').child("printed").set("0/0")
                     
                     # Check if current file is done printing
                     if pages_printed >= printing_pages[i]:

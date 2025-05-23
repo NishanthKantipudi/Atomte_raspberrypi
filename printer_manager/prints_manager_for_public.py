@@ -1077,24 +1077,13 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
 
                             # Process the print job
                             success, job_id = process_print_job_with_snmp(user, filename)
-                            if success and job_id:
-                                # Wait for job to finish and printer to become idle again
-                                waited = 0
-                                while str(printer_state) != "3" and waited < max_wait:
-                                    time.sleep(interval)
-                                    waited += interval
-                                # Record page count after printing this file
-                                pagecount_after = int(current_page_count)
-                                pages_printed = pagecount_after - pagecount_before
-                                
-
-                                db.reference(f'users/{user}/printsdetails/{filename}').child("pages_printed").set(pages_printed)
-                                #update_user_page_count(user, pages_printed)
-
-                                total_pc += pages_printed
+                            if  success and job_id:
+                                up_c = 1  # int(db.reference(f'users/{user}/printsdetails/{filename}/properties').child('count_per_page').get().split(" ")[0])
+                                total_pc += math.ceil(db.reference(f'users/{user}/printsdetails/{filename}').child('pagecount').get() / up_c) * db.reference(f'users/{user}/printsdetails/{filename}').child('count').get()
                                 printing_pages.append(total_pc)
                                 job_ids.append(job_id)
                                 logger.info("Sent to printer")
+                            
                             else:
                                 printing_pages.append(total_pc)
                                 job_ids.append(job_id)

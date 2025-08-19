@@ -153,7 +153,7 @@ def main():
         "cd Atomte && chmod 600 SSH/ssh_key",
         "Atomte/venv/bin/pip install -r Atomte/setup/requirements.txt",
         "Atomte/venv/bin/python3 Atomte/setup/setup.py",
-        # "echo 'SUBSYSTEMS==\"usb\", DRIVERS==\"usbhid\", ACTION==\"add\", ATTR{authorized}=\"0\"' | sudo tee /etc/udev/rules.d/99-com.rules",
+        "echo 'SUBSYSTEMS==\"usb\", DRIVERS==\"usbhid\", ACTION==\"add\", ATTR{authorized}=\"0\"' | sudo tee /etc/udev/rules.d/99-com.rules",
         "sudo sed -i '/^#*PermitRootLogin/c\\PermitRootLogin no' /etc/ssh/sshd_config && sudo systemctl restart ssh",
         "sudo cp /home/$USER/Atomte/boot_image/logo.png /usr/share/plymouth/themes/pix/splash.png",
         "sudo plymouth-set-default-theme -R pix",

@@ -78,22 +78,15 @@ executor = ThreadPoolExecutor(max_workers=1)
 class PrinterManagementError(Exception):
     """Base exception for printer management errors"""
     pass
-
-
 class NetworkError(PrinterManagementError):
     """Network-related errors"""
     pass
-
-
 class PrinterConnectionError(PrinterManagementError):
     """Printer connection errors"""
     pass
-
-
 class PrintJobError(PrinterManagementError):
     """Print job processing errors"""
     pass
-
 
 def load_config() -> Dict:
     """Load configuration from JSON file"""

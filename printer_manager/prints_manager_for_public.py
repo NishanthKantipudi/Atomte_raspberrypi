@@ -716,7 +716,7 @@ async def monitor_printer_status() -> None:
                     refund_all_print_jobs()
                     status_flags_error_counter["no_paper"] = 0
                 
-            if "paper jam" in status_message.lower():
+            if "jam" in status_message.lower():
                 printer_ref.child("details").update({
                     "status": "Inactive",
                     "status_message": "Paper jam (waiting for user to clear)"

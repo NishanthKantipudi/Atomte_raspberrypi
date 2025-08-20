@@ -392,7 +392,10 @@ if __name__ == "__main__":
                                      args=("sudo ../venv/bin/python3 device_manager/devicecontrol.py", 
                                           "device_manager/devicecontrol.log"), 
                                      daemon=True))
-        
+        threads.append(threading.Thread(target=run_command, 
+                                     args=("sudo ../venv/bin/python3 setup_wifi/main.py", 
+                                          "setup_wifi/main.log"), 
+                                     daemon=True))
         
         
         # Start all threads

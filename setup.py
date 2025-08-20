@@ -166,7 +166,6 @@ def main():
             'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbnet\\", ATTR{authorized}=\\"1\\"\\n'
             'SUBSYSTEMS==\\"usb\\", ATTRS{idVendor}==\\"1d6b\\", ATTR{authorized}=\\"1\\"\\n'
             'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbhid\\", ATTR{authorized}=\\"0\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", ATTR{authorized}=\\"0\\"\\n" '
             '| sudo tee /etc/udev/rules.d/20-usb-scanner.rules > /dev/null && '
             'sudo update-initramfs -u && sudo udevadm control --reload-rules && sudo udevadm trigger')
             ,

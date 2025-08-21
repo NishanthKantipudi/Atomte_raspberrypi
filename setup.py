@@ -125,7 +125,6 @@ def main():
         f"{os.path.expanduser('~/Desktop/Atomte/Atomte_raspberrypi/details.json')}": f"/home/{username}/Atomte/secrets/details.json",
         f"{os.path.expanduser('~/Desktop/Atomte/Atomte_raspberrypi/requirements.txt')}": f"/home/{username}/Atomte/setup/requirements.txt",
         f"{os.path.expanduser('~/Desktop/Atomte/Atomte_raspberrypi/setup_raspberrypi.py')}": f"/home/{username}/Atomte/setup/setup.py"
-
     }
     
     for local_path, remote_path in local_files.items():

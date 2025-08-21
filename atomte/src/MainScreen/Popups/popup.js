@@ -34,7 +34,7 @@ const PrinterErrorPopup = ({ code }) => {
           setErrVideo("http://localhost:7000/videos/power.mp4")
         }
         else{
-          setErrVideo("http://localhost:7000/videos/unknown.mp4")
+          setErrVideo("http://localhost:7000/videos/error.mp4")
         }
         setShowPopup(true);
       } else {

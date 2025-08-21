@@ -813,7 +813,6 @@ async def monitor_printer_status() -> None:
                         "status_message": "Printer connection error"
                     })
                     status_flags["connection_error"] = True
-                    
                     # Try to reconnect
                     if not printer_dns_name:
                         printer_ip = printer_ref.child("details").child("ip").get()

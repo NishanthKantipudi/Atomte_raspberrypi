@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, db
-import requests
+import requests,shutil
 import os
 import json
 import time
@@ -71,19 +71,18 @@ def save_links(data):
 
 def download_video(url, filename):
     try:
-        r = requests.get(url, stream=True, timeout=30)
-        r.raise_for_status()
         filepath = os.path.join(VIDEO_FOLDER, filename)
-        with open(filepath, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-        logger.info(f"✅ Downloaded: {filename}")
+        with requests.get(url, stream=True, timeout=30) as r:
+            r.raise_for_status()
+            with open(filepath, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)  # faster streaming
+        logger.info(f"Downloaded: {filename}")
         return True
     except requests.exceptions.RequestException as e:
-        logger.error(f"❌ Network error downloading {url}: {e}")
+        logger.error(f"Network error downloading {url}: {e}")
         return False
     except Exception as e:
-        logger.error(f"❌ Failed to download {url}: {e}")
+        logger.error(f"Failed to download {url}: {e}")
         return False
 
 def get_filename_from_url(url):

@@ -182,6 +182,7 @@ def first_time_setup():
         "details/snmp":True,
         "mic": 50,
         "secrets": config,
+        "load_data": False,
         "details/pagecount": 0,
         "details/printed": 0,
     })

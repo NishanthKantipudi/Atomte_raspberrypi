@@ -88,7 +88,7 @@ export default function LeftView({ code }) {
       <div className="qrcode">
         <h3>Scan to Print</h3>
         <QRCode
-          value={'https://atomte.com/redirect?code=' + code}
+          value={'https://atomte.com/autoprint?code=' + code}
           size={250}
           bgColor="#ffffff"
           fgColor="#000000"

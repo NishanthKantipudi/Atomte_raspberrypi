@@ -107,6 +107,10 @@ def process_videos():
         new_links = {}
 
         for key, url in videos.items():
+            if url is None or url.strip() == "":
+                if old_links.get(key) is not None:
+                    os.remove(os.path.join(VIDEO_FOLDER, key + ".mp4"))
+                continue
             new_links[key] = url
             old_url = old_links.get(key)
             if old_url != url:

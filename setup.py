@@ -159,15 +159,15 @@ def main():
         "sudo update-initramfs -u",
         "sudo iw dev wlan0 set power_save off",
         "sudo usermod -a -G input $USER",
-        ('printf "SUBSYSTEMS==\\"usb\\", ATTRS{idVendor}==\\"0218\\", ATTRS{idProduct}==\\"0210\\", ATTR{authorized}=\\"1\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"rndis_host\\", ATTR{authorized}=\\"1\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"cdc_ether\\", ATTR{authorized}=\\"1\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbnet\\", ATTR{authorized}=\\"1\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", ATTRS{idVendor}==\\"1d6b\\", ATTR{authorized}=\\"1\\"\\n'
-            'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbhid\\", ATTR{authorized}=\\"0\\"\\n'
-            '| sudo tee /etc/udev/rules.d/20-usb-scanner.rules > /dev/null && '
-            'sudo update-initramfs -u && sudo udevadm control --reload-rules && sudo udevadm trigger')
-            ,
+        # ('printf "SUBSYSTEMS==\\"usb\\", ATTRS{idVendor}==\\"0218\\", ATTRS{idProduct}==\\"0210\\", ATTR{authorized}=\\"1\\"\\n'
+        #     'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"rndis_host\\", ATTR{authorized}=\\"1\\"\\n'
+        #     'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"cdc_ether\\", ATTR{authorized}=\\"1\\"\\n'
+        #     'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbnet\\", ATTR{authorized}=\\"1\\"\\n'
+        #     'SUBSYSTEMS==\\"usb\\", ATTRS{idVendor}==\\"1d6b\\", ATTR{authorized}=\\"1\\"\\n'
+        #     'SUBSYSTEMS==\\"usb\\", DRIVERS==\\"usbhid\\", ATTR{authorized}=\\"0\\"\\n'
+        #     '| sudo tee /etc/udev/rules.d/20-usb-scanner.rules > /dev/null && '
+        #     'sudo update-initramfs -u && sudo udevadm control --reload-rules && sudo udevadm trigger')
+        #     ,
         "sudo sed -i '/^dtoverlay=disable-bt$/!s/^$/dtoverlay=disable-bt/' /boot/firmware/config.txt",
         "(crontab -l 2>/dev/null; echo \"@reboot sudo Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py >> Atomte/Atomte_raspberrypi/run/main.log 2>&1\") | crontab -",
         "sudo reboot"

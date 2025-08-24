@@ -182,9 +182,12 @@ def first_time_setup():
         "details/snmp":True,
         "mic": 50,
         "secrets": config,
-        "load_data": False,
+        "load_data": True,
         "details/pagecount": 0,
         "details/printed": 0,
+        "videos":{"ad1":"https://firebasestorage.googleapis.com/v0/b/skilldevelopmentapp.appspot.com/o/videos%2FWhatsApp%20Video%202025-05-12%20at%2016.10.13.mp4?alt=media&token=2149da0e-1b8d-49a6-93fa-4ad165bcb093", 
+                  "ad2":"https://firebasestorage.googleapis.com/v0/b/skilldevelopmentapp.appspot.com/o/videos%2Fad1.mp4?alt=media&token=5d800f0d-d892-437c-b0be-f2c2cdc31b9b", 
+                  "ad3":"https://firebasestorage.googleapis.com/v0/b/skilldevelopmentapp.appspot.com/o/videos%2FTom%20%26%20Jerry%20(1940)%20-%20E16%20-%20Puttin'%20On%20The%20Dog%20.mp4?alt=media&token=672411b5-2d87-4f7e-804e-826ec16516d2"},
     })
     install_modules()
     try:

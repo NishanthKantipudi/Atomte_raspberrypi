@@ -18,6 +18,7 @@ def read_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
         return data
+
 data = read_json_file(cwd+"/../secrets/details.json")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

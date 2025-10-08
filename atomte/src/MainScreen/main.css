@@ -99,3 +99,9 @@
 .MainScreen .CenterView .RightTopView{
     flex:1;
 }
+
+@media screen and (max-height: 700px) {
+  .ad1-container {
+    display: none;
+  }
+}

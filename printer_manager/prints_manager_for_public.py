@@ -6,11 +6,14 @@ offering robust printer management with improved error handling,
 better structure, and comprehensive monitoring capabilities.
 """
 
+#printer ip update
+
+
 import asyncio
 import datetime
 import firebase_admin
 from firebase_admin import credentials, db, messaging
-import os
+import os,re
 import time
 import threading
 import math
@@ -36,8 +39,8 @@ CONFIG_FILE = "../secrets/details.json"
 #FIREBASE_KEY_FILE = "secrets/key.json"
 FIREBASE_KEY_FILE ="/dev/shm/atomte_secrets.json"
 FIREBASE_DB_URL = "https://skilldevelopmentapp-default-rtdb.firebaseio.com/"
-RAZORPAY_KEY = 'rzp_live_7p3oO9G6VYLXcd'
-RAZORPAY_SECRET = 'aEIdELoJ4GIDf03DqpfVrGpX'
+RAZORPAY_KEY = 'rzp_live_RQyQFUZxfHUski'
+RAZORPAY_SECRET = 'uB6hxnCPiD3G1jNOxQFEjU5S'
 SNMP_COMMUNITY = "public"
 SNMP_PORT = 161
 SNMP_TIMEOUT = 7
@@ -175,13 +178,28 @@ def initialize_razorpay() -> Optional[razorpay.Client]:
 def initialize_cups() -> None:
     """Initialize CUPS connection and clean up print queue"""
     global cups_connection
-    
     try:
+        printername=printer_name.replace(" ","_")
         cups_connection = cups.Connection()
         jobs = cups_connection.getJobs()
         for job_id in jobs:
             cups_connection.cancelJob(job_id)
         logger.info("Cleaned up print queue")
+        printers = cups_connection.getPrinters()
+        if printername not in printers:
+            logger.info(f"Available printers: {printers.keys()}")
+        else:
+            logger.info(f"Printer '{printername}' found in CUPS")
+            device_uri = printers[printername]["device-uri"]
+            match = re.search(r"(\d+\.\d+\.\d+\.\d+)", device_uri)
+            if match:
+                cip = match.group(1)
+                if cip != printer_ip:
+                    new_uri = re.sub(r"\d+\.\d+\.\d+\.\d+", printer_ip, device_uri)
+                    cups_connection.setPrinterDevice(printername, new_uri)
+                    logger.info(f"Updated {printername} device-uri to: {new_uri}")
+            else:
+                return "No IP found in URI"
     except Exception as e:
         logger.error(f"Failed to initialize CUPS: {e}")
         raise
@@ -268,7 +286,6 @@ def monitor_network() -> None:
 def monitor_printer_connection() -> None:
     """Continuously monitor printer connection"""
     global printer_error
-    
     error_count = 0
     while True:
         try:
@@ -285,7 +302,6 @@ def monitor_printer_connection() -> None:
                 printer_error = True
                 printer_ref.child("states").child("printer_connection").set(False)
                 logger.error(f"Printer connection error: {e}")
-        
         time.sleep(PRINTER_CHECK_INTERVAL)
 
 
@@ -340,8 +356,6 @@ def download_print_file(url: str, user: str, filename: str) -> str:
         file_type = response.headers.get('Content-Type', '').split("/")[-1]
         total_size = int(response.headers.get('content-length', 0))
         
-        # Download file
-        response = download_with_retry(url)
         temp_file = f"printfile.{file_type}"
         downloaded_size = 0
         previous_percentage = 0
@@ -1130,11 +1144,11 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
                                 job_ids.append(job_id)
                                 logger.info("Sent to printer")
                             else:
-                                printing_pages.append(0)
+                                printing_pages.append(total_pc)
                                 job_ids.append(job_id)
                                 handle_print_error(user, filename, "Printing error")
                         except Exception as e:
-                            printing_pages.append(0)
+                            printing_pages.append(total_pc)
                             job_ids.append(0)
                             logger.error(f"Error at printing {filename}: {e}")
                             handle_print_error(user, filename)
@@ -1148,7 +1162,11 @@ def process_print_queue_for_snmp(event_key: str, job_data: Dict) -> None:
             
             # Monitor printing progress in the main thread
             while True:
-                pages_printed = int(current_page_count) - int(init_page_count)
+                try:
+                    pages_printed = int(current_page_count) - int(init_page_count) 
+                except Exception as e:
+                    logger.error(f"Error getting current page count: {e}---{current_page_count}---{init_page_count}")
+                    logger.error(f"Error getting page count: {e}")
                 
                 # Make sure we have data for the current index
                 if i < len(files) and len(printing_pages) > i:

@@ -298,6 +298,11 @@ p {
   flex: 1;
 }
 
+@media screen and (max-height: 700px) {
+  .super-right-view {
+    display: none;
+  }
+}
 
 /* test */
 .printer-usage-guide {

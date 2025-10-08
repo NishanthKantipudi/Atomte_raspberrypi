@@ -307,7 +307,7 @@ if __name__ == "__main__":
                 run_web(['npm', 'install'], '/../atomte/')
                 run_web(['npm', 'run', 'build'], '/../atomte/')
                 
-            db.reference('/').child("Printers").child(config["code"]).child("updates").set(False)
+            db.reference('/').child("Printers").child(config["code"]).child("updated").set(True)
             run_subprocess(["sudo", "reboot"])
             config["updates"] = False
             write_json_file(cwd+"/../../secrets/details.json", config)
@@ -346,9 +346,20 @@ if __name__ == "__main__":
             db.reference('/').child("Printers").child(config["code"]).child("states").child("printer_connection").set(True)
             
             if db.reference('/').child("Printers").child(config["code"]).child("details").child("type").get() == "public":
-                threads.append(threading.Thread(target=run_command, 
-                                             args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
-                                                  "printer_manager/prints_manager_for_public.log")))
+                try:
+                    if(db.reference('autoprintonline').child("active_printer").get() != config["code"]):
+                        threads.append(threading.Thread(target=run_command, 
+                                                    args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
+                                                        "printer_manager/prints_manager_for_public.log")))
+                    else:
+                        threads.append(threading.Thread(target=run_command, 
+                                                    args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_online.py", 
+                                                        "printer_manager/prints_manager_for_online.log")))
+                except Exception as e:
+                    logger.error(f"Error checking active printer: {e}")
+                    threads.append(threading.Thread(target=run_command, 
+                                                args=("sudo ../venv/bin/python3 printer_manager/prints_manager_for_public.py", 
+                                                    "printer_manager/prints_manager_for_public.log")))
             else:
                 web_thread_for_users = threading.Thread(target=web_server_thread_for_users)
                 web_thread_for_users.start()

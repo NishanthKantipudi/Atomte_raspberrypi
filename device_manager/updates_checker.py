@@ -162,6 +162,7 @@ def pull_repository():
         write_json_file(CONFIG_PATH, config)
 
         db.reference(f"Printers/{config['code']}").child("updates").set(False)
+        db.reference('/').child("Printers").child(config["code"]).child("updated").set(False)
         return True
     except Exception as e:
         logger.error(f"Repository pull error: {e}")

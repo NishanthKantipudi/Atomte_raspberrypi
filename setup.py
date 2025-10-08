@@ -133,7 +133,7 @@ def main():
     # Step 6: Run package installation and setup on Raspberry Pi
     setup_commands = [
         "sudo apt update",
-        "sudo apt install -y libcups2-dev python3-dev build-essential",
+        "sudo apt install -y libcups2-dev python3-dev build-essential swig liblgpio-dev",
         "curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -",
         "sudo apt install -y nodejs",
         "sudo apt install -y sshpass",

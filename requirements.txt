@@ -24,3 +24,4 @@ pyaudio
 pyautogui
 python-nmap
 PyMuPDF
+reportlab

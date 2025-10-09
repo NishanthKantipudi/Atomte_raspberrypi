@@ -51,16 +51,17 @@ for attempt in range(3):
     try:
         service = Service("/usr/bin/chromedriver")
         driver = webdriver.Chrome(service=service, options=Options())
+        # Load your app
+        driver.get(f"http://localhost:3000/?code={data['code']}")
+
+        # Force fullscreen with JavaScript (extra layer of reliability)
+        driver.fullscreen_window()
         break
     except Exception as e:
         print("Retrying Chrome start...", e)
         time.sleep(5)
 
-# Load your app
-driver.get(f"http://localhost:3000/?code={data['code']}")
 
-# Force fullscreen with JavaScript (extra layer of reliability)
-driver.fullscreen_window()
 
 while True:
     time.sleep(100)

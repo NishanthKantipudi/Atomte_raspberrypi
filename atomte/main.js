@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 function createWindow() {
+    const code= process.argv[2] || '';
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -12,10 +13,11 @@ function createWindow() {
       contextIsolation: true
     }
   });
+  alert(code);
 
   // Load the React app
   // If using a local server
-  win.loadURL('http://localhost:3000');
+  win.loadURL('http://localhost:3000?code=' + code);
 
   // If using build folder
   // win.loadFile(path.join(__dirname, 'build', 'index.html'));

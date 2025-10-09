@@ -1,38 +1,35 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import os
-import time# Ensures GUI apps (like Chrome) work
-  # Uses the correct user session
-def getcwd():
-    cwd = os.getcwd()
-    return cwd
-cwd=getcwd()
+import os, time, json, tempfile
 
-import json
-with open(cwd+"/../secrets/details.json", "r") as f:
+cwd = os.getcwd()
+
+with open(os.path.join(cwd, "../secrets/details.json"), "r") as f:
     data = json.load(f)
+
 options = Options()
 options.add_argument("--no-sandbox")
-options.add_argument('--disable-gpu')
-options.add_argument("--autoplay-policy=no-user-gesture-required")  # Allow autoplay with sound
-options.add_argument("--use-fake-ui-for-media-stream")  # Bypass media permission prompts
-options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
-options.add_argument("--allow-running-insecure-content")  # Allow mixed content
-options.add_argument("--disable-dev-shm-usage")  # Ignore certificate errors
-options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
+options.add_argument("--disable-gpu")
+options.add_argument("--autoplay-policy=no-user-gesture-required")
+options.add_argument("--use-fake-ui-for-media-stream")
 options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument("--disable-infobars")  # Disable infobars
-options.add_argument("--kiosk")  # Enable kiosk mode
+options.add_argument("--allow-running-insecure-content")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
+options.add_argument("--disable-infobars")
+options.add_argument("--kiosk")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
-# Set up WebDriver
-service = Service("/usr/bin/chromedriver")  # Path to ChromeDriver
+# 🧠 Create a unique temp user data directory for this session
+user_data_dir = tempfile.mkdtemp()
+options.add_argument(f"--user-data-dir={user_data_dir}")
+
+service = Service("/usr/bin/chromedriver")
 driver = webdriver.Chrome(service=service, options=options)
 
-# Open the React website
-driver.get("http://localhost:3000/?code="+data["code"])  # 
+driver.get(f"http://localhost:3000/?code={data['code']}")
 
 while True:
     time.sleep(100)

@@ -3,10 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os, time, json, tempfile
 
-for _ in range(10):
-    if os.path.exists("/run/user/1000/wayland-0"):
-        break
-    time.sleep(2)
+
 
 cwd = os.getcwd()
 
@@ -23,7 +20,7 @@ options.add_argument("--allow-running-insecure-content")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
 options.add_argument("--disable-infobars")
-options.add_argument("--kiosk")
+options.add_argument("--start-maximized")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 

@@ -324,7 +324,7 @@ if __name__ == "__main__":
         # Web interface
         threads.append(threading.Thread(
             target=run_command,
-            args=("npm run electron", "../run/startweb.log", cwd+"/../atomte/")
+            args=("npm run electron", "run/startweb.log", cwd+"/../atomte/")
         ))
         
         # System services

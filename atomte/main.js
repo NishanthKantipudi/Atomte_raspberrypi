@@ -13,7 +13,7 @@ function createWindow() {
       contextIsolation: true
     }
   });
-  alert(code);
+  console.log('Received code:', code);
 
   // Load the React app
   // If using a local server

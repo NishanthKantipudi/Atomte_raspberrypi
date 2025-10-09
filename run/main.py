@@ -36,6 +36,7 @@ env.update({
     "PULSE_SERVER": "unix:/run/user/1000/pulse/native",
     "XDG_RUNTIME_DIR": "/run/user/1000"
 })
+os.environ["ELECTRON_ENABLE_WAYLAND"] = "0"
 
 # Load configuration
 with open(cwd + "/../../secrets/details.json", "r") as f:
@@ -132,7 +133,7 @@ def initialize_display():
 def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 def web_electron_thread():
-    run_web(['sudo','npm','run','electron','--','--no-sandbox'], '/../atomte/')
+    run_web(['npm','run','electron','--','--no-sandbox'], '/../atomte/')
 
 def web_server_thread_for_users():
     run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')

@@ -12,7 +12,7 @@ export ELECTRON_ENABLE_WAYLAND=0
 code=$(jq -r '.code' Atomte/secrets/details.json)
 
 # Navigate to your project folder
-cd Atomte/Atomte_raspberrypi/Atomte_raspberrypi/atomte
+cd Atomte/Atomte_raspberrypi/atomte
 
 # Launch Electron in fullscreen and pass the code
 npm run electron -- "$code" --no-sandbox

@@ -169,7 +169,7 @@ def main():
         #     'sudo update-initramfs -u && sudo udevadm control --reload-rules && sudo udevadm trigger')
         #     ,
         "sudo sed -i '/^dtoverlay=disable-bt$/!s/^$/dtoverlay=disable-bt/' /boot/firmware/config.txt",
-        "(crontab -l 2>/dev/null; echo \"@reboot sudo Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py >> Atomte/Atomte_raspberrypi/run/main.log 2>&1\") | crontab -",
+        '(crontab -l 2>/dev/null; echo \"@reboot sudo Atomte/venv/bin/python3 Atomte/Atomte_raspberrypi/run/main.py >> Atomte/Atomte_raspberrypi/run/main.log 2>&1\"; echo \"@reboot Atomte/Atomte_raspberrypi/run/start.sh >> Atomte/Atomte_raspberrypi/run/start.log 2>&1\") | crontab -',
         "sudo reboot"
     ]
     

@@ -126,6 +126,7 @@ def initialize_display():
     run_web(['sudo', 'npm', 'install', '-g', 'serve'], '/../atomte/')
     run_subprocess(["sudo", "cp", "../Atomte/boot_image/logo.png", "/usr/share/plymouth/themes/pix/splash.png"])
     run_subprocess(["chmod", "+x", cwd+"/orientation.sh"])
+    run_subprocess(["chmod", "+x", cwd+"/start.sh"])
     run_subprocess(["chmod", "+x", cwd+"/../device_manager/launcher.sh"])
     run_subprocess(["sudo", "chmod", "+x", cwd+"/../device_manager/launcher.sh"])
     run_command("sudo "+cwd+"/orientation.sh", cwd+"/orientation.log")
@@ -324,10 +325,10 @@ if __name__ == "__main__":
         threads = []
         
         # Web interface
-        threads.append(threading.Thread(
-            target=run_command,
-            args=("npm run electron -- --no-sandbox ", "run/startweb.log", cwd+"/../atomte/")
-        ))
+        # threads.append(threading.Thread(
+        #     target=run_command,
+        #     args=("npm run electron -- --no-sandbox ", "run/startweb.log", cwd+"/../atomte/")
+        # ))
         
         # System services
         threads.append(threading.Thread(target=run_command, 
@@ -417,8 +418,8 @@ if __name__ == "__main__":
         # Start all threads
         for thread in threads:
             thread.start()
-        time.sleep(10)
-        web_electron_thread()
+        # time.sleep(10)
+        # web_electron_thread()
         
         # Wait for core services to complete
         for thread in threads[:3]:

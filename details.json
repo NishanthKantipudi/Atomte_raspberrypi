@@ -1,9 +1,9 @@
 {
-    "code": "100002",
+    "code": "111111",
     "type": "display",
     "password": "7093812229",
-    "pi_username": "atomte100002",
+    "pi_username": "atomte111111",
     "pi_password": "7093812229",
-    "pi_hostname": "atomte100002",
+    "pi_hostname": "atomte111111",
     "setup": false
 }

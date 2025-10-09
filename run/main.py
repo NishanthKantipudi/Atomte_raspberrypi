@@ -132,7 +132,7 @@ def initialize_display():
 def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
 def web_electron_thread():
-    run_web(['sudo','npm','run','electron'], '/../atomte/')
+    run_web(['sudo','npm','run','electron','--','--no-sandbox'], '/../atomte/')
 
 def web_server_thread_for_users():
     run_web(['sudo', 'serve', '-s', 'build','-l','80'], '/../autoprint/')

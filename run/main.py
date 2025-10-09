@@ -131,6 +131,7 @@ def initialize_display():
 
 def web_server_thread():
     run_web(['sudo', 'serve', '-s', 'build'], '/../atomte/')
+def web_electron_thread():
     run_web(['sudo','npm','run','electron'], '/../atomte/')
 
 def web_server_thread_for_users():
@@ -324,7 +325,7 @@ if __name__ == "__main__":
         # Web interface
         threads.append(threading.Thread(
             target=run_command,
-            args=("npm run electron -- --no-sandbox", "run/startweb.log", cwd+"/../atomte/")
+            args=("npm run electron -- --no-sandbox ", "run/startweb.log", cwd+"/../atomte/")
         ))
         
         # System services
@@ -415,6 +416,8 @@ if __name__ == "__main__":
         # Start all threads
         for thread in threads:
             thread.start()
+        time.sleep(10)
+        web_electron_thread()
         
         # Wait for core services to complete
         for thread in threads[:3]:

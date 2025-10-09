@@ -4,7 +4,13 @@ from selenium.webdriver.chrome.options import Options
 import os, time, json, tempfile
 
 cwd = os.getcwd()
-
+env = os.environ.copy()
+env.update({
+    "DISPLAY": ":0",
+    "PULSE_SERVER": "unix:/run/user/1000/pulse/native",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+})
+time.sleep(5)  # Give some time for the display server to be ready
 with open(os.path.join(cwd, "../secrets/details.json"), "r") as f:
     data = json.load(f)
 
@@ -41,10 +47,14 @@ user_data_dir = tempfile.mkdtemp()
 options.add_argument(f"--user-data-dir={user_data_dir}")
 
 # Path to ChromeDriver
-service = Service("/usr/bin/chromedriver")
-
-# 🧠 Create driver
-driver = webdriver.Chrome(service=service, options=options)
+for attempt in range(3):
+    try:
+        service = Service("/usr/bin/chromedriver")
+        driver = webdriver.Chrome(service=service, options=Options())
+        break
+    except Exception as e:
+        print("Retrying Chrome start...", e)
+        time.sleep(5)
 
 # Load your app
 driver.get(f"http://localhost:3000/?code={data['code']}")

@@ -20,7 +20,7 @@ options.add_argument("--allow-running-insecure-content")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
 options.add_argument("--disable-infobars")
-options.add_argument("--start-maximized")
+options.add_argument("--kiosk")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 

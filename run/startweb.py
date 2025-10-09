@@ -10,7 +10,9 @@ env.update({
     "PULSE_SERVER": "unix:/run/user/1000/pulse/native",
     "XDG_RUNTIME_DIR": "/run/user/1000"
 })
+
 time.sleep(5)  # Give some time for the display server to be ready
+
 with open(os.path.join(cwd, "../secrets/details.json"), "r") as f:
     data = json.load(f)
 
@@ -27,13 +29,12 @@ options.add_argument("--disable-infobars")
 options.add_argument("--disable-notifications")
 options.add_argument("--start-maximized")
 options.add_argument("--start-fullscreen")
-options.add_argument("--kiosk")  # kiosk still works on 141
+options.add_argument("--kiosk")
 options.add_argument("--hide-scrollbars")
 options.add_argument("--ignore-certificate-errors")
 options.add_argument("--disable-features=TranslateUI,AutomationControlled,RendererCodeIntegrity")
 options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:3000")
 
-# Disable automation banners in 141 (new way)
 options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
 options.add_experimental_option("prefs", {
     "profile.default_content_setting_values.media_stream_mic": 1,
@@ -46,22 +47,22 @@ options.add_experimental_option("prefs", {
 user_data_dir = tempfile.mkdtemp()
 options.add_argument(f"--user-data-dir={user_data_dir}")
 
-# Path to ChromeDriver
+# --- Launch Chrome ---
+driver = None
 for attempt in range(3):
     try:
         service = Service("/usr/bin/chromedriver")
-        driver = webdriver.Chrome(service=service, options=Options())
-        # Load your app
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(f"http://localhost:3000/?code={data['code']}")
-
-        # Force fullscreen with JavaScript (extra layer of reliability)
         driver.fullscreen_window()
+        print("Chrome started successfully.")
         break
     except Exception as e:
-        print("Retrying Chrome start...", e)
+        print(f"Retrying Chrome start ({attempt+1}/3)...", e)
         time.sleep(5)
 
-
+if driver is None:
+    raise RuntimeError("Failed to start Chrome after 3 attempts")
 
 while True:
     time.sleep(100)

@@ -42,10 +42,10 @@ with open(cwd + "/../../secrets/details.json", "r") as f:
     config = json.load(f)
 
 # Helper functions
-def run_command(command, log_file):
+def run_command(command, log_file,cwd=None):
     with open(log_file, 'a') as log:
         log.write(f"\n=== Started at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
-        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT, env=env)
+        process = subprocess.Popen(command, shell=True, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=cwd)
         process.communicate()
 
 def run_subprocess(commands):
@@ -321,9 +321,10 @@ if __name__ == "__main__":
         threads = []
         
         # Web interface
-        threads.append(threading.Thread(target=run_command, 
-                                     args=("../venv/bin/python3 run/startweb.py", 
-                                          "run/startweb.log")))
+        threads.append(threading.Thread(
+            target=run_command,
+            args=("npm run electron", "../run/startweb.log", cwd+"/../atomte/")
+        ))
         
         # System services
         threads.append(threading.Thread(target=run_command, 

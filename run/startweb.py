@@ -13,9 +13,9 @@ cwd = os.getcwd()
 with open(os.path.join(cwd, "../secrets/details.json"), "r") as f:
     data = json.load(f)
 
-# Set up Chrome options
+# Chrome options
 options = Options()
-options.binary_location = "/snap/bin/chromium"  # Snap Chromium binary
+options.binary_location = "/snap/bin/chromium"
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-gpu")
 options.add_argument("--disable-dev-shm-usage")
@@ -29,13 +29,15 @@ options.add_argument("--disable-infobars")
 options.add_experimental_option("useAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
-# Automatically download and use the correct ChromeDriver
-service = Service(ChromeDriverManager(path="/usr/local/bin").install())
+# Correct way to use webdriver-manager
+driver_path = ChromeDriverManager().install()  # <-- just call install()
+service = Service(driver_path)
 driver = webdriver.Chrome(service=service, options=options)
 
-# Open your React website
+# Open React website
 driver.get("http://localhost:3000/?code=" + data["code"])
 
 # Keep running
 while True:
     time.sleep(100)
+

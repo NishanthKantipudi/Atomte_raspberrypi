@@ -3,6 +3,11 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os, time, json, tempfile
 
+for _ in range(10):
+    if os.path.exists("/run/user/1000/wayland-0"):
+        break
+    time.sleep(2)
+
 cwd = os.getcwd()
 
 with open(os.path.join(cwd, "../secrets/details.json"), "r") as f:

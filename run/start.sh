@@ -16,7 +16,7 @@ cd ~/Atomte/Atomte_raspberrypi/atomte || exit
 
 # Wait until the site is live (port 3000 responding)
 echo "Waiting for React app to start..."
-until curl -s http://localhost:3000 > /dev/null; do
+until curl -s http://localhost:3000?code="$code" > /dev/null; do
   sleep 2
 done
 

@@ -403,7 +403,7 @@ def convert_to_pdf(image_path: str, pdf_path: str) -> None:
     """Convert image file to PDF"""
     try:
         with Image.open(image_path) as img:
-            img.convert("L").save(pdf_path, "PDF", optimize=True, resolution=85.0)
+            img.convert("L").save(pdf_path, "PDF", optimize=True, resolution=100.0)
     except Exception as e:
         logger.error(f"PDF conversion failed: {e}")
         raise PrintJobError("PDF conversion failed")

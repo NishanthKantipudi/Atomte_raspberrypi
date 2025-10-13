@@ -112,6 +112,7 @@ def restart_printer_listener(event):
             script_path = os.path.join(cwd, "../venv/bin/python3 device_manager/printer_restart_ir4245.py")
             log_path = os.path.join(cwd, "device_manager/printer_restart.log")
             run_command(script_path, log_path)
+            printer_ref.child("printer_restart").set(False)
         except Exception as e:
             logger.error(f"Error restarting printer: {e}")
 

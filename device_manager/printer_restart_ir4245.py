@@ -10,8 +10,9 @@ chrome_options = Options()
 chrome_options.binary_location = "/usr/bin/chromium-browser"
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
-#chrome_options.add_argument("--headless")  # Remove this line if you want to see the browser
-
+chrome_options.add_argument("--headless")  # Remove this line if you want to see the browser
+temp_user_data_dir = tempfile.mkdtemp()
+chrome_options.add_argument(f"--user-data-dir={temp_user_data_dir}")
 # Explicitly set Chromedriver path
 service = Service("/usr/bin/chromedriver")
 driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -66,3 +67,8 @@ try:
 except Exception as e:
     print("? Error:", e)
 time.sleep(10)
+
+driver.quit()
+
+import shutil
+shutil.rmtree(temp_user_data_dir, ignore_errors=True)

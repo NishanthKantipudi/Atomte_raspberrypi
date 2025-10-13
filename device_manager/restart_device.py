@@ -5,7 +5,7 @@ import socket
 import logging
 import threading
 import subprocess
-
+import datetime
 import firebase_admin
 from firebase_admin import credentials, db, storage
 
@@ -125,6 +125,28 @@ def reload_website_listener(event):
         except Exception as e:
             logger.error(f"Error reloading website: {e}")
 
+
+def take_screenshot_and_upload(event):
+    if not event.data:
+        return
+    screenshot_path = "~/screenshot.png"
+
+    # Take screenshot
+    os.system(f"sudo fbgrab {screenshot_path}")
+
+    # Upload to Firebase Storage
+    now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    blob = bucket.blob(f"screenshots/screenshot_{now}.png")
+    blob.upload_from_filename(screenshot_path)
+    blob.make_public()  # optional: makes the file publicly accessible
+
+    url = blob.public_url
+    print("Uploaded screenshot URL:", url)
+
+    # Save URL in Realtime Database
+    db.reference("screenshots/latest").set(url)
+    printer_ref.child("screenshot").set(False)
+
 # Launch background network thread
 network_thread = threading.Thread(target=check_network, daemon=True)
 network_thread.start()
@@ -145,6 +167,7 @@ def firebase_listener_loop():
             # Add new listeners
             listners.append(printer_ref.child("restart").listen(restart_pi_listener))
             listners.append(printer_ref.child("getlogs").listen(send_logs))
+            listners.append(printer_ref.child("screenshot").listen(take_screenshot_and_upload))
             # Uncomment when needed
             # listners.append(printer_ref.child("restart_printer").listen(restart_printer_listener))
             # listners.append(printer_ref.child("reload_website").listen(reload_website_listener))

@@ -109,7 +109,7 @@ def run_command(command, log_file):
 def restart_printer_listener(event):
     if event.data:
         try:
-            script_path = os.path.join(cwd, "../venv/bin/python3 device_manager/printer_restart.py")
+            script_path = os.path.join(cwd, "../venv/bin/python3 device_manager/printer_restart_ir4245.py")
             log_path = os.path.join(cwd, "device_manager/printer_restart.log")
             run_command(script_path, log_path)
         except Exception as e:
@@ -168,6 +168,7 @@ def firebase_listener_loop():
             listners.append(printer_ref.child("restart").listen(restart_pi_listener))
             listners.append(printer_ref.child("getlogs").listen(send_logs))
             listners.append(printer_ref.child("screenshot").listen(take_screenshot_and_upload))
+            listners.append(printer_ref.child("printer_restart").listen(restart_printer_listener))
             # Uncomment when needed
             # listners.append(printer_ref.child("restart_printer").listen(restart_printer_listener))
             # listners.append(printer_ref.child("reload_website").listen(reload_website_listener))

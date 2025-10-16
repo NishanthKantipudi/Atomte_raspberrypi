@@ -100,8 +100,11 @@
     flex:1;
 }
 
-@media screen and (max-height: 700px) {
+@media screen and (max-height: 800px) {
   .ad1-container {
+    display: none;
+  }
+  .RightView{
     display: none;
   }
 }

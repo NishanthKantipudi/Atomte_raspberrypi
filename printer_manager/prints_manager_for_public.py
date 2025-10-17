@@ -883,7 +883,7 @@ def setup_pause_listener(printer_id: str):
                     except:
                         pass
                 
-                pause_ref = db.reference(f'Printer/{printer_id}/pause_prints')
+                pause_ref = db.reference(f'Printers/{printer_id}/pause_prints')
                 pause_listener = pause_ref.listen(on_pause_change)
                 logging.info(f"Pause listener created for printer: {printer_id}")
         except Exception as e:

@@ -63,7 +63,9 @@ printer_name = ""
 active_listeners = []
 cups_connection = None
 razorpay_client = None
-
+pause_print_state = False
+pause_listener = None
+pause_listener_lock = threading.Lock()
 
 
 
@@ -844,7 +846,74 @@ def run_snmp_loop() -> None:
     """Run the SNMP monitoring loop"""
     asyncio.run(monitor_printer_status())
 
+def check_listener_health(listener, listener_name):
+    """Check if a listener thread is alive."""
+    if listener is None:
+        return False
+    try:
+        if hasattr(listener, '_thread') and listener._thread is not None:
+            is_alive = listener._thread.is_alive()
+            if not is_alive:
+                logging.warning(f"Listener {listener_name} thread is dead")
+            return is_alive
+        else:
+            logging.warning(f"Listener {listener_name} has no thread attribute")
+            return False
+    except Exception as e:
+        logging.error(f"Error checking listener {listener_name} health: {e}")
+        return False
 
+def setup_pause_listener(printer_id: str):
+    """Setup Firebase listener for printer pause state"""
+    global pause_listener, pause_print_state
+    
+    def on_pause_change(event):
+        global pause_print_state
+        if event.data is not None:
+            pause_print_state = bool(event.data)
+            logging.info(f"Pause state changed to: {pause_print_state}")
+    def create_listener():
+        global pause_listener
+        try:
+            with pause_listener_lock:
+                # Close existing listener if present
+                if pause_listener:
+                    try:
+                        pause_listener.close()
+                    except:
+                        pass
+                
+                pause_ref = db.reference(f'Printer/{printer_id}/pause_prints')
+                pause_listener = pause_ref.listen(on_pause_change)
+                logging.info(f"Pause listener created for printer: {printer_id}")
+        except Exception as e:
+            logging.error(f"Failed to create pause listener: {e}")
+    
+    # Create initial listener
+    create_listener()
+    
+    # Monitor listener health in background thread
+    def monitor_listener():
+        while True:
+            time.sleep(30)  # Check every 30 seconds
+            
+            if not check_listener_health(pause_listener, "pause_prints"):
+                logging.warning("Pause listener is not healthy, recreating...")
+                create_listener()
+    
+    monitor_thread = threading.Thread(target=monitor_listener, daemon=True, name="PauseListenerMonitor")
+    monitor_thread.start()
+    logging.info("Pause listener monitor thread started")
+def cleanup_pause_listener():
+    """Cleanup pause listener on shutdown"""
+    global pause_listener
+    with pause_listener_lock:
+        if pause_listener:
+            try:
+                pause_listener.close()
+                logging.info("Pause listener closed")
+            except Exception as e:
+                logging.error(f"Error closing pause listener: {e}")
 def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
     """Process a single print job with SNMP monitoring"""
     file_ref = db.reference(f'users/{user}/printsdetails/{filename}')
@@ -871,6 +940,17 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
         }
         options["copies"] = str(file_data["count"])
         
+        if pause_print_state:
+                file_ref.child("status").set("Paused")
+                logging.info(f"Print job {print_job_id} paused")
+                
+                # Wait until unpaused
+                while pause_print_state:
+                    time.sleep(1)
+                
+                file_ref.child("status").set("Printing...")
+                logging.info(f"Print job {print_job_id} resumed")
+
         # Submit print job with retries
         retry_count = 0
         print_job_id = None
@@ -889,6 +969,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 if retry_count >= 5:
                     raise
                 time.sleep(3)
+        file_ref.child("status").set("Printing...")
         while 1:
             status, reasons = get_print_job_status(print_job_id)
             if status is None and reasons is None:
@@ -905,7 +986,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
                 return False, print_job_id
 
-        file_ref.child("status").set("Printing...")
+        
         return True, print_job_id
     
     except Exception as e:

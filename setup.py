@@ -186,3 +186,10 @@ if __name__ == "__main__":
     main()
 
 
+# sudo chmod +x Atomte/Atomte_raspberrypi/run/start.sh
+# sudo crontab -r -u atomte100003
+
+# ( 
+#   echo "@reboot ~/Atomte/venv/bin/python3 ~/Atomte/Atomte_raspberrypi/run/main.py >> ~/Atomte/Atomte_raspberrypi/run/main.log 2>&1"
+#   echo "@reboot ~/Atomte/Atomte_raspberrypi/run/start.sh >> ~/Atomte/Atomte_raspberrypi/run/start.log 2>&1"
+# ) | sudo crontab -u atomte123456 -

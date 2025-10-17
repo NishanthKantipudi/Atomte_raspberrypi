@@ -1586,6 +1586,7 @@ def main() -> None:
     
     try:
         initialize_system()
+        setup_pause_listener(config["printer_id"])
         
         while True:
             try:

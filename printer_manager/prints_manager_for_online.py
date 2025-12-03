@@ -851,31 +851,37 @@ def run_snmp_loop() -> None:
     """Run the SNMP monitoring loop"""
     asyncio.run(monitor_printer_status())
 
-def add_watermark(input_pdf, output_pdf, text):
+def add_watermark_and_duplicate(input_pdf, output_pdf, text, copies=1):
     reader = PdfReader(input_pdf)
     writer = PdfWriter()
 
-    # watermark template file
+    # watermark generation
     def create_watermark(page_width, page_height, text):
         from io import BytesIO
         packet = BytesIO()
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
         c.setFont("Helvetica", 10)
         text_width = c.stringWidth(text, "Helvetica", 10)
-        c.drawString(page_width - text_width - 20, 15, text)  # bottom right corner
+        c.drawString(page_width - text_width - 20, 15, text)
         c.save()
         packet.seek(0)
         return PdfReader(packet).pages[0]
 
     num_pages = len(reader.pages)
-    for i, page in enumerate(reader.pages):
-        if i == 0 or i == num_pages - 1:  # first or last page
-            watermark = create_watermark(float(page.mediabox.width), float(page.mediabox.height), text)
-            page.merge_page(watermark)
-        writer.add_page(page)
+
+    for _ in range(copies):                      # repeat for number of copies
+        for i, page in enumerate(reader.pages):
+            if i == 0 or i == num_pages - 1:
+                watermark = create_watermark(float(page.mediabox.width), float(page.mediabox.height), text)
+                page_to_add = page.copy()
+                page_to_add.merge_page(watermark)
+                writer.add_page(page_to_add)
+            else:
+                writer.add_page(page)
 
     with open(output_pdf, "wb") as f:
         writer.write(f)
+
 
 def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
     """Process a single print job with SNMP monitoring"""
@@ -901,7 +907,6 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
             key: value.split(" ")[0] 
             for key, value in file_data["properties"].items()
         }
-        options["copies"] = str(file_data["count"])
         
         # Submit print job with retries
         retry_count = 0
@@ -912,7 +917,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 try:
                     temp_file = os.path.abspath("temp_watermarked.pdf")
                     user_atomte_id=db.reference(f'users/{user}/details').child("atomte_id").get()
-                    add_watermark(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown")
+                    add_watermark_and_duplicate(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown")
                 except Exception as e:
                     logger.error(f"Failed to add watermark: {e}")
                     temp_file = local_file  # Fallback to original file if watermarking fails

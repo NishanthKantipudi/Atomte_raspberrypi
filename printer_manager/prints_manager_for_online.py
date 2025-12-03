@@ -917,7 +917,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 try:
                     temp_file = os.path.abspath("temp_watermarked.pdf")
                     user_atomte_id=db.reference(f'users/{user}/details').child("atomte_id").get()
-                    add_watermark_and_duplicate(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown")
+                    add_watermark_and_duplicate(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown",copies=int(file_data["count"]))
                 except Exception as e:
                     logger.error(f"Failed to add watermark: {e}")
                     temp_file = local_file  # Fallback to original file if watermarking fails

@@ -854,37 +854,49 @@ def run_snmp_loop() -> None:
     """Run the SNMP monitoring loop"""
     asyncio.run(monitor_printer_status())
 
-def add_watermark(input_pdf, output_pdf, text):
+def add_watermark_and_duplicate(input_pdf, output_pdf, text, copies=1):
     reader = PdfReader(input_pdf)
     writer = PdfWriter()
 
+    # Create watermark page (PDF → PageObject)
     def create_watermark(page_width, page_height, text):
         packet = BytesIO()
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
         c.setFont("Helvetica", 10)
         text_width = c.stringWidth(text, "Helvetica", 10)
-        c.drawString(page_width - text_width - 20, 15, text)
+        c.drawString(page_width - text_width - 20, 15, text)  # bottom-right
         c.save()
         packet.seek(0)
-        wm_pdf = PdfReader(packet)
-        return wm_pdf.pages[0]
+        return PdfReader(packet).pages[0]
 
     num_pages = len(reader.pages)
 
-    for i, page in enumerate(reader.pages):
-        page = PageObject.create_blank_page(None, page.mediabox.width, page.mediabox.height).merge_page(page)
+    # Duplicate sets
+    for _ in range(copies):
+        for i, original_page in enumerate(reader.pages):
 
-        if i == 0 or i == num_pages - 1:
-            watermark_page = create_watermark(float(page.mediabox.width),
-                                              float(page.mediabox.height),
-                                              text)
-            page.merge_page(watermark_page)
+            # Proper page cloning (avoids dict error)
+            cloned = PageObject.create_blank_page(
+                None,
+                original_page.mediabox.width,
+                original_page.mediabox.height
+            )
+            cloned.merge_page(original_page)
 
-        writer.add_page(page)
+            # Apply watermark only on 1st or last page
+            if i == 0 or i == num_pages - 1:
+                watermark = create_watermark(
+                    float(original_page.mediabox.width),
+                    float(original_page.mediabox.height),
+                    text
+                )
+                cloned.merge_page(watermark)
 
+            writer.add_page(cloned)
+
+    # Save output
     with open(output_pdf, "wb") as f:
         writer.write(f)
-
 
 def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
     """Process a single print job with SNMP monitoring"""

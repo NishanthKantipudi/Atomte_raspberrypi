@@ -38,6 +38,9 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 
+from PyPDF2._page import PageObject
+from io import BytesIO
+
 # Constants and Configuration
 
 CONFIG_FILE = "../secrets/details.json"
@@ -851,13 +854,11 @@ def run_snmp_loop() -> None:
     """Run the SNMP monitoring loop"""
     asyncio.run(monitor_printer_status())
 
-def add_watermark_and_duplicate(input_pdf, output_pdf, text, copies=1):
+def add_watermark(input_pdf, output_pdf, text):
     reader = PdfReader(input_pdf)
     writer = PdfWriter()
 
-    # watermark generation
     def create_watermark(page_width, page_height, text):
-        from io import BytesIO
         packet = BytesIO()
         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
         c.setFont("Helvetica", 10)
@@ -865,19 +866,21 @@ def add_watermark_and_duplicate(input_pdf, output_pdf, text, copies=1):
         c.drawString(page_width - text_width - 20, 15, text)
         c.save()
         packet.seek(0)
-        return PdfReader(packet).pages[0]
+        wm_pdf = PdfReader(packet)
+        return wm_pdf.pages[0]
 
     num_pages = len(reader.pages)
 
-    for _ in range(copies):                      # repeat for number of copies
-        for i, page in enumerate(reader.pages):
-            if i == 0 or i == num_pages - 1:
-                watermark = create_watermark(float(page.mediabox.width), float(page.mediabox.height), text)
-                page_to_add = page.copy()
-                page_to_add.merge_page(watermark)
-                writer.add_page(page_to_add)
-            else:
-                writer.add_page(page)
+    for i, page in enumerate(reader.pages):
+        page = PageObject.create_blank_page(None, page.mediabox.width, page.mediabox.height).merge_page(page)
+
+        if i == 0 or i == num_pages - 1:
+            watermark_page = create_watermark(float(page.mediabox.width),
+                                              float(page.mediabox.height),
+                                              text)
+            page.merge_page(watermark_page)
+
+        writer.add_page(page)
 
     with open(output_pdf, "wb") as f:
         writer.write(f)
@@ -917,7 +920,7 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 try:
                     temp_file = os.path.abspath("temp_watermarked.pdf")
                     user_atomte_id=db.reference(f'users/{user}/details').child("atomte_id").get()
-                    add_watermark_and_duplicate(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown",copies=int(file_data["count"]))
+                    add_watermark(local_file, temp_file, user_atomte_id if user_atomte_id else "unknown",copies=int(file_data["count"]))
                 except Exception as e:
                     logger.error(f"Failed to add watermark: {e}")
                     temp_file = local_file  # Fallback to original file if watermarking fails

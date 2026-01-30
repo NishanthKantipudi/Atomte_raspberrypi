@@ -72,7 +72,7 @@ export default function MainScreen() {
       <div className="separatorHorizontal"></div>
 
 
-      
+
       <div className="ad1-container">
         <VideoPlayer className="ad1" videoFile={"http://localhost:7000/videos/ad1.mp4"} width="100%" height="100%" mute={false} />
       </div>

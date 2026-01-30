@@ -985,8 +985,6 @@ def process_print_job_with_snmp(user: str, filename: str) -> Tuple[bool, int]:
                 logger.error(f"Print job failed: {status} - {reasons}")
                 handle_print_error(user, filename, f"Rejected by printer: {status} - {reasons}")
                 return False, print_job_id
-
-        
         return True, print_job_id
     
     except Exception as e:

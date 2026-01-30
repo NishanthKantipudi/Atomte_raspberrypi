@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, db
 import requests,shutil
-import os
+import os,socket
 import json
 import time
 from urllib.parse import urlparse
@@ -206,14 +206,14 @@ def main():
             # Monitor listener health
             while True:
                 time.sleep(10)
-                
-                # Check network connectivity
                 try:
-                    requests.get("https://skilldevelopmentapp-default-rtdb.firebaseio.com/", timeout=5)
-                except requests.exceptions.RequestException:
+                    socket.create_connection(("8.8.8.8", 53), timeout=5)
+                except OSError:
+                    time.sleep(5)
                     logger.warning("Network connectivity issue detected")
                     time.sleep(RETRY_DELAY)
                     raise Exception("Network error")
+                # Check network connectivity
                 
                 # Check if all listeners are alive
                 if not check_listener_health():

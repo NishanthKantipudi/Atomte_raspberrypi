@@ -117,7 +117,7 @@ def lock2(event):
 listners=[]
 
 while 1:
-    try:
+    try: 
         for listner in listners:
             listner.close()
         listners=[]

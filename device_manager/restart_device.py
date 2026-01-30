@@ -168,7 +168,6 @@ def firebase_listener_loop():
             # Add new listeners
             listners.append(printer_ref.child("restart").listen(restart_pi_listener))
             listners.append(printer_ref.child("getlogs").listen(send_logs))
-            listners.append(printer_ref.child("screenshot").listen(take_screenshot_and_upload))
             listners.append(printer_ref.child("printer_restart").listen(restart_printer_listener))
             # Uncomment when needed
             # listners.append(printer_ref.child("restart_printer").listen(restart_printer_listener))

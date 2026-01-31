@@ -325,10 +325,10 @@ if __name__ == "__main__":
         threads = []
         
         # Web interface
-        threads.append(threading.Thread(
-            target=run_command,
-            args=("npm run electron -- --no-sandbox ", "run/startweb.log", cwd+"/../atomte/")
-        ))
+        # threads.append(threading.Thread(
+        #     target=run_command,
+        #     args=("npm run electron -- --no-sandbox ", "run/startweb.log", cwd+"/../atomte/")
+        # ))
         
         # System services
         threads.append(threading.Thread(target=run_command, 

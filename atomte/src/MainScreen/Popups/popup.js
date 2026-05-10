@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import app from "../../firebase/firebase";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, set,get } from "firebase/database";
 import "./popup.css";
 import VideoPlayer from "../RightView/rightcenterview";
 
@@ -9,6 +9,7 @@ const PrinterErrorPopup = ({ code }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [errVideo, setErrVideo] = useState("");
   const db = getDatabase(app);
+  const [mobile, setMobile] = useState("");
 
   // Function to check printer error
   const checkPrinterError = () => {
@@ -45,10 +46,28 @@ const PrinterErrorPopup = ({ code }) => {
 
     return () => unsubscribe(); // Cleanup listener
   };
+ const fetchMobile = async () => {
+  try {
+    const snapshot = await get(ref(db, `Printers/${code}/details/service_number`));
+
+    if (snapshot.exists()) {
+      setMobile(snapshot.val());
+    } else {
+      console.log("No mobile number found for this printer.");
+      setMobile("");
+    }
+  } catch (error) {
+    console.error("Error fetching mobile number:", error);
+    setMobile("");
+  }
+};
 
   // Check printer error 
   useEffect(() => {
+    fetchMobile();
     checkPrinterError();
+
+    
   }, [code]);
 
   if (!showPopup) return null; // Hide popup if no issue
@@ -57,7 +76,7 @@ const PrinterErrorPopup = ({ code }) => {
     <div className="popup-overlay">
       <div className="popup-content">
         <h2 className="contact-info">
-          For assistance, call: <strong>9849033249 </strong>(Available 24/7)
+          For assistance, call: <strong>{mobile} </strong>(Available 24/7)
         </h2>
         <p className="error-message">
           Printer Error: {error}

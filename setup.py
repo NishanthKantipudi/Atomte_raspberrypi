@@ -193,3 +193,9 @@ if __name__ == "__main__":
 #   echo "@reboot ~/Atomte/venv/bin/python3 ~/Atomte/Atomte_raspberrypi/run/main.py >> ~/Atomte/Atomte_raspberrypi/run/main.log 2>&1"
 #   echo "@reboot ~/Atomte/Atomte_raspberrypi/run/start.sh >> ~/Atomte/Atomte_raspberrypi/run/start.log 2>&1"
 # ) | sudo crontab -u atomte123456 -
+
+
+# :///sample.drv/generpcl.ppd
+# sudo lpadmin -p atomte100005 -m drv:///sample.drv/generpcl.ppd
+# sudo systemctl restart cups
+# sudo lpadmin -p atomte100005 -o Resolution=600dpi

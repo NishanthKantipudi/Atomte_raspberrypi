@@ -216,9 +216,6 @@ const RightTopView = ({code}) => {
                     </div>
                     </div>:<></>}
                     </div>
-                    
-                    
-    
                 </div>
     
             </div>

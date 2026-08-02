@@ -199,3 +199,5 @@ if __name__ == "__main__":
 # sudo lpadmin -p atomte100005 -m drv:///sample.drv/generpcl.ppd
 # sudo systemctl restart cups
 # sudo lpadmin -p atomte100005 -o Resolution=600dpi
+
+# cat /sys/class/drm/card*-HDMI-A-*/status

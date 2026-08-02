@@ -924,7 +924,7 @@ export default function KioskApp() {
             )}
           </div>
         </div>
-
+        <div className="h-30"> </div>
         <div className={`h-1/2 border-t ${tk.borderXFaint} flex-shrink-0 flex flex-col`}>
           <div className={`flex-1 border-b ${tk.borderXFaint} overflow-hidden`}>
             <Ad src="http://localhost:7000/videos/ad1.mp4" />
@@ -1008,7 +1008,7 @@ export default function KioskApp() {
       </div>
 
       {/* ── Ad strip ── */}
-      <div className={`h-44 flex-shrink-0 border-t ${tk.borderXFaint} flex`}>
+      <div className={`h-20 flex-shrink-0 border-t ${tk.borderXFaint} flex`}>
         <div className="flex-1 overflow-hidden">
           <Ad src="http://localhost:7000/videos/ad2.mp4" />
         </div>
